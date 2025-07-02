@@ -35,7 +35,7 @@ export const useTopics = (categoryId?: string) => {
         .from('topics')
         .select(`
           *,
-          profiles!topics_author_id_fkey (username, avatar_url),
+          profiles (username, avatar_url),
           categories (name, color)
         `)
         .order('is_pinned', { ascending: false })
