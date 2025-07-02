@@ -36,7 +36,7 @@ export const useTopics = (categoryId?: string) => {
         .select(`
           *,
           profiles!topics_author_id_fkey (username, avatar_url),
-          categories!topics_category_id_fkey (name, color)
+          categories (name, color)
         `)
         .order('is_pinned', { ascending: false })
         .order('last_reply_at', { ascending: false });
