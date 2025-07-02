@@ -72,6 +72,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "posts_parent_post_id_fkey"
             columns: ["parent_post_id"]
             isOneToOne: false
@@ -161,6 +168,13 @@ export type Database = {
           view_count?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "topics_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "topics_category_id_fkey"
             columns: ["category_id"]

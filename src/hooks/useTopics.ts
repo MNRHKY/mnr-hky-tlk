@@ -53,7 +53,7 @@ export const useTopics = (categoryId?: string) => {
       }
       
       console.log('Topics fetched:', data);
-      return data as Topic[];
+      return data;
     },
   });
 };
