@@ -83,7 +83,9 @@ export const ForumHome = () => {
           <Button asChild>
             <Link to="/create">Start a Discussion</Link>
           </Button>
-          <Button variant="outline">Browse Topics</Button>
+          <Button variant="outline" asChild>
+            <Link to="/topics">Browse Topics</Link>
+          </Button>
         </div>
       </Card>
 

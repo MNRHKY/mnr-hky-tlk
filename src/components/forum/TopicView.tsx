@@ -55,16 +55,16 @@ export const TopicView = () => {
     <div className="space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center space-x-2 text-sm text-gray-600">
-        <Link to="/forum" className="hover:text-blue-600">Forum</Link>
+        <Link to="/" className="hover:text-blue-600">Forum</Link>
         <span>/</span>
-        <Link to="/forum/category/equipment" className="hover:text-blue-600">Equipment & Gear</Link>
+        <Link to="/category/equipment" className="hover:text-blue-600">Equipment & Gear</Link>
         <span>/</span>
         <span className="text-gray-900">{topic.title}</span>
       </div>
 
       {/* Back Button */}
       <Button variant="outline" size="sm" asChild>
-        <Link to="/forum">
+        <Link to="/">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Forum
         </Link>
@@ -178,7 +178,9 @@ export const TopicView = () => {
       ) : (
         <Card className="p-6 text-center">
           <p className="text-gray-600 mb-4">Please sign in to post a reply</p>
-          <Button>Sign In</Button>
+          <Button asChild>
+            <Link to="/login">Sign In</Link>
+          </Button>
         </Card>
       )}
     </div>

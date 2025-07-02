@@ -1,29 +1,21 @@
 
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, User, Clock, Pin, Plus } from 'lucide-react';
-import { AdUnit } from '../ads/AdUnit';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MessageSquare, User, Clock, Pin, Search } from 'lucide-react';
+import { AdUnit } from '@/components/ads/AdUnit';
 
-export const CategoryView = () => {
-  const { categoryId } = useParams();
-  
-  // Mock category data
-  const category = {
-    id: categoryId,
-    name: 'Equipment & Gear',
-    description: 'Hockey equipment reviews, recommendations, and discussions',
-    topics: 189,
-    posts: 2156
-  };
-
+const Topics = () => {
   const topics = [
     {
       id: 1,
       title: 'Best Budget Hockey Skates for Kids Under 12',
       author: 'HockeyParent23',
+      category: 'Equipment & Gear',
       replies: 12,
       views: 234,
       lastActivity: '2 hours ago',
@@ -31,19 +23,41 @@ export const CategoryView = () => {
     },
     {
       id: 2,
+      title: '2024 Minor Hockey Tournament Schedule Released',
+      author: 'AdminUser',
+      category: 'Tournaments & Events',
+      replies: 45,
+      views: 1250,
+      lastActivity: '2 hours ago',
+      isPinned: true
+    },
+    {
+      id: 3,
       title: 'Helmet Safety Standards - What to Look For',
       author: 'SafetyFirst',
+      category: 'Equipment & Gear',
       replies: 28,
       views: 456,
       lastActivity: '4 hours ago',
       isPinned: true
     },
     {
-      id: 3,
-      title: 'Stick Flex Guide for Different Age Groups',
-      author: 'CoachDave',
-      replies: 15,
-      views: 189,
+      id: 4,
+      title: 'Coaching Tips for 8-10 Year Olds',
+      author: 'CoachMike',
+      category: 'Coaching & Training',
+      replies: 34,
+      views: 678,
+      lastActivity: '6 hours ago',
+      isPinned: false
+    },
+    {
+      id: 5,
+      title: 'Best Ice Rinks in Toronto Area',
+      author: 'TorontoHockey',
+      category: 'General Discussion',
+      replies: 56,
+      views: 890,
       lastActivity: '1 day ago',
       isPinned: false
     }
@@ -51,36 +65,58 @@ export const CategoryView = () => {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <div className="flex items-center space-x-2 text-sm text-gray-600">
-        <Link to="/" className="hover:text-blue-600">Forum</Link>
-        <span>/</span>
-        <span className="text-gray-900">{category.name}</span>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">All Topics</h1>
+          <p className="text-gray-600">Browse all forum discussions</p>
+        </div>
+        <Button asChild>
+          <Link to="/create">Create New Topic</Link>
+        </Button>
       </div>
 
-      {/* Category Header */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">{category.name}</h1>
-            <p className="text-gray-600 mb-4">{category.description}</p>
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
-              <span>{category.topics} topics</span>
-              <span>{category.posts} posts</span>
+      {/* Filters */}
+      <Card className="p-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search topics..."
+                className="pl-10"
+              />
             </div>
           </div>
-          <Button asChild>
-            <Link to="/create">
-              <Plus className="h-4 w-4 mr-2" />
-              New Topic
-            </Link>
-          </Button>
+          <Select>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="general">General Discussion</SelectItem>
+              <SelectItem value="equipment">Equipment & Gear</SelectItem>
+              <SelectItem value="coaching">Coaching & Training</SelectItem>
+              <SelectItem value="tournaments">Tournaments & Events</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Sort by Latest" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="latest">Latest Activity</SelectItem>
+              <SelectItem value="newest">Newest Topics</SelectItem>
+              <SelectItem value="popular">Most Popular</SelectItem>
+              <SelectItem value="replies">Most Replies</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </Card>
 
       {/* Ad */}
       <AdUnit 
-        slot="category-banner" 
+        slot="topics-banner" 
         format="horizontal" 
         className="my-6"
       />
@@ -105,7 +141,7 @@ export const CategoryView = () => {
                   <div className="flex items-center space-x-2 mt-1 text-sm text-gray-500">
                     <span>by {topic.author}</span>
                     <Badge variant="outline" className="text-xs">
-                      {category.name}
+                      {topic.category}
                     </Badge>
                   </div>
                 </div>
@@ -140,3 +176,5 @@ export const CategoryView = () => {
     </div>
   );
 };
+
+export default Topics;

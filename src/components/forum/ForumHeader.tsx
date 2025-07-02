@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,10 +17,19 @@ import {
 export const ForumHeader = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
+      setSearchTerm('');
+    }
   };
 
   return (
@@ -39,13 +48,15 @@ export const ForumHeader = () => {
 
           {/* Search */}
           <div className="flex-1 max-w-md mx-8">
-            <div className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search forums..."
                 className="pl-10 pr-4"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
-            </div>
+            </form>
           </div>
 
           {/* User Actions */}

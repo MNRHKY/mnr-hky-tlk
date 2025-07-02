@@ -14,6 +14,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import Topics from "./pages/Topics";
+import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +38,8 @@ const App = () => (
               <Route path="topic/:topicId" element={<TopicView />} />
               <Route path="category/:categoryId" element={<CategoryView />} />
               <Route path="create" element={<CreateTopic />} />
+              <Route path="topics" element={<Topics />} />
+              <Route path="search" element={<Search />} />
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
             </Route>
