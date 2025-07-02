@@ -4,167 +4,142 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Users, Pin, Clock } from 'lucide-react';
-import { AdUnit } from '../ads/AdUnit';
+import { Plus, MessageSquare, Users, Pin, Lock } from 'lucide-react';
+import { useCategories } from '@/hooks/useCategories';
+import { useTopics } from '@/hooks/useTopics';
+import { useAuth } from '@/hooks/useAuth';
+import { formatDistanceToNow } from 'date-fns';
 
 export const ForumHome = () => {
-  const categories = [
-    {
-      id: 'general',
-      name: 'General Discussion',
-      description: 'General hockey discussions and community chat',
-      topics: 245,
-      posts: 3420,
-      lastPost: '2 hours ago',
-      color: 'bg-blue-100 text-blue-800'
-    },
-    {
-      id: 'equipment',
-      name: 'Equipment & Gear',
-      description: 'Hockey equipment reviews, recommendations, and discussions',
-      topics: 189,
-      posts: 2156,
-      lastPost: '4 hours ago',
-      color: 'bg-green-100 text-green-800'
-    },
-    {
-      id: 'coaching',
-      name: 'Coaching & Training',
-      description: 'Coaching strategies, training tips, and skill development',
-      topics: 167,
-      posts: 1987,
-      lastPost: '1 day ago',
-      color: 'bg-purple-100 text-purple-800'
-    },
-    {
-      id: 'tournaments',
-      name: 'Tournaments & Events',
-      description: 'Tournament announcements, results, and event planning',
-      topics: 98,
-      posts: 1234,
-      lastPost: '3 days ago',
-      color: 'bg-orange-100 text-orange-800'
-    }
-  ];
+  const { user } = useAuth();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: topics, isLoading: topicsLoading } = useTopics();
 
-  const featuredTopics = [
-    {
-      id: 1,
-      title: '2024 Minor Hockey Tournament Schedule Released',
-      author: 'AdminUser',
-      replies: 45,
-      views: 1250,
-      isPinned: true,
-      lastActivity: '2 hours ago'
-    },
-    {
-      id: 2,
-      title: 'Best Budget Hockey Skates for Kids Under 12',
-      author: 'HockeyParent23',
-      replies: 89,
-      views: 2340,
-      isPinned: false,
-      lastActivity: '4 hours ago'
-    }
-  ];
+  if (categoriesLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-32 bg-gray-200 rounded animate-pulse"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
-      <Card className="p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Welcome to Minor Hockey Talks
-        </h1>
-        <p className="text-gray-600 mb-4">
-          The largest community for minor hockey players, parents, and coaches. 
-          Join the discussion and share your passion for the game!
-        </p>
-        <div className="flex gap-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Minor Hockey Talk</h1>
+        {user && (
           <Button asChild>
-            <Link to="/create">Start a Discussion</Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/topics">Browse Topics</Link>
-          </Button>
-        </div>
-      </Card>
-
-      {/* Ad between sections */}
-      <AdUnit 
-        slot="content-banner" 
-        format="horizontal" 
-        className="my-6"
-      />
-
-      {/* Featured Topics */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Featured Topics</h2>
-        <div className="space-y-4">
-          {featuredTopics.map((topic) => (
-            <div key={topic.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-              <div className="flex items-start space-x-3">
-                {topic.isPinned && <Pin className="h-4 w-4 text-red-500 mt-1" />}
-                <div>
-                  <Link 
-                    to={`/topic/${topic.id}`}
-                    className="font-medium text-gray-900 hover:text-blue-600"
-                  >
-                    {topic.title}
-                  </Link>
-                  <p className="text-sm text-gray-600">by {topic.author}</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4 text-sm text-gray-500">
-                <div className="flex items-center space-x-1">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>{topic.replies}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Users className="h-4 w-4" />
-                  <span>{topic.views}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Clock className="h-4 w-4" />
-                  <span>{topic.lastActivity}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Forum Categories */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Forum Categories</h2>
-        <div className="space-y-4">
-          {categories.map((category) => (
-            <Link 
-              key={category.id}
-              to={`/category/${category.id}`}
-              className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors block"
-            >
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <MessageSquare className="h-6 w-6 text-gray-600" />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <h3 className="font-medium text-gray-900">{category.name}</h3>
-                    <Badge className={category.color}>
-                      {category.topics} Topics
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-1">{category.description}</p>
-                </div>
-              </div>
-              <div className="text-right text-sm text-gray-500">
-                <div>{category.posts} Posts</div>
-                <div className="text-xs mt-1">Last: {category.lastPost}</div>
-              </div>
+            <Link to="/create">
+              <Plus className="h-4 w-4 mr-2" />
+              New Topic
             </Link>
-          ))}
-        </div>
-      </Card>
+          </Button>
+        )}
+      </div>
+
+      {/* Categories */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {categories?.map((category) => (
+          <Link key={category.id} to={`/category/${category.slug}`}>
+            <Card className="p-6 hover:shadow-md transition-shadow cursor-pointer">
+              <div className="flex items-center space-x-3 mb-3">
+                <div 
+                  className="w-4 h-4 rounded-full" 
+                  style={{ backgroundColor: category.color }}
+                />
+                <h3 className="font-semibold text-gray-900">{category.name}</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">{category.description}</p>
+              <div className="flex items-center text-sm text-gray-500">
+                <MessageSquare className="h-4 w-4 mr-1" />
+                <span>View topics</span>
+              </div>
+            </Card>
+          </Link>
+        ))}
+      </div>
+
+      {/* Recent Topics */}
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Discussions</h2>
+        {topicsLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-20 bg-gray-200 rounded animate-pulse"></div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {topics?.slice(0, 5).map((topic) => (
+              <Card key={topic.id} className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-2">
+                      {topic.is_pinned && (
+                        <Pin className="h-4 w-4 text-blue-500" />
+                      )}
+                      {topic.is_locked && (
+                        <Lock className="h-4 w-4 text-gray-500" />
+                      )}
+                      <Link 
+                        to={`/topic/${topic.id}`}
+                        className="font-medium text-gray-900 hover:text-blue-600"
+                      >
+                        {topic.title}
+                      </Link>
+                    </div>
+                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <span>by {topic.profiles?.username || 'Unknown'}</span>
+                      <Badge 
+                        variant="outline"
+                        style={{ 
+                          borderColor: topic.categories?.color,
+                          color: topic.categories?.color 
+                        }}
+                      >
+                        {topic.categories?.name}
+                      </Badge>
+                      <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4 text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <MessageSquare className="h-4 w-4 mr-1" />
+                      {topic.reply_count}
+                    </div>
+                    <div className="flex items-center">
+                      <Users className="h-4 w-4 mr-1" />
+                      {topic.view_count}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {!user && (
+        <Card className="p-6 text-center">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Join the Community</h3>
+          <p className="text-gray-600 mb-4">
+            Sign up to create topics, reply to discussions, and connect with other hockey enthusiasts!
+          </p>
+          <div className="space-x-4">
+            <Button asChild>
+              <Link to="/login">Sign In</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/register">Sign Up</Link>
+            </Button>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };

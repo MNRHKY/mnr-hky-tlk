@@ -1,68 +1,115 @@
 
 import React, { createContext, useEffect, useState } from 'react';
-import { User, AuthContextType } from '@/types/auth';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+import { AuthContextType } from '@/types/auth';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<'admin' | 'moderator' | 'user'>('user');
 
   useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch user role
+          setTimeout(async () => {
+            try {
+              const { data: roleData } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', session.user.id)
+                .single();
+              
+              if (roleData) {
+                setUserRole(roleData.role);
+              }
+            } catch (error) {
+              console.log('Error fetching user role:', error);
+            }
+          }, 0);
+        } else {
+          setUserRole('user');
+        }
+        
+        setLoading(false);
+      }
+    );
+
     // Check for existing session
-    const storedUser = localStorage.getItem('forum_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
-    // Mock sign in - replace with Supabase auth
-    const mockUser: User = {
-      id: '1',
+    const { error } = await supabase.auth.signInWithPassword({
       email,
-      username: email.split('@')[0],
-      role: email === 'admin@test.com' ? 'admin' : 'user',
-      joinDate: '2024-01-15',
-      reputation: 127,
-      isActive: true,
-      bio: 'Hockey enthusiast and forum member'
-    };
-    setUser(mockUser);
-    localStorage.setItem('forum_user', JSON.stringify(mockUser));
-    setLoading(false);
+      password,
+    });
+    
+    if (error) {
+      setLoading(false);
+      throw error;
+    }
   };
 
   const signUp = async (email: string, password: string, username: string) => {
     setLoading(true);
-    // Mock sign up - replace with Supabase auth
-    const mockUser: User = {
-      id: Date.now().toString(),
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { error } = await supabase.auth.signUp({
       email,
-      username,
-      role: 'user',
-      joinDate: new Date().toISOString().split('T')[0],
-      reputation: 0,
-      isActive: true
-    };
-    setUser(mockUser);
-    localStorage.setItem('forum_user', JSON.stringify(mockUser));
-    setLoading(false);
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          username: username
+        }
+      }
+    });
+    
+    if (error) {
+      setLoading(false);
+      throw error;
+    }
   };
 
   const signOut = async () => {
-    setUser(null);
-    localStorage.removeItem('forum_user');
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   };
 
-  const isAdmin = user?.role === 'admin';
-  const isModerator = user?.role === 'moderator' || isAdmin;
+  const isAdmin = userRole === 'admin';
+  const isModerator = userRole === 'moderator' || isAdmin;
+
+  const contextUser = user ? {
+    id: user.id,
+    email: user.email || '',
+    username: user.user_metadata?.username || user.email?.split('@')[0] || '',
+    role: userRole,
+    joinDate: user.created_at?.split('T')[0] || '',
+    reputation: 0,
+    isActive: true
+  } : null;
 
   return (
     <AuthContext.Provider value={{ 
-      user, 
+      user: contextUser, 
       signIn, 
       signUp, 
       signOut, 

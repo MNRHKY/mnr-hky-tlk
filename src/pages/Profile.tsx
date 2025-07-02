@@ -4,10 +4,47 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { User, Mail, Calendar, Award, MessageSquare, TrendingUp } from 'lucide-react';
 
 const Profile = () => {
   const { user } = useAuth();
+
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: userTopics } = useQuery({
+    queryKey: ['user-topics', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('topics')
+        .select('*')
+        .eq('author_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
   if (!user) {
     return (
@@ -39,10 +76,18 @@ const Profile = () => {
         <Card className="p-6">
           <div className="flex items-center space-x-4 mb-6">
             <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-              <User className="h-8 w-8 text-gray-600" />
+              {profile?.avatar_url ? (
+                <img 
+                  src={profile.avatar_url} 
+                  alt={user.username}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              ) : (
+                <User className="h-8 w-8 text-gray-600" />
+              )}
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">{user.username}</h2>
+              <h2 className="text-xl font-semibold text-gray-900">{profile?.username || user.username}</h2>
               <Badge className={getRoleColor(user.role)}>
                 {user.role}
               </Badge>
@@ -64,10 +109,10 @@ const Profile = () => {
                 <p className="font-medium">{user.joinDate}</p>
               </div>
             </div>
-            {user.bio && (
+            {profile?.bio && (
               <div className="pt-4 border-t">
                 <p className="text-sm text-gray-500 mb-2">Bio</p>
-                <p className="text-gray-700">{user.bio}</p>
+                <p className="text-gray-700">{profile.bio}</p>
               </div>
             )}
           </div>
@@ -79,46 +124,42 @@ const Profile = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <MessageSquare className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-600">Posts Made</span>
+                <span className="text-gray-600">Topics Created</span>
               </div>
-              <span className="font-medium">45</span>
+              <span className="font-medium">{userTopics?.length || 0}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Award className="h-4 w-4 text-gray-400" />
                 <span className="text-gray-600">Reputation</span>
               </div>
-              <span className="font-medium">{user.reputation}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-600">Topics Created</span>
-              </div>
-              <span className="font-medium">12</span>
+              <span className="font-medium">{profile?.reputation || 0}</span>
             </div>
           </div>
         </Card>
       </div>
 
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <div>
-              <span className="font-medium">Posted in "Best Budget Hockey Skates"</span>
-              <p className="text-sm text-gray-600">Equipment & Gear category</p>
-            </div>
-            <span className="text-sm text-gray-500">2 hours ago</span>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Topics</h2>
+        {userTopics && userTopics.length > 0 ? (
+          <div className="space-y-3">
+            {userTopics.map((topic) => (
+              <div key={topic.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <span className="font-medium">{topic.title}</span>
+                  <p className="text-sm text-gray-600">
+                    {topic.reply_count} replies • {topic.view_count} views
+                  </p>
+                </div>
+                <span className="text-sm text-gray-500">
+                  {new Date(topic.created_at).toLocaleDateString()}
+                </span>
+              </div>
+            ))}
           </div>
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <div>
-              <span className="font-medium">Created topic "Training Tips for Beginners"</span>
-              <p className="text-sm text-gray-600">Coaching & Training category</p>
-            </div>
-            <span className="text-sm text-gray-500">1 day ago</span>
-          </div>
-        </div>
+        ) : (
+          <p className="text-gray-500">No topics created yet.</p>
+        )}
       </Card>
     </div>
   );
