@@ -10,7 +10,6 @@ import { ForumHome } from "./components/forum/ForumHome";
 import { TopicView } from "./components/forum/TopicView";
 import { CategoryView } from "./components/forum/CategoryView";
 import { CreateTopic } from "./components/forum/CreateTopic";
-import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,8 +22,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/forum" element={<ForumLayout />}>
+            <Route path="/" element={<ForumLayout />}>
               <Route index element={<ForumHome />} />
               <Route path="topic/:topicId" element={<TopicView />} />
               <Route path="category/:categoryId" element={<CategoryView />} />

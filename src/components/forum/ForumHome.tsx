@@ -81,7 +81,7 @@ export const ForumHome = () => {
         </p>
         <div className="flex gap-4">
           <Button asChild>
-            <Link to="/forum/create">Start a Discussion</Link>
+            <Link to="/create">Start a Discussion</Link>
           </Button>
           <Button variant="outline">Browse Topics</Button>
         </div>
@@ -104,7 +104,7 @@ export const ForumHome = () => {
                 {topic.isPinned && <Pin className="h-4 w-4 text-red-500 mt-1" />}
                 <div>
                   <Link 
-                    to={`/forum/topic/${topic.id}`}
+                    to={`/topic/${topic.id}`}
                     className="font-medium text-gray-900 hover:text-blue-600"
                   >
                     {topic.title}
@@ -138,7 +138,7 @@ export const ForumHome = () => {
           {categories.map((category) => (
             <Link 
               key={category.id}
-              to={`/forum/category/${category.id}`}
+              to={`/category/${category.id}`}
               className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors block"
             >
               <div className="flex items-start space-x-4">

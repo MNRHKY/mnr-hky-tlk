@@ -30,7 +30,7 @@ export const CreateTopic = () => {
     if (formData.title && formData.content && formData.category) {
       console.log('Creating topic:', formData);
       // Mock topic creation - would connect to backend
-      navigate('/forum');
+      navigate('/');
     }
   };
 
@@ -39,7 +39,7 @@ export const CreateTopic = () => {
       <Card className="p-6 text-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Sign In Required</h1>
         <p className="text-gray-600 mb-4">You need to be signed in to create a new topic</p>
-        <Button onClick={() => navigate('/forum')}>Back to Forum</Button>
+        <Button onClick={() => navigate('/')}>Back to Forum</Button>
       </Card>
     );
   }
@@ -48,7 +48,7 @@ export const CreateTopic = () => {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Create New Topic</h1>
-        <Button variant="outline" onClick={() => navigate('/forum')}>
+        <Button variant="outline" onClick={() => navigate('/')}>
           Cancel
         </Button>
       </div>
@@ -102,7 +102,7 @@ export const CreateTopic = () => {
             <Button 
               type="button" 
               variant="outline"
-              onClick={() => navigate('/forum')}
+              onClick={() => navigate('/')}
             >
               Cancel
             </Button>
