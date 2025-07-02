@@ -1,21 +1,6 @@
 
 import React, { createContext, useEffect, useState } from 'react';
-
-// Mock auth context for now - will be replaced with Supabase
-interface User {
-  id: string;
-  email: string;
-  username: string;
-  avatar?: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, username: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  loading: boolean;
-}
+import { User, AuthContextType } from '@/types/auth';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -35,10 +20,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     // Mock sign in - replace with Supabase auth
-    const mockUser = {
+    const mockUser: User = {
       id: '1',
       email,
-      username: email.split('@')[0]
+      username: email.split('@')[0],
+      role: email === 'admin@test.com' ? 'admin' : 'user',
+      joinDate: '2024-01-15',
+      reputation: 127,
+      isActive: true,
+      bio: 'Hockey enthusiast and forum member'
     };
     setUser(mockUser);
     localStorage.setItem('forum_user', JSON.stringify(mockUser));
@@ -48,10 +38,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, username: string) => {
     setLoading(true);
     // Mock sign up - replace with Supabase auth
-    const mockUser = {
-      id: '1',
+    const mockUser: User = {
+      id: Date.now().toString(),
       email,
-      username
+      username,
+      role: 'user',
+      joinDate: new Date().toISOString().split('T')[0],
+      reputation: 0,
+      isActive: true
     };
     setUser(mockUser);
     localStorage.setItem('forum_user', JSON.stringify(mockUser));
@@ -63,8 +57,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('forum_user');
   };
 
+  const isAdmin = user?.role === 'admin';
+  const isModerator = user?.role === 'moderator' || isAdmin;
+
   return (
-    <AuthContext.Provider value={{ user, signIn, signUp, signOut, loading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      signIn, 
+      signUp, 
+      signOut, 
+      loading, 
+      isAdmin, 
+      isModerator 
+    }}>
       {children}
     </AuthContext.Provider>
   );

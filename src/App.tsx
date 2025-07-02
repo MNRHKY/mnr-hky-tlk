@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { ForumLayout } from "./components/forum/ForumLayout";
+import { AdminLayout } from "./components/admin/AdminLayout";
 import { ForumHome } from "./components/forum/ForumHome";
 import { TopicView } from "./components/forum/TopicView";
 import { CategoryView } from "./components/forum/CategoryView";
@@ -17,6 +18,8 @@ import Settings from "./pages/Settings";
 import Topics from "./pages/Topics";
 import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
+import AdminPage from "./pages/admin/AdminPage";
+import AdminUsers from "./pages/admin/AdminUsers";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +34,12 @@ const App = () => (
             {/* Authentication routes - standalone pages */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            
+            {/* Admin routes - wrapped in AdminLayout */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminPage />} />
+              <Route path="users" element={<AdminUsers />} />
+            </Route>
             
             {/* Forum routes - wrapped in ForumLayout */}
             <Route path="/" element={<ForumLayout />}>
