@@ -10,6 +10,10 @@ import { ForumHome } from "./components/forum/ForumHome";
 import { TopicView } from "./components/forum/TopicView";
 import { CategoryView } from "./components/forum/CategoryView";
 import { CreateTopic } from "./components/forum/CreateTopic";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,12 +26,20 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Authentication routes - standalone pages */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            
+            {/* Forum routes - wrapped in ForumLayout */}
             <Route path="/" element={<ForumLayout />}>
               <Route index element={<ForumHome />} />
               <Route path="topic/:topicId" element={<TopicView />} />
               <Route path="category/:categoryId" element={<CategoryView />} />
               <Route path="create" element={<CreateTopic />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="settings" element={<Settings />} />
             </Route>
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
