@@ -286,6 +286,21 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_category_stats: {
+        Args: { category_id: string }
+        Returns: {
+          topic_count: number
+          post_count: number
+        }[]
+      }
+      get_forum_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_topics: number
+          total_posts: number
+          total_members: number
+        }[]
+      }
       has_role: {
         Args: {
           _user_id: string

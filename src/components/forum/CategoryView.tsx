@@ -9,6 +9,7 @@ import { AdUnit } from '../ads/AdUnit';
 import { useCategories, useCategoryBySlug } from '@/hooks/useCategories';
 import { useTopics } from '@/hooks/useTopics';
 import { useAuth } from '@/hooks/useAuth';
+import { useCategoryStats } from '@/hooks/useCategoryStats';
 import { formatDistanceToNow } from 'date-fns';
 import { QuickTopicModal } from './QuickTopicModal';
 import { CategoryRequestModal } from './CategoryRequestModal';
@@ -21,6 +22,52 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+
+const SubcategoryCard = ({ subcat }: { subcat: any }) => {
+  const { data: stats } = useCategoryStats(subcat.id);
+  
+  return (
+    <Link to={`/category/${subcat.slug}`}>
+      <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: subcat.color }}
+            />
+            <h3 className="font-semibold text-sm text-gray-900">{subcat.name}</h3>
+          </div>
+          <div className="flex items-center space-x-2">
+            <QuickTopicModal 
+              trigger={
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => e.preventDefault()}
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              }
+            />
+            <ChevronRight className="h-4 w-4 text-gray-400" />
+          </div>
+        </div>
+        <p className="text-xs text-gray-600 mb-3 line-clamp-2">{subcat.description}</p>
+        <div className="flex items-center text-xs text-gray-500 space-x-4">
+          <div className="flex items-center space-x-1">
+            <MessageSquare className="h-3 w-3" />
+            <span>{stats?.topic_count || 0} topics</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <User className="h-3 w-3" />
+            <span>{stats?.post_count || 0} posts</span>
+          </div>
+        </div>
+      </Card>
+    </Link>
+  );
+};
 
 export const CategoryView = () => {
   const { categoryId } = useParams();
@@ -161,39 +208,7 @@ export const CategoryView = () => {
           </div>
           <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {subcategories.map((subcat) => (
-              <Link key={subcat.id} to={`/category/${subcat.slug}`}>
-                <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: subcat.color }}
-                      />
-                      <h3 className="font-semibold text-sm text-gray-900">{subcat.name}</h3>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <QuickTopicModal 
-                        trigger={
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => e.preventDefault()}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        }
-                      />
-                      <ChevronRight className="h-4 w-4 text-gray-400" />
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-600 mb-3 line-clamp-2">{subcat.description}</p>
-                  <div className="flex items-center text-xs text-gray-500">
-                    <MessageSquare className="h-3 w-3 mr-1" />
-                    <span>View topics</span>
-                  </div>
-                </Card>
-              </Link>
+              <SubcategoryCard key={subcat.id} subcat={subcat} />
             ))}
           </div>
         </>

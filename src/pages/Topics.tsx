@@ -8,60 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MessageSquare, User, Clock, Pin, Search } from 'lucide-react';
 import { AdUnit } from '@/components/ads/AdUnit';
+import { useTopics } from '@/hooks/useTopics';
+import { formatDistanceToNow } from 'date-fns';
 
 const Topics = () => {
-  const topics = [
-    {
-      id: 1,
-      title: 'Best Budget Hockey Skates for Kids Under 12',
-      author: 'HockeyParent23',
-      category: 'Equipment & Gear',
-      replies: 12,
-      views: 234,
-      lastActivity: '2 hours ago',
-      isPinned: false
-    },
-    {
-      id: 2,
-      title: '2024 Minor Hockey Tournament Schedule Released',
-      author: 'AdminUser',
-      category: 'Tournaments & Events',
-      replies: 45,
-      views: 1250,
-      lastActivity: '2 hours ago',
-      isPinned: true
-    },
-    {
-      id: 3,
-      title: 'Helmet Safety Standards - What to Look For',
-      author: 'SafetyFirst',
-      category: 'Equipment & Gear',
-      replies: 28,
-      views: 456,
-      lastActivity: '4 hours ago',
-      isPinned: true
-    },
-    {
-      id: 4,
-      title: 'Coaching Tips for 8-10 Year Olds',
-      author: 'CoachMike',
-      category: 'Coaching & Training',
-      replies: 34,
-      views: 678,
-      lastActivity: '6 hours ago',
-      isPinned: false
-    },
-    {
-      id: 5,
-      title: 'Best Ice Rinks in Toronto Area',
-      author: 'TorontoHockey',
-      category: 'General Discussion',
-      replies: 56,
-      views: 890,
-      lastActivity: '1 day ago',
-      isPinned: false
-    }
-  ];
+  const { data: topics, isLoading } = useTopics();
 
   return (
     <div className="space-y-6">
@@ -123,55 +74,74 @@ const Topics = () => {
 
       {/* Topics List */}
       <Card className="p-6">
-        <div className="space-y-4">
-          {topics.map((topic) => (
-            <div key={topic.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className="flex items-start space-x-4 flex-1">
-                <div className="flex items-center space-x-2">
-                  {topic.isPinned && <Pin className="h-4 w-4 text-red-500" />}
-                  <MessageSquare className="h-5 w-5 text-gray-400" />
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-20 bg-gray-200 rounded animate-pulse"></div>
+            ))}
+          </div>
+        ) : topics && topics.length > 0 ? (
+          <div className="space-y-4">
+            {topics.map((topic) => (
+              <div key={topic.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex items-start space-x-4 flex-1">
+                  <div className="flex items-center space-x-2">
+                    {topic.is_pinned && <Pin className="h-4 w-4 text-red-500" />}
+                    <MessageSquare className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <div className="flex-1">
+                    <Link 
+                      to={`/topic/${topic.id}`}
+                      className="font-medium text-gray-900 hover:text-blue-600"
+                    >
+                      {topic.title}
+                    </Link>
+                    <div className="flex items-center space-x-2 mt-1 text-sm text-gray-500">
+                      <span>by {topic.profiles?.username || 'Unknown'}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {topic.categories?.name || 'General'}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <Link 
-                    to={`/topic/${topic.id}`}
-                    className="font-medium text-gray-900 hover:text-blue-600"
-                  >
-                    {topic.title}
-                  </Link>
-                  <div className="flex items-center space-x-2 mt-1 text-sm text-gray-500">
-                    <span>by {topic.author}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {topic.category}
-                    </Badge>
+                
+                <div className="flex items-center space-x-6 text-sm text-gray-500">
+                  <div className="text-center">
+                    <div className="flex items-center space-x-1">
+                      <MessageSquare className="h-4 w-4" />
+                      <span>{topic.reply_count || 0}</span>
+                    </div>
+                    <span className="text-xs">replies</span>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center space-x-1">
+                      <User className="h-4 w-4" />
+                      <span>{topic.view_count || 0}</span>
+                    </div>
+                    <span className="text-xs">views</span>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center space-x-1">
+                      <Clock className="h-4 w-4" />
+                      <span className="whitespace-nowrap">
+                        {formatDistanceToNow(new Date(topic.last_reply_at || topic.created_at))} ago
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-              
-              <div className="flex items-center space-x-6 text-sm text-gray-500">
-                <div className="text-center">
-                  <div className="flex items-center space-x-1">
-                    <MessageSquare className="h-4 w-4" />
-                    <span>{topic.replies}</span>
-                  </div>
-                  <span className="text-xs">replies</span>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center space-x-1">
-                    <User className="h-4 w-4" />
-                    <span>{topic.views}</span>
-                  </div>
-                  <span className="text-xs">views</span>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center space-x-1">
-                    <Clock className="h-4 w-4" />
-                    <span className="whitespace-nowrap">{topic.lastActivity}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No topics found</h3>
+            <p className="text-gray-600 mb-4">Be the first to start a discussion!</p>
+            <Button asChild>
+              <Link to="/create">Create First Topic</Link>
+            </Button>
+          </div>
+        )}
       </Card>
     </div>
   );
