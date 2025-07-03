@@ -3,6 +3,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { ForumHeader } from './ForumHeader';
 import { ForumSidebar } from './ForumSidebar';
+import { ForumStats } from './ForumStats';
 import { AdUnit } from '../ads/AdUnit';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -44,6 +45,9 @@ export const ForumLayout = () => {
           </aside>
         </div>
       </div>
+
+      {/* Forum Stats at the bottom */}
+      <ForumStats />
     </div>
   );
 };

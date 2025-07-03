@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, MessageSquare, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTopics } from '@/hooks/useTopics';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -14,12 +14,6 @@ export const ForumSidebar = () => {
   const maxItems = 100;
   
   const { data: allTopics, isLoading } = useTopics();
-  
-  const stats = {
-    totalMembers: '15,247',
-    totalPosts: '234,891',
-    onlineUsers: '89'
-  };
 
   // Get paginated topics
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -39,34 +33,6 @@ export const ForumSidebar = () => {
 
   return (
     <div className="space-y-4 lg:space-y-6">
-      {/* Forum Stats */}
-      <Card className="p-3 sm:p-4">
-        <h3 className="font-semibold text-sm text-gray-900 mb-3">Forum Statistics</h3>
-        <div className="grid grid-cols-3 lg:grid-cols-1 gap-3 lg:space-y-3 lg:gap-0">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between text-center lg:text-left">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-2">
-              <Users className="h-4 w-4 text-blue-500 mx-auto lg:mx-0" />
-              <span className="text-xs sm:text-sm text-gray-600 mt-1 lg:mt-0">Members</span>
-            </div>
-            <span className="font-semibold text-xs sm:text-sm mt-1 lg:mt-0">{stats.totalMembers}</span>
-          </div>
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between text-center lg:text-left">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-2">
-              <MessageSquare className="h-4 w-4 text-green-500 mx-auto lg:mx-0" />
-              <span className="text-xs sm:text-sm text-gray-600 mt-1 lg:mt-0">Posts</span>
-            </div>
-            <span className="font-semibold text-xs sm:text-sm mt-1 lg:mt-0">{stats.totalPosts}</span>
-          </div>
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between text-center lg:text-left">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-2">
-              <TrendingUp className="h-4 w-4 text-orange-500 mx-auto lg:mx-0" />
-              <span className="text-xs sm:text-sm text-gray-600 mt-1 lg:mt-0">Online</span>
-            </div>
-            <span className="font-semibold text-xs sm:text-sm text-green-600 mt-1 lg:mt-0">{stats.onlineUsers}</span>
-          </div>
-        </div>
-      </Card>
-
       {/* Most Recent Topics */}
       <Card className="p-3 sm:p-4">
         <div className="flex items-center justify-between mb-3">
