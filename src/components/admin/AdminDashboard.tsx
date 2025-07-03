@@ -1,46 +1,60 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Users, MessageSquare, Flag, TrendingUp } from 'lucide-react';
+import { useAdminStats } from '@/hooks/useAdminStats';
+import { useAdminActivity } from '@/hooks/useAdminActivity';
+import { formatDistanceToNow } from 'date-fns';
 
 export const AdminDashboard = () => {
-  const stats = [
+  const { data: stats, isLoading: statsLoading, error: statsError } = useAdminStats();
+  const { data: activities, isLoading: activitiesLoading, error: activitiesError } = useAdminActivity();
+
+  if (statsError || activitiesError) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center p-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Admin Dashboard</h2>
+          <p className="text-gray-600">
+            {statsError?.message || activitiesError?.message || 'Unable to load admin data'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const dashboardStats = [
     {
       title: 'Total Users',
-      value: '1,247',
+      value: statsLoading ? '...' : stats?.total_users?.toString() || '0',
       change: '+12%',
       changeType: 'positive',
       icon: Users
     },
     {
       title: 'Total Posts',
-      value: '8,392',
+      value: statsLoading ? '...' : stats?.total_posts?.toString() || '0',
       change: '+8%',
       changeType: 'positive',
       icon: MessageSquare
     },
     {
       title: 'Pending Reports',
-      value: '3',
-      change: '-2',
-      changeType: 'negative',
+      value: statsLoading ? '...' : stats?.pending_reports?.toString() || '0',
+      change: 'No change',
+      changeType: 'neutral',
       icon: Flag
     },
     {
-      title: 'Active Topics',
-      value: '156',
+      title: 'Total Topics',
+      value: statsLoading ? '...' : stats?.total_topics?.toString() || '0',
       change: '+5%',
       changeType: 'positive',
       icon: TrendingUp
     }
-  ];
-
-  const recentActivity = [
-    { user: 'HockeyParent23', action: 'Created topic', content: 'Best Budget Hockey Skates', time: '2 hours ago' },
-    { user: 'CoachDave', action: 'Replied to', content: 'Training Tips for U12', time: '3 hours ago' },
-    { user: 'AdminUser', action: 'Pinned topic', content: '2024 Tournament Schedule', time: '5 hours ago' },
-    { user: 'SafetyFirst', action: 'Reported post', content: 'Inappropriate content', time: '6 hours ago' }
   ];
 
   return (
@@ -54,7 +68,7 @@ export const AdminDashboard = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => {
+        {dashboardStats.map((stat) => {
           const Icon = stat.icon;
           return (
             <Card key={stat.title} className="p-6">
@@ -63,7 +77,8 @@ export const AdminDashboard = () => {
                   <p className="text-sm text-gray-600">{stat.title}</p>
                   <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                   <p className={`text-sm ${
-                    stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'
+                    stat.changeType === 'positive' ? 'text-green-600' : 
+                    stat.changeType === 'negative' ? 'text-red-600' : 'text-gray-600'
                   }`}>
                     {stat.change} from last month
                   </p>
@@ -81,16 +96,31 @@ export const AdminDashboard = () => {
       <Card className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
         <div className="space-y-4">
-          {recentActivity.map((activity, index) => (
-            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div>
-                <span className="font-medium">{activity.user}</span>
-                <span className="text-gray-600 mx-2">{activity.action}</span>
-                <span className="font-medium">"{activity.content}"</span>
-              </div>
-              <span className="text-sm text-gray-500">{activity.time}</span>
+          {activitiesLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : activities && activities.length > 0 ? (
+            activities.map((activity, index) => (
+              <div key={`${activity.id}-${index}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <span className="font-medium">{activity.user}</span>
+                  <span className="text-gray-600 mx-2">{activity.action}</span>
+                  <span className="font-medium">"{activity.content}"</span>
+                </div>
+                <span className="text-sm text-gray-500">
+                  {formatDistanceToNow(new Date(activity.time))} ago
+                </span>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500 text-center py-4">No recent activity</p>
+          )}
         </div>
       </Card>
 
@@ -98,26 +128,30 @@ export const AdminDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-6">
           <h3 className="font-semibold text-gray-900 mb-2">Pending Moderation</h3>
-          <p className="text-sm text-gray-600 mb-4">3 reports waiting for review</p>
-          <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+          <p className="text-sm text-gray-600 mb-4">
+            {statsLoading ? 'Loading...' : `${stats?.pending_reports || 0} reports waiting for review`}
+          </p>
+          <Button variant="link" className="p-0 h-auto text-blue-600 hover:text-blue-800">
             Review Reports →
-          </button>
+          </Button>
         </Card>
 
         <Card className="p-6">
           <h3 className="font-semibold text-gray-900 mb-2">User Management</h3>
           <p className="text-sm text-gray-600 mb-4">Manage user accounts and permissions</p>
-          <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-            Manage Users →
-          </button>
+          <Button variant="link" className="p-0 h-auto text-blue-600 hover:text-blue-800" asChild>
+            <Link to="/admin/users">
+              Manage Users →
+            </Link>
+          </Button>
         </Card>
 
         <Card className="p-6">
           <h3 className="font-semibold text-gray-900 mb-2">Forum Settings</h3>
           <p className="text-sm text-gray-600 mb-4">Configure forum-wide settings</p>
-          <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+          <Button variant="link" className="p-0 h-auto text-blue-600 hover:text-blue-800">
             Open Settings →
-          </button>
+          </Button>
         </Card>
       </div>
     </div>
