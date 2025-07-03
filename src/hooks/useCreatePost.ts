@@ -41,7 +41,7 @@ export const useCreatePost = () => {
       await supabase
         .from('topics')
         .update({
-          reply_count: supabase.raw('reply_count + 1'),
+          reply_count: supabase.rpc('increment', { x: 1 }),
           last_reply_at: new Date().toISOString()
         })
         .eq('id', data.topic_id);

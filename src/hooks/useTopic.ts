@@ -23,11 +23,8 @@ export const useTopic = (topicId: string) => {
         throw error;
       }
       
-      // Increment view count
-      await supabase
-        .from('topics')
-        .update({ view_count: supabase.raw('view_count + 1') })
-        .eq('id', topicId);
+      // Increment view count using a separate query
+      await supabase.rpc('increment_view_count', { topic_id: topicId });
       
       console.log('Topic fetched:', data);
       return data;
