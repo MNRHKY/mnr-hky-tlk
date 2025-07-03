@@ -244,6 +244,10 @@ export type Database = {
         Args: { x: number }
         Returns: number
       }
+      increment_reply_count: {
+        Args: { topic_id: string }
+        Returns: undefined
+      }
       increment_view_count: {
         Args: { topic_id: string }
         Returns: undefined
