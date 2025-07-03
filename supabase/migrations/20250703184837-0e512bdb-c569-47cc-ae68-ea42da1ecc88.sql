@@ -30,8 +30,8 @@ BEGIN
     SELECT c.id, c.parent_category_id, c.level
     FROM categories c
     WHERE c.is_active = true
-      AND (parent_category_id IS NULL OR c.parent_category_id = parent_category_id)
-      AND (category_level IS NULL OR c.level = category_level)
+      AND (get_categories_by_activity.parent_category_id IS NULL OR c.parent_category_id = get_categories_by_activity.parent_category_id)
+      AND (get_categories_by_activity.category_level IS NULL OR c.level = get_categories_by_activity.category_level)
     
     UNION ALL
     
@@ -53,8 +53,8 @@ BEGIN
     LEFT JOIN category_tree ct ON c.id = ct.id OR c.parent_category_id = ct.id
     LEFT JOIN topics t ON t.category_id = ct.id
     WHERE c.is_active = true
-      AND (parent_category_id IS NULL OR c.parent_category_id = parent_category_id)
-      AND (category_level IS NULL OR c.level = category_level)
+      AND (get_categories_by_activity.parent_category_id IS NULL OR c.parent_category_id = get_categories_by_activity.parent_category_id)
+      AND (get_categories_by_activity.category_level IS NULL OR c.level = get_categories_by_activity.category_level)
     GROUP BY c.id
   )
   SELECT 
@@ -79,8 +79,8 @@ BEGIN
   FROM categories c
   LEFT JOIN category_activity ca ON c.id = ca.category_id
   WHERE c.is_active = true
-    AND (parent_category_id IS NULL OR c.parent_category_id = parent_category_id)
-    AND (category_level IS NULL OR c.level = category_level)
+    AND (get_categories_by_activity.parent_category_id IS NULL OR c.parent_category_id = get_categories_by_activity.parent_category_id)
+    AND (get_categories_by_activity.category_level IS NULL OR c.level = get_categories_by_activity.category_level)
   ORDER BY 
     CASE 
       WHEN ca.last_activity = '1970-01-01'::timestamp with time zone 
