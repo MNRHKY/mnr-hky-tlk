@@ -114,9 +114,9 @@ export const CategoryView = () => {
   const isLevel3Category = category.level === 3; // Only Level 3 categories can have topics
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full overflow-x-hidden">
       {/* Breadcrumb */}
-      <Breadcrumb>
+      <Breadcrumb className="overflow-x-auto">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
@@ -127,37 +127,37 @@ export const CategoryView = () => {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>{category.name}</BreadcrumbPage>
+            <BreadcrumbPage className="max-w-full truncate">{category.name}</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
       {/* Category Header */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
+      <Card className="p-4 sm:p-6 w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center space-x-3 mb-2">
               <div 
-                className="w-4 h-4 rounded-full" 
+                className="w-4 h-4 rounded-full flex-shrink-0" 
                 style={{ backgroundColor: category.color }}
               />
-              <h1 className="text-2xl font-bold text-gray-900">{category.name}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 min-w-0 truncate">{category.name}</h1>
             </div>
-            <p className="text-gray-600 mb-4">{category.description}</p>
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
+            <p className="text-gray-600 mb-4 text-sm sm:text-base">{category.description}</p>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
               {category.region && <span>Region: {category.region}</span>}
               {category.birth_year && <span>Birth Year: {category.birth_year}</span>}
               {category.play_level && <span>Level: {category.play_level}</span>}
             </div>
           </div>
           
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             {/* Enhanced topic creation buttons */}
             {isLevel3Category ? (
               <QuickTopicModal 
                 preselectedCategoryId={category.id}
                 trigger={
-                  <Button>
+                  <Button size="sm" className="w-full sm:w-auto">
                     <Plus className="h-4 w-4 mr-2" />
                     New Topic
                   </Button>
@@ -166,7 +166,7 @@ export const CategoryView = () => {
             ) : (
               <QuickTopicModal 
                 trigger={
-                  <Button>
+                  <Button size="sm" className="w-full sm:w-auto">
                     <Plus className="h-4 w-4 mr-2" />
                     Start Discussion
                   </Button>
@@ -178,9 +178,10 @@ export const CategoryView = () => {
             <CategoryRequestModal 
               currentCategoryId={category.id}
               trigger={
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
                   <HelpCircle className="h-4 w-4 mr-2" />
-                  Request Category
+                  <span className="hidden sm:inline">Request Category</span>
+                  <span className="sm:hidden">Request</span>
                 </Button>
               }
             />
@@ -192,27 +193,27 @@ export const CategoryView = () => {
       <AdUnit 
         slot="category-banner" 
         format="horizontal" 
-        className="my-6"
+        className="my-4 sm:my-6 w-full max-w-full overflow-hidden"
       />
 
       {/* Subcategories or Topics */}
       {hasSubcategories ? (
         <>
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">Browse Categories</h2>
-            <div className="text-sm text-gray-500">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Browse Categories</h2>
+            <div className="text-xs sm:text-sm text-gray-500">
               Can't find what you're looking for?{' '}
               <CategoryRequestModal 
                 currentCategoryId={category.id}
                 trigger={
-                  <Button variant="link" size="sm" className="p-0 h-auto text-blue-600">
+                  <Button variant="link" size="sm" className="p-0 h-auto text-blue-600 text-xs sm:text-sm">
                     Request a new category
                   </Button>
                 }
               />
             </div>
           </div>
-          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
             {subcategories.map((subcat) => (
               <SubcategoryCard key={subcat.id} subcat={subcat} />
             ))}
@@ -221,7 +222,7 @@ export const CategoryView = () => {
       ) : (
         <>
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">Topics</h2>
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Topics</h2>
             <div className="flex items-center space-x-2">
               <QuickTopicModal 
                 preselectedCategoryId={category.id}
@@ -229,52 +230,53 @@ export const CategoryView = () => {
               />
             </div>
           </div>
-          <Card className="p-6">
+          <Card className="p-3 sm:p-6 w-full">
             {topicsLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-20 bg-gray-200 rounded animate-pulse"></div>
+                  <div key={i} className="h-16 sm:h-20 bg-gray-200 rounded animate-pulse"></div>
                 ))}
               </div>
             ) : topics && topics.length > 0 ? (
               <div className="space-y-4">
                 {topics.map((topic) => (
-                  <div key={topic.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex items-start space-x-4 flex-1">
-                      <div className="flex items-center space-x-2">
+                  <div key={topic.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors gap-3 sm:gap-4">
+                    <div className="flex items-start space-x-3 sm:space-x-4 flex-1 min-w-0">
+                      <div className="flex items-center space-x-2 flex-shrink-0">
                         {topic.is_pinned && <Pin className="h-4 w-4 text-red-500" />}
-                        <MessageSquare className="h-5 w-5 text-gray-400" />
+                        <MessageSquare className="h-4 sm:h-5 w-4 sm:w-5 text-gray-400" />
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <Link 
                           to={`/topic/${topic.id}`}
-                          className="font-medium text-gray-900 hover:text-blue-600"
+                          className="font-medium text-gray-900 hover:text-blue-600 text-sm sm:text-base line-clamp-2"
                         >
                           {topic.title}
                         </Link>
-                        <div className="flex items-center space-x-2 mt-1 text-sm text-gray-500">
+                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1 text-xs sm:text-sm text-gray-500">
                           <span>by {topic.is_anonymous ? 'Anonymous User' : (topic.profiles?.username || 'Unknown')}</span>
+                          <span className="hidden sm:inline">•</span>
                           <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
                         </div>
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-6 text-sm text-gray-500">
+                    <div className="flex items-center justify-between sm:justify-end space-x-4 sm:space-x-6 text-xs sm:text-sm text-gray-500 flex-shrink-0">
                       <div className="text-center">
                         <div className="flex items-center space-x-1">
-                          <MessageSquare className="h-4 w-4" />
+                          <MessageSquare className="h-3 sm:h-4 w-3 sm:w-4" />
                           <span>{topic.reply_count || 0}</span>
                         </div>
-                        <span className="text-xs">replies</span>
+                        <span className="text-xs hidden sm:block">replies</span>
                       </div>
                       <div className="text-center">
                         <div className="flex items-center space-x-1">
-                          <User className="h-4 w-4" />
+                          <User className="h-3 sm:h-4 w-3 sm:w-4" />
                           <span>{topic.view_count || 0}</span>
                         </div>
-                        <span className="text-xs">views</span>
+                        <span className="text-xs hidden sm:block">views</span>
                       </div>
-                      <div className="text-center">
+                      <div className="text-center hidden sm:block">
                         <div className="flex items-center space-x-1">
                           <Clock className="h-4 w-4" />
                           <span className="whitespace-nowrap">{formatDistanceToNow(new Date(topic.last_reply_at || topic.created_at))} ago</span>
@@ -285,14 +287,14 @@ export const CategoryView = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No topics yet</h3>
-                <p className="text-gray-600 mb-4">Be the first to start a discussion in this category!</p>
+              <div className="text-center py-6 sm:py-8">
+                <MessageSquare className="h-10 sm:h-12 w-10 sm:w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">No topics yet</h3>
+                <p className="text-gray-600 mb-4 text-sm sm:text-base">Be the first to start a discussion in this category!</p>
                 <QuickTopicModal 
                   preselectedCategoryId={category.id}
                   trigger={
-                    <Button>Create First Topic</Button>
+                    <Button size="sm" className="w-full sm:w-auto">Create First Topic</Button>
                   }
                 />
               </div>
