@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,29 +8,57 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import { useCategories } from '@/hooks/useCategories';
+import { useCreateTopic } from '@/hooks/useCreateTopic';
+import { toast } from '@/hooks/use-toast';
 
 export const CreateTopic = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    category: ''
+    category_id: ''
   });
 
-  const categories = [
-    'General Discussion',
-    'Equipment & Gear',
-    'Coaching & Training',
-    'Tournaments & Events'
-  ];
+  // Get all Level 3 categories (the actual discussion forums)
+  const { data: level3Categories, isLoading: categoriesLoading } = useCategories(undefined, 3);
+  const createTopicMutation = useCreateTopic();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Pre-select category if passed in URL
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
+    if (categoryFromUrl) {
+      setFormData(prev => ({ ...prev, category_id: categoryFromUrl }));
+    }
+  }, [searchParams]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.title && formData.content && formData.category) {
-      console.log('Creating topic:', formData);
-      // Mock topic creation - would connect to backend
-      navigate('/');
+    if (!formData.title || !formData.content || !formData.category_id) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const topic = await createTopicMutation.mutateAsync(formData);
+      toast({
+        title: "Success",
+        description: "Topic created successfully!",
+      });
+      navigate(`/topic/${topic.id}`);
+    } catch (error) {
+      console.error('Error creating topic:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create topic. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -69,19 +97,23 @@ export const CreateTopic = () => {
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
             <Select 
-              value={formData.category} 
-              onValueChange={(value) => setFormData({ ...formData, category: value })}
+              value={formData.category_id} 
+              onValueChange={(value) => setFormData({ ...formData, category_id: value })}
               required
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
+                {categoriesLoading ? (
+                  <SelectItem value="loading" disabled>Loading categories...</SelectItem>
+                ) : (
+                  level3Categories?.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -106,8 +138,11 @@ export const CreateTopic = () => {
             >
               Cancel
             </Button>
-            <Button type="submit">
-              Create Topic
+            <Button 
+              type="submit" 
+              disabled={createTopicMutation.isPending}
+            >
+              {createTopicMutation.isPending ? 'Creating...' : 'Create Topic'}
             </Button>
           </div>
         </form>

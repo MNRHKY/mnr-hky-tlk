@@ -56,6 +56,7 @@ export const CategoryView = () => {
 
   // Determine if we should show subcategories or topics
   const hasSubcategories = subcategories && subcategories.length > 0;
+  const isLevel3Category = category.level === 3; // Only Level 3 categories can have topics
 
   return (
     <div className="space-y-6">
@@ -94,9 +95,9 @@ export const CategoryView = () => {
               {category.play_level && <span>Level: {category.play_level}</span>}
             </div>
           </div>
-          {user && !hasSubcategories && (
+          {user && isLevel3Category && (
             <Button asChild>
-              <Link to="/create">
+              <Link to={`/create?category=${category.id}`}>
                 <Plus className="h-4 w-4 mr-2" />
                 New Topic
               </Link>
@@ -203,9 +204,9 @@ export const CategoryView = () => {
                 <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No topics yet</h3>
                 <p className="text-gray-600 mb-4">Be the first to start a discussion in this category!</p>
-                {user && (
+                {user && isLevel3Category && (
                   <Button asChild>
-                    <Link to="/create">Create First Topic</Link>
+                    <Link to={`/create?category=${category.id}`}>Create First Topic</Link>
                   </Button>
                 )}
               </div>

@@ -1,55 +1,86 @@
 
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageSquare, User, Clock, ArrowLeft, ThumbsUp, Flag } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTopic } from '@/hooks/useTopic';
+import { usePosts } from '@/hooks/usePosts';
+import { useCreatePost } from '@/hooks/useCreatePost';
 import { AdUnit } from '../ads/AdUnit';
+import { formatDistanceToNow } from 'date-fns';
+import { toast } from '@/hooks/use-toast';
 
 export const TopicView = () => {
   const { topicId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [newReply, setNewReply] = useState('');
 
-  // Mock topic data - will be replaced with real data
-  const topic = {
-    id: topicId,
-    title: 'Best Budget Hockey Skates for Kids Under 12',
-    content: 'Hi everyone! I\'m looking for recommendations for budget-friendly hockey skates for my 10-year-old. He\'s just starting out so we don\'t want to spend too much, but still want something decent. What are your thoughts?',
-    author: 'HockeyParent23',
-    category: 'Equipment & Gear',
-    createdAt: '2 hours ago',
-    replies: 12,
-    views: 234,
-    isPinned: false
-  };
+  const { data: topic, isLoading: topicLoading, error: topicError } = useTopic(topicId || '');
+  const { data: posts, isLoading: postsLoading } = usePosts(topicId || '');
+  const createPostMutation = useCreatePost();
 
-  const replies = [
-    {
-      id: 1,
-      content: 'I\'d recommend the Bauer Vapor X2.5. Great entry-level skates that won\'t break the bank. My son used them for his first season.',
-      author: 'CoachMike',
-      createdAt: '1 hour ago',
-      likes: 5
-    },
-    {
-      id: 2,
-      content: 'CCM Tacks 9040 are also good options. Make sure to get them properly fitted at a pro shop though!',
-      author: 'HockeyMom2024',
-      createdAt: '45 minutes ago',
-      likes: 3
+  const handleReplySubmit = async () => {
+    if (!newReply.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a reply",
+        variant: "destructive",
+      });
+      return;
     }
-  ];
 
-  const handleReplySubmit = () => {
-    if (newReply.trim()) {
-      console.log('Submitting reply:', newReply);
+    if (!topicId) return;
+
+    try {
+      await createPostMutation.mutateAsync({
+        content: newReply,
+        topic_id: topicId,
+      });
       setNewReply('');
+      toast({
+        title: "Success",
+        description: "Reply posted successfully!",
+      });
+    } catch (error) {
+      console.error('Error creating post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to post reply. Please try again.",
+        variant: "destructive",
+      });
     }
   };
+
+  if (topicLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
+        <div className="h-32 bg-gray-200 rounded animate-pulse"></div>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-20 bg-gray-200 rounded animate-pulse"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (topicError || !topic) {
+    return (
+      <div className="text-center py-8">
+        <h2 className="text-xl font-semibold text-gray-900">Topic not found</h2>
+        <p className="text-gray-600 mt-2">The topic you're looking for doesn't exist.</p>
+        <Button asChild className="mt-4">
+          <Link to="/">Back to Home</Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -57,17 +88,17 @@ export const TopicView = () => {
       <div className="flex items-center space-x-2 text-sm text-gray-600">
         <Link to="/" className="hover:text-blue-600">Forum</Link>
         <span>/</span>
-        <Link to="/category/equipment" className="hover:text-blue-600">Equipment & Gear</Link>
+        <Link to={`/category/${topic.categories?.slug}`} className="hover:text-blue-600">
+          {topic.categories?.name}
+        </Link>
         <span>/</span>
         <span className="text-gray-900">{topic.title}</span>
       </div>
 
       {/* Back Button */}
-      <Button variant="outline" size="sm" asChild>
-        <Link to="/">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Forum
-        </Link>
+      <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back
       </Button>
 
       {/* Topic Header */}
@@ -78,29 +109,39 @@ export const TopicView = () => {
             <div className="flex items-center space-x-4 text-sm text-gray-600">
               <div className="flex items-center space-x-1">
                 <User className="h-4 w-4" />
-                <span>{topic.author}</span>
+                <span>{topic.profiles?.username || 'Unknown'}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <Clock className="h-4 w-4" />
-                <span>{topic.createdAt}</span>
+                <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
               </div>
               <div className="flex items-center space-x-1">
                 <MessageSquare className="h-4 w-4" />
-                <span>{topic.replies} replies</span>
+                <span>{topic.reply_count || 0} replies</span>
               </div>
             </div>
           </div>
           <div className="flex space-x-2">
-            <Badge variant="secondary">{topic.category}</Badge>
+            <Badge 
+              variant="secondary"
+              style={{ 
+                borderColor: topic.categories?.color,
+                color: topic.categories?.color 
+              }}
+            >
+              {topic.categories?.name}
+            </Badge>
             <Button variant="outline" size="sm">
               <Flag className="h-4 w-4" />
             </Button>
           </div>
         </div>
         
-        <div className="prose max-w-none">
-          <p className="text-gray-700">{topic.content}</p>
-        </div>
+        {topic.content && (
+          <div className="prose max-w-none">
+            <p className="text-gray-700 whitespace-pre-wrap">{topic.content}</p>
+          </div>
+        )}
       </Card>
 
       {/* Ad between topic and replies */}
@@ -113,38 +154,52 @@ export const TopicView = () => {
       {/* Replies */}
       <Card className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Replies ({replies.length})
+          Replies ({posts?.length || 0})
         </h2>
         
-        <div className="space-y-6">
-          {replies.map((reply) => (
-            <div key={reply.id} className="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
-              <div className="flex items-start space-x-4">
-                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                  <User className="h-5 w-5 text-gray-600" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium text-gray-900">{reply.author}</span>
-                      <span className="text-sm text-gray-500">{reply.createdAt}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm" className="text-gray-500 hover:text-blue-600">
-                        <ThumbsUp className="h-4 w-4 mr-1" />
-                        {reply.likes}
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Flag className="h-4 w-4" />
-                      </Button>
-                    </div>
+        {postsLoading ? (
+          <div className="space-y-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-20 bg-gray-200 rounded animate-pulse"></div>
+            ))}
+          </div>
+        ) : posts && posts.length > 0 ? (
+          <div className="space-y-6">
+            {posts.map((reply) => (
+              <div key={reply.id} className="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
+                <div className="flex items-start space-x-4">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                    <User className="h-5 w-5 text-gray-600" />
                   </div>
-                  <p className="text-gray-700">{reply.content}</p>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium text-gray-900">
+                          {reply.profiles?.username || 'Unknown'}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {formatDistanceToNow(new Date(reply.created_at))} ago
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button variant="ghost" size="sm" className="text-gray-500 hover:text-blue-600">
+                          <ThumbsUp className="h-4 w-4 mr-1" />
+                          0
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Flag className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-gray-700 whitespace-pre-wrap">{reply.content}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-600 text-center py-8">No replies yet. Be the first to reply!</p>
+        )}
       </Card>
 
       {/* Reply Form */}
@@ -168,9 +223,9 @@ export const TopicView = () => {
               </Button>
               <Button 
                 onClick={handleReplySubmit}
-                disabled={!newReply.trim()}
+                disabled={!newReply.trim() || createPostMutation.isPending}
               >
-                Post Reply
+                {createPostMutation.isPending ? 'Posting...' : 'Post Reply'}
               </Button>
             </div>
           </div>
