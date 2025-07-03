@@ -1,14 +1,17 @@
+
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, User, Clock, Pin, Plus, ChevronRight, Home } from 'lucide-react';
+import { MessageSquare, User, Clock, Pin, Plus, ChevronRight, Home, HelpCircle } from 'lucide-react';
 import { AdUnit } from '../ads/AdUnit';
 import { useCategories, useCategoryBySlug } from '@/hooks/useCategories';
 import { useTopics } from '@/hooks/useTopics';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
+import { QuickTopicModal } from './QuickTopicModal';
+import { CategoryRequestModal } from './CategoryRequestModal';
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -94,15 +97,41 @@ export const CategoryView = () => {
               {category.play_level && <span>Level: {category.play_level}</span>}
             </div>
           </div>
-          {/* Show New Topic button for everyone in Level 3 categories */}
-          {isLevel3Category && (
-            <Button asChild>
-              <Link to={`/create?category=${category.id}`}>
-                <Plus className="h-4 w-4 mr-2" />
-                New Topic
-              </Link>
-            </Button>
-          )}
+          
+          <div className="flex items-center space-x-3">
+            {/* Enhanced topic creation buttons */}
+            {isLevel3Category ? (
+              <QuickTopicModal 
+                preselectedCategoryId={category.id}
+                trigger={
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Topic
+                  </Button>
+                }
+              />
+            ) : (
+              <QuickTopicModal 
+                trigger={
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Start Discussion
+                  </Button>
+                }
+              />
+            )}
+            
+            {/* Category request button */}
+            <CategoryRequestModal 
+              currentCategoryId={category.id}
+              trigger={
+                <Button variant="outline" size="sm">
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  Request Category
+                </Button>
+              }
+            />
+          </div>
         </div>
       </Card>
 
@@ -116,7 +145,20 @@ export const CategoryView = () => {
       {/* Subcategories or Topics */}
       {hasSubcategories ? (
         <>
-          <h2 className="text-xl font-semibold text-gray-900">Browse Categories</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-900">Browse Categories</h2>
+            <div className="text-sm text-gray-500">
+              Can't find what you're looking for?{' '}
+              <CategoryRequestModal 
+                currentCategoryId={category.id}
+                trigger={
+                  <Button variant="link" size="sm" className="p-0 h-auto text-blue-600">
+                    Request a new category
+                  </Button>
+                }
+              />
+            </div>
+          </div>
           <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {subcategories.map((subcat) => (
               <Link key={subcat.id} to={`/category/${subcat.slug}`}>
@@ -129,7 +171,21 @@ export const CategoryView = () => {
                       />
                       <h3 className="font-semibold text-sm text-gray-900">{subcat.name}</h3>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-gray-400" />
+                    <div className="flex items-center space-x-2">
+                      <QuickTopicModal 
+                        trigger={
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => e.preventDefault()}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        }
+                      />
+                      <ChevronRight className="h-4 w-4 text-gray-400" />
+                    </div>
                   </div>
                   <p className="text-xs text-gray-600 mb-3 line-clamp-2">{subcat.description}</p>
                   <div className="flex items-center text-xs text-gray-500">
@@ -143,7 +199,15 @@ export const CategoryView = () => {
         </>
       ) : (
         <>
-          <h2 className="text-xl font-semibold text-gray-900">Topics</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-900">Topics</h2>
+            <div className="flex items-center space-x-2">
+              <QuickTopicModal 
+                preselectedCategoryId={category.id}
+                size="sm"
+              />
+            </div>
+          </div>
           <Card className="p-6">
             {topicsLoading ? (
               <div className="space-y-4">
@@ -204,11 +268,12 @@ export const CategoryView = () => {
                 <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No topics yet</h3>
                 <p className="text-gray-600 mb-4">Be the first to start a discussion in this category!</p>
-                {isLevel3Category && (
-                  <Button asChild>
-                    <Link to={`/create?category=${category.id}`}>Create First Topic</Link>
-                  </Button>
-                )}
+                <QuickTopicModal 
+                  preselectedCategoryId={category.id}
+                  trigger={
+                    <Button>Create First Topic</Button>
+                  }
+                />
               </div>
             )}
           </Card>

@@ -1,42 +1,42 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { MessageSquare, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateTopic } from '@/hooks/useCreateTopic';
 import { useAnonymousPosting } from '@/hooks/useAnonymousPosting';
-import { AnonymousPostingNotice } from './AnonymousPostingNotice';
 import { SmartCategorySelector } from './SmartCategorySelector';
+import { AnonymousPostingNotice } from './AnonymousPostingNotice';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
-export const CreateTopic = () => {
+interface QuickTopicModalProps {
+  preselectedCategoryId?: string;
+  trigger?: React.ReactNode;
+  size?: "sm" | "default" | "lg";
+}
+
+export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "default" }: QuickTopicModalProps) => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    category_id: ''
+    category_id: preselectedCategoryId || ''
   });
   const [contentErrors, setContentErrors] = useState<string[]>([]);
 
   const createTopicMutation = useCreateTopic();
   const anonymousPosting = useAnonymousPosting();
 
-  // Pre-select category if passed in URL
-  useEffect(() => {
-    const categoryFromUrl = searchParams.get('category');
-    if (categoryFromUrl) {
-      setFormData(prev => ({ ...prev, category_id: categoryFromUrl }));
-    }
-  }, [searchParams]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!formData.title || !formData.content || !formData.category_id) {
       toast({
         title: "Error",
@@ -85,6 +85,14 @@ export const CreateTopic = () => {
         title: "Success",
         description: "Topic created successfully!",
       });
+      
+      setOpen(false);
+      setFormData({
+        title: '',
+        content: '',
+        category_id: preselectedCategoryId || ''
+      });
+      
       navigate(`/topic/${topic.id}`);
     } catch (error) {
       console.error('Error creating topic:', error);
@@ -96,25 +104,35 @@ export const CreateTopic = () => {
     }
   };
 
+  const defaultTrigger = (
+    <Button size={size}>
+      <Plus className="h-4 w-4 mr-2" />
+      New Topic
+    </Button>
+  );
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Create New Topic</h1>
-        <Button variant="outline" onClick={() => navigate('/')}>
-          Cancel
-        </Button>
-      </div>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {trigger || defaultTrigger}
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center space-x-2">
+            <MessageSquare className="h-5 w-5" />
+            <span>Create New Topic</span>
+          </DialogTitle>
+        </DialogHeader>
 
-      {/* Show anonymous posting notice for non-authenticated users */}
-      {!user && (
-        <AnonymousPostingNotice
-          remainingPosts={anonymousPosting.remainingPosts}
-          canPost={anonymousPosting.canPost}
-        />
-      )}
+        {/* Show anonymous posting notice for non-authenticated users */}
+        {!user && (
+          <AnonymousPostingNotice
+            remainingPosts={anonymousPosting.remainingPosts}
+            canPost={anonymousPosting.canPost}
+          />
+        )}
 
-      <Card className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Topic Title</Label>
             <Input
@@ -129,7 +147,7 @@ export const CreateTopic = () => {
           <SmartCategorySelector
             value={formData.category_id}
             onChange={(value) => setFormData({ ...formData, category_id: value })}
-            currentCategoryId={searchParams.get('category') || undefined}
+            currentCategoryId={preselectedCategoryId}
             required
           />
 
@@ -140,7 +158,7 @@ export const CreateTopic = () => {
               placeholder={user ? "Write your topic content here..." : "Write your topic content here (no images or links allowed for anonymous users)..."}
               value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              rows={8}
+              rows={6}
               required
             />
             {contentErrors.length > 0 && (
@@ -158,7 +176,7 @@ export const CreateTopic = () => {
             <Button 
               type="button" 
               variant="outline"
-              onClick={() => navigate('/')}
+              onClick={() => setOpen(false)}
             >
               Cancel
             </Button>
@@ -170,7 +188,7 @@ export const CreateTopic = () => {
             </Button>
           </div>
         </form>
-      </Card>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };

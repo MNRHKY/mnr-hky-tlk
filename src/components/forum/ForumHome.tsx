@@ -1,16 +1,17 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, MessageSquare, Users, Clock, Pin, Lock, User, Eye } from 'lucide-react';
+import { Plus, MessageSquare, Users, Clock, Pin, Lock, User, Eye, TrendingUp, HelpCircle } from 'lucide-react';
 import { useCategories } from '@/hooks/useCategories';
 import { useTopics } from '@/hooks/useTopics';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { QuickTopicModal } from './QuickTopicModal';
+import { CategoryRequestModal } from './CategoryRequestModal';
 
 export const ForumHome = () => {
   const { user } = useAuth();
@@ -32,26 +33,70 @@ export const ForumHome = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Minor Hockey Talk</h1>
           <p className="text-gray-600 mt-1">Connect with hockey parents and players across Canada</p>
         </div>
-        {user && (
-          <Button asChild size={isMobile ? "sm" : "default"}>
-            <Link to="/create">
-              <Plus className="h-4 w-4 mr-2" />
-              New Topic
-            </Link>
-          </Button>
-        )}
+        <div className="flex items-center space-x-2">
+          <QuickTopicModal 
+            size={isMobile ? "sm" : "default"}
+            trigger={
+              <Button size={isMobile ? "sm" : "default"}>
+                <Plus className="h-4 w-4 mr-2" />
+                New Topic
+              </Button>
+            }
+          />
+          <CategoryRequestModal 
+            trigger={
+              <Button variant="outline" size={isMobile ? "sm" : "default"}>
+                <HelpCircle className="h-4 w-4 mr-2" />
+                Request Category
+              </Button>
+            }
+          />
+        </div>
+      </div>
+
+      {/* Forum Statistics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="p-4 text-center">
+          <div className="text-2xl font-bold text-blue-600">1,234</div>
+          <div className="text-sm text-gray-600">Total Topics</div>
+        </Card>
+        <Card className="p-4 text-center">
+          <div className="text-2xl font-bold text-green-600">5,678</div>
+          <div className="text-sm text-gray-600">Total Posts</div>
+        </Card>
+        <Card className="p-4 text-center">
+          <div className="text-2xl font-bold text-purple-600">892</div>
+          <div className="text-sm text-gray-600">Members</div>
+        </Card>
+        <Card className="p-4 text-center">
+          <div className="text-2xl font-bold text-orange-600">23</div>
+          <div className="text-sm text-gray-600">Online Now</div>
+        </Card>
       </div>
 
       {/* Categories Section */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Forum Categories</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">Forum Categories</h2>
+          <div className="text-sm text-gray-500">
+            Missing a category?{' '}
+            <CategoryRequestModal 
+              trigger={
+                <Button variant="link" size="sm" className="p-0 h-auto text-blue-600">
+                  Request one
+                </Button>
+              }
+            />
+          </div>
+        </div>
+        
         <Card className="overflow-hidden">
           {/* Header Row - Hidden on mobile */}
           <div className="hidden sm:grid sm:grid-cols-12 gap-4 p-4 bg-gray-50 border-b font-medium text-sm text-gray-700">
@@ -64,67 +109,86 @@ export const ForumHome = () => {
           {/* Category Rows */}
           <div className="divide-y">
             {topLevelCategories?.map((category, index) => (
-              <Link key={category.id} to={`/category/${category.slug}`}>
-                <div className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-                    {/* Category Info */}
-                    <div className="sm:col-span-6">
-                      <div className="flex items-center space-x-3">
-                        <div 
-                          className="w-4 h-4 rounded-full flex-shrink-0" 
-                          style={{ backgroundColor: category.color }}
-                        />
-                        <div className="min-w-0">
-                          <h3 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors">
-                            {category.name}
-                          </h3>
-                          <p className="text-sm text-gray-600 line-clamp-1">{category.description}</p>
-                          {(category.region || category.birth_year || category.play_level) && (
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {category.region && (
-                                <Badge variant="outline" className="text-xs">{category.region}</Badge>
-                              )}
-                              {category.birth_year && (
-                                <Badge variant="outline" className="text-xs">{category.birth_year}</Badge>
-                              )}
-                              {category.play_level && (
-                                <Badge variant="outline" className="text-xs">{category.play_level}</Badge>
+              <div key={category.id} className="group">
+                <Link to={`/category/${category.slug}`}>
+                  <div className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                      {/* Category Info */}
+                      <div className="sm:col-span-6">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3 flex-1">
+                            <div 
+                              className="w-4 h-4 rounded-full flex-shrink-0" 
+                              style={{ backgroundColor: category.color }}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                                {category.name}
+                              </h3>
+                              <p className="text-sm text-gray-600 line-clamp-1">{category.description}</p>
+                              {(category.region || category.birth_year || category.play_level) && (
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                  {category.region && (
+                                    <Badge variant="outline" className="text-xs">{category.region}</Badge>
+                                  )}
+                                  {category.birth_year && (
+                                    <Badge variant="outline" className="text-xs">{category.birth_year}</Badge>
+                                  )}
+                                  {category.play_level && (
+                                    <Badge variant="outline" className="text-xs">{category.play_level}</Badge>
+                                  )}
+                                </div>
                               )}
                             </div>
-                          )}
+                          </div>
+                          
+                          {/* Quick action button */}
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <QuickTopicModal 
+                              trigger={
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={(e) => e.preventDefault()}
+                                >
+                                  <Plus className="h-4 w-4" />
+                                </Button>
+                              }
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Stats - Mobile Layout */}
-                    <div className="sm:hidden flex justify-between text-sm text-gray-500">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-1">
-                          <MessageSquare className="h-4 w-4" />
-                          <span>0 topics</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Users className="h-4 w-4" />
-                          <span>0 posts</span>
+                      {/* Stats - Mobile Layout */}
+                      <div className="sm:hidden flex justify-between text-sm text-gray-500">
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center space-x-1">
+                            <MessageSquare className="h-4 w-4" />
+                            <span>0 topics</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Users className="h-4 w-4" />
+                            <span>0 posts</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Stats - Desktop Layout */}
-                    <div className="hidden sm:block sm:col-span-2 text-center">
-                      <div className="text-lg font-semibold text-gray-900">0</div>
-                      <div className="text-xs text-gray-500">topics</div>
-                    </div>
-                    <div className="hidden sm:block sm:col-span-2 text-center">
-                      <div className="text-lg font-semibold text-gray-900">0</div>
-                      <div className="text-xs text-gray-500">posts</div>
-                    </div>
-                    <div className="hidden sm:block sm:col-span-2 text-center">
-                      <div className="text-xs text-gray-500">No posts yet</div>
+                      {/* Stats - Desktop Layout */}
+                      <div className="hidden sm:block sm:col-span-2 text-center">
+                        <div className="text-lg font-semibold text-gray-900">0</div>
+                        <div className="text-xs text-gray-500">topics</div>
+                      </div>
+                      <div className="hidden sm:block sm:col-span-2 text-center">
+                        <div className="text-lg font-semibold text-gray-900">0</div>
+                        <div className="text-xs text-gray-500">posts</div>
+                      </div>
+                      <div className="hidden sm:block sm:col-span-2 text-center">
+                        <div className="text-xs text-gray-500">No posts yet</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
             ))}
           </div>
         </Card>
@@ -132,7 +196,21 @@ export const ForumHome = () => {
 
       {/* Recent Activity Section */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Latest Discussions</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 flex items-center space-x-2">
+            <TrendingUp className="h-5 w-5" />
+            <span>Latest Discussions</span>
+          </h2>
+          <QuickTopicModal 
+            trigger={
+              <Button variant="outline" size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Start Discussion
+              </Button>
+            }
+          />
+        </div>
+        
         <Card className="overflow-hidden">
           {topicsLoading ? (
             <div className="p-4 space-y-4">
@@ -146,7 +224,6 @@ export const ForumHome = () => {
                 <div key={topic.id} className="p-4 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start space-x-3 flex-1 min-w-0">
-                      {/* Topic Icon */}
                       <div className="flex-shrink-0 mt-1">
                         {topic.is_pinned ? (
                           <Pin className="h-4 w-4 text-blue-500" />
@@ -157,7 +234,6 @@ export const ForumHome = () => {
                         )}
                       </div>
 
-                      {/* Topic Info */}
                       <div className="flex-1 min-w-0">
                         <Link 
                           to={`/topic/${topic.id}`}
@@ -184,7 +260,6 @@ export const ForumHome = () => {
                       </div>
                     </div>
 
-                    {/* Stats */}
                     <div className="flex items-center space-x-4 text-sm text-gray-500 flex-shrink-0">
                       <div className="text-center hidden sm:block">
                         <div className="font-medium text-gray-900">{topic.reply_count || 0}</div>
@@ -220,11 +295,11 @@ export const ForumHome = () => {
               <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No discussions yet</h3>
               <p className="text-gray-600 mb-4">Be the first to start a conversation!</p>
-              {user && (
-                <Button asChild>
-                  <Link to="/create">Create First Topic</Link>
-                </Button>
-              )}
+              <QuickTopicModal 
+                trigger={
+                  <Button>Create First Topic</Button>
+                }
+              />
             </div>
           )}
         </Card>
@@ -246,6 +321,19 @@ export const ForumHome = () => {
             </Button>
           </div>
         </Card>
+      )}
+
+      {/* Floating Action Button for Mobile */}
+      {isMobile && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <QuickTopicModal 
+            trigger={
+              <Button size="lg" className="rounded-full shadow-lg">
+                <Plus className="h-6 w-6" />
+              </Button>
+            }
+          />
+        </div>
       )}
     </div>
   );
