@@ -5,11 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 export interface Post {
   id: string;
   content: string;
-  author_id: string;
+  author_id: string | null;
   topic_id: string;
   parent_post_id: string | null;
   created_at: string;
   updated_at: string;
+  is_anonymous: boolean | null;
+  anonymous_ip: string | null;
+  anonymous_session_id: string | null;
   profiles?: {
     username: string;
     avatar_url: string | null;
