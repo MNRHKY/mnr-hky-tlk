@@ -5,110 +5,21 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Plus, MessageSquare, Users, Clock, Pin, Lock, User, Eye, TrendingUp, HelpCircle } from 'lucide-react';
-import { useCategories } from '@/hooks/useCategories';
+import { useCategoriesByActivity } from '@/hooks/useCategoriesByActivity';
 import { useTopics } from '@/hooks/useTopics';
 import { useAuth } from '@/hooks/useAuth';
 import { useForumStats } from '@/hooks/useForumStats';
-import { useCategoryStats } from '@/hooks/useCategoryStats';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { QuickTopicModal } from './QuickTopicModal';
 import { CategoryRequestModal } from './CategoryRequestModal';
-
-const CategoryRow = ({ category }: { category: any }) => {
-  const { data: stats } = useCategoryStats(category.id);
-  
-  return (
-    <div className="group">
-      <Link to={`/category/${category.slug}`}>
-        <div className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-            {/* Category Info */}
-            <div className="sm:col-span-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3 flex-1">
-                  <div 
-                    className="w-4 h-4 rounded-full flex-shrink-0" 
-                    style={{ backgroundColor: category.color }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors">
-                      {category.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 line-clamp-1">{category.description}</p>
-                    {(category.region || category.birth_year || category.play_level) && (
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {category.region && (
-                          <Badge variant="outline" className="text-xs">{category.region}</Badge>
-                        )}
-                        {category.birth_year && (
-                          <Badge variant="outline" className="text-xs">{category.birth_year}</Badge>
-                        )}
-                        {category.play_level && (
-                          <Badge variant="outline" className="text-xs">{category.play_level}</Badge>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Quick action button */}
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                  <QuickTopicModal 
-                    trigger={
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => e.preventDefault()}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Stats - Mobile Layout */}
-            <div className="sm:hidden flex justify-between text-sm text-gray-500">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-1">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>{stats?.topic_count || 0} topics</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Users className="h-4 w-4" />
-                  <span>{stats?.post_count || 0} posts</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Stats - Desktop Layout */}
-            <div className="hidden sm:block sm:col-span-2 text-center">
-              <div className="text-lg font-semibold text-gray-900">{stats?.topic_count || 0}</div>
-              <div className="text-xs text-gray-500">topics</div>
-            </div>
-            <div className="hidden sm:block sm:col-span-2 text-center">
-              <div className="text-lg font-semibold text-gray-900">{stats?.post_count || 0}</div>
-              <div className="text-xs text-gray-500">posts</div>
-            </div>
-            <div className="hidden sm:block sm:col-span-2 text-center">
-              <div className="text-xs text-gray-500">
-                {(stats?.topic_count || 0) > 0 ? 'Active' : 'No posts yet'}
-              </div>
-            </div>
-          </div>
-        </div>
-      </Link>
-    </div>
-  );
-};
+import { CategoryRow } from './CategoryRow';
 
 export const ForumHome = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const { data: topLevelCategories, isLoading: categoriesLoading } = useCategories(null, 1);
+  const { data: topLevelCategories, isLoading: categoriesLoading } = useCategoriesByActivity(null, 1);
   const { data: topics, isLoading: topicsLoading } = useTopics();
   const { data: forumStats, isLoading: statsLoading } = useForumStats();
 

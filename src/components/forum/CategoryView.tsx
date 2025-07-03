@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
@@ -6,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, User, Clock, Pin, Plus, ChevronRight, Home, HelpCircle } from 'lucide-react';
 import { AdUnit } from '../ads/AdUnit';
-import { useCategories, useCategoryBySlug } from '@/hooks/useCategories';
+import { useCategoriesByActivity } from '@/hooks/useCategoriesByActivity';
+import { useCategoryBySlug } from '@/hooks/useCategories';
 import { useTopics } from '@/hooks/useTopics';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategoryStats } from '@/hooks/useCategoryStats';
@@ -63,6 +63,12 @@ const SubcategoryCard = ({ subcat }: { subcat: any }) => {
             <User className="h-3 w-3" />
             <span>{stats?.post_count || 0} posts</span>
           </div>
+          {subcat.last_activity_at && (
+            <div className="flex items-center space-x-1">
+              <Clock className="h-3 w-3" />
+              <span>{formatDistanceToNow(new Date(subcat.last_activity_at))} ago</span>
+            </div>
+          )}
         </div>
       </Card>
     </Link>
@@ -74,7 +80,7 @@ export const CategoryView = () => {
   const { user } = useAuth();
   
   const { data: category, isLoading: categoryLoading } = useCategoryBySlug(categoryId || '');
-  const { data: subcategories, isLoading: subcategoriesLoading } = useCategories(category?.id, category?.level ? category.level + 1 : undefined);
+  const { data: subcategories, isLoading: subcategoriesLoading } = useCategoriesByActivity(category?.id, category?.level ? category.level + 1 : undefined);
   const { data: topics, isLoading: topicsLoading } = useTopics(category?.id);
 
   if (categoryLoading) {
