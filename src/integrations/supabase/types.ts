@@ -240,6 +240,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment: {
+        Args: { x: number }
+        Returns: number
+      }
+      increment_view_count: {
+        Args: { topic_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       user_role: "admin" | "moderator" | "user"

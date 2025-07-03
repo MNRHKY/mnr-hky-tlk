@@ -38,13 +38,25 @@ export const useCreatePost = () => {
       }
 
       // Update topic's reply count and last_reply_at
-      await supabase
+      const { error: updateError } = await supabase
         .from('topics')
         .update({
-          reply_count: supabase.rpc('increment', { x: 1 }),
           last_reply_at: new Date().toISOString()
         })
         .eq('id', data.topic_id);
+
+      if (updateError) {
+        console.error('Error updating topic:', updateError);
+      }
+
+      // Increment reply count separately using raw SQL
+      const { error: incrementError } = await supabase.rpc('increment_reply_count', { 
+        topic_id: data.topic_id 
+      });
+
+      if (incrementError) {
+        console.error('Error incrementing reply count:', incrementError);
+      }
 
       console.log('Post created successfully:', post);
       return post;
