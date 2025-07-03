@@ -11,36 +11,59 @@ export type Database = {
     Tables: {
       categories: {
         Row: {
+          birth_year: number | null
           color: string | null
           created_at: string | null
           description: string | null
           id: string
           is_active: boolean | null
+          level: number
           name: string
+          parent_category_id: string | null
+          play_level: string | null
+          region: string | null
           slug: string
           sort_order: number | null
         }
         Insert: {
+          birth_year?: number | null
           color?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           is_active?: boolean | null
+          level?: number
           name: string
+          parent_category_id?: string | null
+          play_level?: string | null
+          region?: string | null
           slug: string
           sort_order?: number | null
         }
         Update: {
+          birth_year?: number | null
           color?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           is_active?: boolean | null
+          level?: number
           name?: string
+          parent_category_id?: string | null
+          play_level?: string | null
+          region?: string | null
           slug?: string
           sort_order?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_category_id_fkey"
+            columns: ["parent_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       posts: {
         Row: {

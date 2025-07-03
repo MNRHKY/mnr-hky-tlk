@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, MessageSquare, Users, Pin, Lock } from 'lucide-react';
+import { Plus, MessageSquare, Users, Pin, Lock, ChevronRight } from 'lucide-react';
 import { useCategories } from '@/hooks/useCategories';
 import { useTopics } from '@/hooks/useTopics';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,7 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 export const ForumHome = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: topLevelCategories, isLoading: categoriesLoading } = useCategories(null, 1);
   const { data: topics, isLoading: topicsLoading } = useTopics();
 
   if (categoriesLoading) {
@@ -22,7 +22,7 @@ export const ForumHome = () => {
       <div className="space-y-4 sm:space-y-6">
         <div className="h-6 sm:h-8 bg-gray-200 rounded animate-pulse"></div>
         <div className="space-y-3 sm:space-y-4">
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-24 sm:h-32 bg-gray-200 rounded animate-pulse"></div>
           ))}
         </div>
@@ -44,22 +44,25 @@ export const ForumHome = () => {
         )}
       </div>
 
-      {/* Categories */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {categories?.map((category) => (
+      {/* Top Level Categories */}
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
+        {topLevelCategories?.map((category) => (
           <Link key={category.id} to={`/category/${category.slug}`}>
             <Card className="p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer">
-              <div className="flex items-center space-x-2 sm:space-x-3 mb-2 sm:mb-3">
-                <div 
-                  className="w-3 h-3 sm:w-4 sm:h-4 rounded-full" 
-                  style={{ backgroundColor: category.color }}
-                />
-                <h3 className="font-semibold text-sm sm:text-base text-gray-900">{category.name}</h3>
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div 
+                    className="w-3 h-3 sm:w-4 sm:h-4 rounded-full" 
+                    style={{ backgroundColor: category.color }}
+                  />
+                  <h3 className="font-semibold text-sm sm:text-base text-gray-900">{category.name}</h3>
+                </div>
+                <ChevronRight className="h-4 w-4 text-gray-400" />
               </div>
               <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 line-clamp-2">{category.description}</p>
               <div className="flex items-center text-xs sm:text-sm text-gray-500">
                 <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                <span>View topics</span>
+                <span>Browse discussions</span>
               </div>
             </Card>
           </Link>
