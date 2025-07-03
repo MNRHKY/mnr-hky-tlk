@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
@@ -95,7 +94,8 @@ export const CategoryView = () => {
               {category.play_level && <span>Level: {category.play_level}</span>}
             </div>
           </div>
-          {user && isLevel3Category && (
+          {/* Show New Topic button for everyone in Level 3 categories */}
+          {isLevel3Category && (
             <Button asChild>
               <Link to={`/create?category=${category.id}`}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -168,7 +168,7 @@ export const CategoryView = () => {
                           {topic.title}
                         </Link>
                         <div className="flex items-center space-x-2 mt-1 text-sm text-gray-500">
-                          <span>by {topic.profiles?.username || 'Unknown'}</span>
+                          <span>by {topic.is_anonymous ? 'Anonymous User' : (topic.profiles?.username || 'Unknown')}</span>
                           <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
                         </div>
                       </div>
@@ -204,7 +204,7 @@ export const CategoryView = () => {
                 <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No topics yet</h3>
                 <p className="text-gray-600 mb-4">Be the first to start a discussion in this category!</p>
-                {user && isLevel3Category && (
+                {isLevel3Category && (
                   <Button asChild>
                     <Link to={`/create?category=${category.id}`}>Create First Topic</Link>
                   </Button>

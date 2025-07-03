@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
@@ -10,7 +9,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTopic } from '@/hooks/useTopic';
 import { usePosts } from '@/hooks/usePosts';
 import { useCreatePost } from '@/hooks/useCreatePost';
+import { useAnonymousPosting } from '@/hooks/useAnonymousPosting';
 import { AdUnit } from '../ads/AdUnit';
+import { AnonymousPostingNotice } from './AnonymousPostingNotice';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 
@@ -19,10 +20,12 @@ export const TopicView = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [newReply, setNewReply] = useState('');
+  const [contentErrors, setContentErrors] = useState<string[]>([]);
 
   const { data: topic, isLoading: topicLoading, error: topicError } = useTopic(topicId || '');
   const { data: posts, isLoading: postsLoading } = usePosts(topicId || '');
   const createPostMutation = useCreatePost();
+  const anonymousPosting = useAnonymousPosting();
 
   const handleReplySubmit = async () => {
     if (!newReply.trim()) {
@@ -36,11 +39,42 @@ export const TopicView = () => {
 
     if (!topicId) return;
 
+    // Validate content for anonymous users
+    if (!user) {
+      if (!anonymousPosting.canPost) {
+        toast({
+          title: "Rate limit exceeded",
+          description: "You've reached the limit of 3 posts per 12 hours for anonymous users",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const validation = anonymousPosting.validateContent(newReply);
+      if (!validation.isValid) {
+        setContentErrors(validation.errors);
+        toast({
+          title: "Content not allowed",
+          description: validation.errors.join(', '),
+          variant: "destructive",
+        });
+        return;
+      }
+      setContentErrors([]);
+    }
+
     try {
       await createPostMutation.mutateAsync({
         content: newReply,
         topic_id: topicId,
+        is_anonymous: !user
       });
+
+      // Record the post for anonymous users
+      if (!user) {
+        await anonymousPosting.recordPost();
+      }
+
       setNewReply('');
       toast({
         title: "Success",
@@ -109,7 +143,7 @@ export const TopicView = () => {
             <div className="flex items-center space-x-4 text-sm text-gray-600">
               <div className="flex items-center space-x-1">
                 <User className="h-4 w-4" />
-                <span>{topic.profiles?.username || 'Unknown'}</span>
+                <span>{topic.is_anonymous ? 'Anonymous User' : (topic.profiles?.username || 'Unknown')}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <Clock className="h-4 w-4" />
@@ -175,7 +209,7 @@ export const TopicView = () => {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
                         <span className="font-medium text-gray-900">
-                          {reply.profiles?.username || 'Unknown'}
+                          {reply.is_anonymous ? 'Anonymous User' : (reply.profiles?.username || 'Unknown')}
                         </span>
                         <span className="text-sm text-gray-500">
                           {formatDistanceToNow(new Date(reply.created_at))} ago
@@ -202,42 +236,55 @@ export const TopicView = () => {
         )}
       </Card>
 
-      {/* Reply Form */}
-      {user ? (
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Post a Reply</h3>
-          <div className="space-y-4">
-            <Textarea
-              placeholder="Write your reply..."
-              value={newReply}
-              onChange={(e) => setNewReply(e.target.value)}
-              rows={4}
-              className="w-full"
+      {/* Reply Form - Now available for everyone */}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Post a Reply</h3>
+        
+        {/* Show anonymous posting notice for non-authenticated users */}
+        {!user && (
+          <div className="mb-4">
+            <AnonymousPostingNotice
+              remainingPosts={anonymousPosting.remainingPosts}
+              canPost={anonymousPosting.canPost}
             />
-            <div className="flex justify-end space-x-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setNewReply('')}
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleReplySubmit}
-                disabled={!newReply.trim() || createPostMutation.isPending}
-              >
-                {createPostMutation.isPending ? 'Posting...' : 'Post Reply'}
-              </Button>
-            </div>
           </div>
-        </Card>
-      ) : (
-        <Card className="p-6 text-center">
-          <p className="text-gray-600 mb-4">Please sign in to post a reply</p>
-          <Button asChild>
-            <Link to="/login">Sign In</Link>
-          </Button>
-        </Card>
-      )}
+        )}
+
+        <div className="space-y-4">
+          <Textarea
+            placeholder={user ? "Write your reply..." : "Write your reply as an anonymous user (no images or links allowed)..."}
+            value={newReply}
+            onChange={(e) => setNewReply(e.target.value)}
+            rows={4}
+            className="w-full"
+          />
+          
+          {contentErrors.length > 0 && (
+            <div className="text-sm text-red-600">
+              <ul className="list-disc list-inside">
+                {contentErrors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="flex justify-end space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setNewReply('')}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleReplySubmit}
+              disabled={!newReply.trim() || createPostMutation.isPending || (!user && !anonymousPosting.canPost)}
+            >
+              {createPostMutation.isPending ? 'Posting...' : 'Post Reply'}
+            </Button>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 };

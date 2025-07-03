@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      anonymous_post_tracking: {
+        Row: {
+          created_at: string | null
+          id: string
+          ip_address: unknown
+          last_post_at: string | null
+          post_count: number | null
+          session_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          ip_address: unknown
+          last_post_at?: string | null
+          post_count?: number | null
+          session_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          last_post_at?: string | null
+          post_count?: number | null
+          session_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           birth_year: number | null
@@ -67,28 +94,37 @@ export type Database = {
       }
       posts: {
         Row: {
-          author_id: string
+          anonymous_ip: unknown | null
+          anonymous_session_id: string | null
+          author_id: string | null
           content: string
           created_at: string | null
           id: string
+          is_anonymous: boolean | null
           parent_post_id: string | null
           topic_id: string
           updated_at: string | null
         }
         Insert: {
-          author_id: string
+          anonymous_ip?: unknown | null
+          anonymous_session_id?: string | null
+          author_id?: string | null
           content: string
           created_at?: string | null
           id?: string
+          is_anonymous?: boolean | null
           parent_post_id?: string | null
           topic_id: string
           updated_at?: string | null
         }
         Update: {
-          author_id?: string
+          anonymous_ip?: unknown | null
+          anonymous_session_id?: string | null
+          author_id?: string | null
           content?: string
           created_at?: string | null
           id?: string
+          is_anonymous?: boolean | null
           parent_post_id?: string | null
           topic_id?: string
           updated_at?: string | null
@@ -149,11 +185,14 @@ export type Database = {
       }
       topics: {
         Row: {
-          author_id: string
+          anonymous_ip: unknown | null
+          anonymous_session_id: string | null
+          author_id: string | null
           category_id: string
           content: string | null
           created_at: string | null
           id: string
+          is_anonymous: boolean | null
           is_locked: boolean | null
           is_pinned: boolean | null
           last_reply_at: string | null
@@ -163,11 +202,14 @@ export type Database = {
           view_count: number | null
         }
         Insert: {
-          author_id: string
+          anonymous_ip?: unknown | null
+          anonymous_session_id?: string | null
+          author_id?: string | null
           category_id: string
           content?: string | null
           created_at?: string | null
           id?: string
+          is_anonymous?: boolean | null
           is_locked?: boolean | null
           is_pinned?: boolean | null
           last_reply_at?: string | null
@@ -177,11 +219,14 @@ export type Database = {
           view_count?: number | null
         }
         Update: {
-          author_id?: string
+          anonymous_ip?: unknown | null
+          anonymous_session_id?: string | null
+          author_id?: string | null
           category_id?: string
           content?: string | null
           created_at?: string | null
           id?: string
+          is_anonymous?: boolean | null
           is_locked?: boolean | null
           is_pinned?: boolean | null
           last_reply_at?: string | null
@@ -233,6 +278,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_anonymous_rate_limit: {
+        Args: { user_ip: unknown; session_id: string }
+        Returns: boolean
+      }
+      cleanup_old_anonymous_tracking: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -251,6 +304,14 @@ export type Database = {
       increment_view_count: {
         Args: { topic_id: string }
         Returns: undefined
+      }
+      record_anonymous_post: {
+        Args: { user_ip: unknown; session_id: string }
+        Returns: undefined
+      }
+      validate_anonymous_content: {
+        Args: { content: string }
+        Returns: boolean
       }
     }
     Enums: {

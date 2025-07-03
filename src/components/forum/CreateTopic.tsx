@@ -10,6 +10,8 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
 import { useCreateTopic } from '@/hooks/useCreateTopic';
+import { useAnonymousPosting } from '@/hooks/useAnonymousPosting';
+import { AnonymousPostingNotice } from './AnonymousPostingNotice';
 import { toast } from '@/hooks/use-toast';
 
 export const CreateTopic = () => {
@@ -21,10 +23,12 @@ export const CreateTopic = () => {
     content: '',
     category_id: ''
   });
+  const [contentErrors, setContentErrors] = useState<string[]>([]);
 
   // Get all Level 3 categories (the actual discussion forums)
   const { data: level3Categories, isLoading: categoriesLoading } = useCategories(undefined, 3);
   const createTopicMutation = useCreateTopic();
+  const anonymousPosting = useAnonymousPosting();
 
   // Pre-select category if passed in URL
   useEffect(() => {
@@ -45,8 +49,41 @@ export const CreateTopic = () => {
       return;
     }
 
+    // Validate content for anonymous users
+    if (!user) {
+      if (!anonymousPosting.canPost) {
+        toast({
+          title: "Rate limit exceeded",
+          description: "You've reached the limit of 3 posts per 12 hours for anonymous users",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const validation = anonymousPosting.validateContent(formData.content);
+      if (!validation.isValid) {
+        setContentErrors(validation.errors);
+        toast({
+          title: "Content not allowed",
+          description: validation.errors.join(', '),
+          variant: "destructive",
+        });
+        return;
+      }
+      setContentErrors([]);
+    }
+
     try {
-      const topic = await createTopicMutation.mutateAsync(formData);
+      const topic = await createTopicMutation.mutateAsync({
+        ...formData,
+        is_anonymous: !user
+      });
+
+      // Record the post for anonymous users
+      if (!user) {
+        await anonymousPosting.recordPost();
+      }
+
       toast({
         title: "Success",
         description: "Topic created successfully!",
@@ -62,16 +99,6 @@ export const CreateTopic = () => {
     }
   };
 
-  if (!user) {
-    return (
-      <Card className="p-6 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Sign In Required</h1>
-        <p className="text-gray-600 mb-4">You need to be signed in to create a new topic</p>
-        <Button onClick={() => navigate('/')}>Back to Forum</Button>
-      </Card>
-    );
-  }
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -80,6 +107,14 @@ export const CreateTopic = () => {
           Cancel
         </Button>
       </div>
+
+      {/* Show anonymous posting notice for non-authenticated users */}
+      {!user && (
+        <AnonymousPostingNotice
+          remainingPosts={anonymousPosting.remainingPosts}
+          canPost={anonymousPosting.canPost}
+        />
+      )}
 
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -122,12 +157,21 @@ export const CreateTopic = () => {
             <Label htmlFor="content">Content</Label>
             <Textarea
               id="content"
-              placeholder="Write your topic content here..."
+              placeholder={user ? "Write your topic content here..." : "Write your topic content here (no images or links allowed for anonymous users)..."}
               value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
               rows={8}
               required
             />
+            {contentErrors.length > 0 && (
+              <div className="text-sm text-red-600">
+                <ul className="list-disc list-inside">
+                  {contentErrors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end space-x-2">
@@ -140,7 +184,7 @@ export const CreateTopic = () => {
             </Button>
             <Button 
               type="submit" 
-              disabled={createTopicMutation.isPending}
+              disabled={createTopicMutation.isPending || (!user && !anonymousPosting.canPost)}
             >
               {createTopicMutation.isPending ? 'Creating...' : 'Create Topic'}
             </Button>

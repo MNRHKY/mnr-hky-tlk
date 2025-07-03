@@ -2,11 +2,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { generateSessionId, getClientIP } from '@/utils/anonymousUtils';
 
 interface CreatePostData {
   content: string;
   topic_id: string;
   parent_post_id?: string | null;
+  is_anonymous?: boolean;
 }
 
 export const useCreatePost = () => {
@@ -15,20 +17,32 @@ export const useCreatePost = () => {
 
   return useMutation({
     mutationFn: async (data: CreatePostData) => {
-      if (!user) {
-        throw new Error('You must be logged in to create a post');
-      }
-
       console.log('Creating post:', data);
+
+      const postData: any = {
+        content: data.content,
+        topic_id: data.topic_id,
+        parent_post_id: data.parent_post_id || null
+      };
+
+      if (user) {
+        // Authenticated user
+        postData.author_id = user.id;
+        postData.is_anonymous = false;
+      } else {
+        // Anonymous user
+        if (!data.is_anonymous) {
+          throw new Error('Anonymous users must set is_anonymous to true');
+        }
+        postData.author_id = null;
+        postData.is_anonymous = true;
+        postData.anonymous_session_id = generateSessionId();
+        postData.anonymous_ip = await getClientIP();
+      }
 
       const { data: post, error } = await supabase
         .from('posts')
-        .insert({
-          content: data.content,
-          topic_id: data.topic_id,
-          author_id: user.id,
-          parent_post_id: data.parent_post_id || null
-        })
+        .insert(postData)
         .select()
         .single();
 
