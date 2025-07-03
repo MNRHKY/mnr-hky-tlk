@@ -13,11 +13,11 @@ export const useCategoriesByActivity = (parentId?: string | null, level?: number
     queryFn: async () => {
       console.log('Fetching categories by activity with parentId:', parentId, 'level:', level);
       
-      // Call the RPC function directly with proper parameter names
+      // Call the RPC function with correct parameter names
       const { data, error } = await supabase
         .rpc('get_categories_by_activity', { 
-          parent_category_id: parentId,
-          category_level: level 
+          p_parent_category_id: parentId,
+          p_category_level: level 
         });
       
       if (error) {

@@ -286,6 +286,25 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_categories_by_activity: {
+        Args: { p_parent_category_id?: string; p_category_level?: number }
+        Returns: {
+          id: string
+          name: string
+          description: string
+          slug: string
+          color: string
+          sort_order: number
+          is_active: boolean
+          created_at: string
+          parent_category_id: string
+          level: number
+          region: string
+          birth_year: number
+          play_level: string
+          last_activity_at: string
+        }[]
+      }
       get_category_stats: {
         Args: { category_id: string }
         Returns: {
