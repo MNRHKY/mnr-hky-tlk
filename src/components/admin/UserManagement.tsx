@@ -19,12 +19,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Search, MoreHorizontal, Ban, Shield, User } from 'lucide-react';
-import { useAdminUsers } from '@/hooks/useAdminUsers';
+import { useAdminUsers, AdminUser } from '@/hooks/useAdminUsers';
 import { formatDistanceToNow } from 'date-fns';
+import { RoleChangeModal } from './RoleChangeModal';
+import { BanUserModal } from './BanUserModal';
+import { EditProfileModal } from './EditProfileModal';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  const [isBanModalOpen, setIsBanModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { data: users, isLoading, error } = useAdminUsers();
+  const queryClient = useQueryClient();
 
   if (error) {
     return (
@@ -47,6 +56,25 @@ export const UserManagement = () => {
       case 'moderator': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-blue-100 text-blue-800';
     }
+  };
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+  };
+
+  const handleEditProfile = (user: AdminUser) => {
+    setSelectedUser(user);
+    setIsEditModalOpen(true);
+  };
+
+  const handleChangeRole = (user: AdminUser) => {
+    setSelectedUser(user);
+    setIsRoleModalOpen(true);
+  };
+
+  const handleBanUser = (user: AdminUser) => {
+    setSelectedUser(user);
+    setIsBanModalOpen(true);
   };
 
   return (
@@ -121,15 +149,18 @@ export const UserManagement = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-white">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditProfile(user)}>
                             <User className="mr-2 h-4 w-4" />
                             Edit Profile
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleChangeRole(user)}>
                             <Shield className="mr-2 h-4 w-4" />
                             Change Role
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
+                          <DropdownMenuItem 
+                            className="text-red-600" 
+                            onClick={() => handleBanUser(user)}
+                          >
                             <Ban className="mr-2 h-4 w-4" />
                             Ban User
                           </DropdownMenuItem>
@@ -174,6 +205,28 @@ export const UserManagement = () => {
           </p>
         </Card>
       </div>
+
+      {/* Modals */}
+      <RoleChangeModal
+        user={selectedUser}
+        isOpen={isRoleModalOpen}
+        onClose={() => setIsRoleModalOpen(false)}
+        onSuccess={handleRefresh}
+      />
+      
+      <BanUserModal
+        user={selectedUser}
+        isOpen={isBanModalOpen}
+        onClose={() => setIsBanModalOpen(false)}
+        onSuccess={handleRefresh}
+      />
+      
+      <EditProfileModal
+        user={selectedUser}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={handleRefresh}
+      />
     </div>
   );
 };
