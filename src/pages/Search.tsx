@@ -5,22 +5,63 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, MessageSquare, User, Clock, FileText, FolderOpen } from 'lucide-react';
-import { useSearch } from '@/hooks/useSearch';
+import { useSearch, SearchFilter } from '@/hooks/useSearch';
 import { formatDistanceToNow } from 'date-fns';
 
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
+  const filterParam = searchParams.get('filter') as SearchFilter || 'all';
   const [searchTerm, setSearchTerm] = useState(query);
+  const [filter, setFilter] = useState<SearchFilter>(filterParam);
   
-  const { data: searchResults = [], isLoading, error } = useSearch(query);
+  const { data: searchResults = [], isLoading, error } = useSearch(query, filter);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      window.location.href = `/search?q=${encodeURIComponent(searchTerm)}`;
+      const params = new URLSearchParams();
+      params.set('q', searchTerm);
+      if (filter !== 'all') {
+        params.set('filter', filter);
+      }
+      window.location.href = `/search?${params.toString()}`;
     }
+  };
+
+  const handleFilterChange = (newFilter: SearchFilter) => {
+    setFilter(newFilter);
+    if (query) {
+      const params = new URLSearchParams();
+      params.set('q', query);
+      if (newFilter !== 'all') {
+        params.set('filter', newFilter);
+      }
+      window.location.href = `/search?${params.toString()}`;
+    }
+  };
+
+  const getPlaceholderText = () => {
+    switch (filter) {
+      case 'categories':
+        return 'Search categories...';
+      case 'topics':
+        return 'Search topics...';
+      case 'posts':
+        return 'Search posts...';
+      default:
+        return 'Search topics, posts, and categories...';
+    }
+  };
+
+  const getFilteredResultsText = () => {
+    if (!query || isLoading) return '';
+    
+    const count = searchResults.length;
+    const filterText = filter === 'all' ? '' : ` ${filter}`;
+    return `(${count}${filterText} results found)`;
   };
 
   const truncateContent = (content: string, maxLength: number = 150) => {
@@ -35,7 +76,7 @@ const SearchPage = () => {
         <h1 className="text-2xl font-bold mb-2">Search Results</h1>
         {query && (
           <p className="text-muted-foreground">
-            Showing results for "{query}" {!isLoading && `(${searchResults.length} results found)`}
+            Showing results for "{query}" {getFilteredResultsText()}
           </p>
         )}
       </div>
@@ -46,12 +87,23 @@ const SearchPage = () => {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search topics, posts, and users..."
+              placeholder={getPlaceholderText()}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
+          <Select value={filter} onValueChange={handleFilterChange}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="categories">Categories</SelectItem>
+              <SelectItem value="topics">Topics</SelectItem>
+              <SelectItem value="posts">Posts</SelectItem>
+            </SelectContent>
+          </Select>
           <Button type="submit">Search</Button>
         </form>
       </Card>
