@@ -5,7 +5,7 @@ export interface SearchResult {
   id: string;
   title: string;
   content: string;
-  type: 'topic' | 'post';
+  type: 'topic' | 'post' | 'category';
   author_username: string;
   category_name: string;
   category_color: string;
@@ -74,6 +74,26 @@ export const useSearch = (query: string) => {
         throw postError;
       }
 
+      // Search in categories
+      const { data: categoryResults, error: categoryError } = await supabase
+        .from('categories')
+        .select(`
+          id,
+          name,
+          description,
+          color,
+          created_at
+        `)
+        .or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (categoryError) {
+        console.error('Error searching categories:', categoryError);
+        throw categoryError;
+      }
+
       // Combine and format results
       const results: SearchResult[] = [];
 
@@ -108,6 +128,23 @@ export const useSearch = (query: string) => {
           view_count: post.topics.view_count || 0,
           created_at: post.created_at,
           is_anonymous: post.is_anonymous || false,
+        });
+      });
+
+      // Add category results
+      categoryResults?.forEach((category) => {
+        results.push({
+          id: category.id,
+          title: category.name,
+          content: category.description || '',
+          type: 'category',
+          author_username: 'System',
+          category_name: category.name,
+          category_color: category.color || '#3b82f6',
+          reply_count: 0,
+          view_count: 0,
+          created_at: category.created_at,
+          is_anonymous: false,
         });
       });
 

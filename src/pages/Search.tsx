@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, MessageSquare, User, Clock, FileText } from 'lucide-react';
+import { Search, MessageSquare, User, Clock, FileText, FolderOpen } from 'lucide-react';
 import { useSearch } from '@/hooks/useSearch';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -77,20 +77,22 @@ const SearchPage = () => {
             <div className="space-y-4">
               {searchResults.map((result) => (
                 <div key={`${result.type}-${result.id}`} className="border-b border-border pb-4 last:border-b-0 last:pb-0">
-                  <div className="flex items-start justify-between">
+                      <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
                         {result.type === 'post' ? (
                           <FileText className="h-4 w-4 text-muted-foreground" />
+                        ) : result.type === 'category' ? (
+                          <FolderOpen className="h-4 w-4 text-muted-foreground" />
                         ) : (
                           <MessageSquare className="h-4 w-4 text-muted-foreground" />
                         )}
                         <Badge variant="outline" className="text-xs">
-                          {result.type === 'post' ? 'Post' : 'Topic'}
+                          {result.type === 'post' ? 'Post' : result.type === 'category' ? 'Category' : 'Topic'}
                         </Badge>
                       </div>
                       <Link 
-                        to={result.type === 'topic' ? `/topic/${result.id}` : `/topic/${result.id}`}
+                        to={result.type === 'category' ? `/category/${result.id}` : `/topic/${result.id}`}
                         className="font-medium text-foreground hover:text-primary text-lg"
                       >
                         {result.title}
@@ -99,7 +101,7 @@ const SearchPage = () => {
                         {truncateContent(result.content)}
                       </p>
                       <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
-                        <span>by {result.author_username}</span>
+                        {result.type !== 'category' && <span>by {result.author_username}</span>}
                         <Badge 
                           variant="outline" 
                           className="text-xs"
