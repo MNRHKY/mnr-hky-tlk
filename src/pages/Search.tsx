@@ -93,19 +93,21 @@ const SearchPage = () => {
               className="pl-10 w-full"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Filter:</span>
-            <Select value={filter} onValueChange={handleFilterChange}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="categories">Categories</SelectItem>
-                <SelectItem value="topics">Topics</SelectItem>
-                <SelectItem value="posts">Posts</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Filter:</span>
+              <Select value={filter} onValueChange={handleFilterChange}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="categories">Categories</SelectItem>
+                  <SelectItem value="topics">Topics</SelectItem>
+                  <SelectItem value="posts">Posts</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <Button type="submit">Search</Button>
           </div>
         </form>
