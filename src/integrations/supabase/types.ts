@@ -92,6 +92,48 @@ export type Database = {
           },
         ]
       }
+      post_votes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          updated_at: string
+          user_id: string | null
+          vote_type: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          updated_at?: string
+          user_id?: string | null
+          vote_type: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          updated_at?: string
+          user_id?: string | null
+          vote_type?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_votes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           anonymous_ip: unknown | null
@@ -104,6 +146,7 @@ export type Database = {
           parent_post_id: string | null
           topic_id: string
           updated_at: string | null
+          vote_score: number | null
         }
         Insert: {
           anonymous_ip?: unknown | null
@@ -116,6 +159,7 @@ export type Database = {
           parent_post_id?: string | null
           topic_id: string
           updated_at?: string | null
+          vote_score?: number | null
         }
         Update: {
           anonymous_ip?: unknown | null
@@ -128,6 +172,7 @@ export type Database = {
           parent_post_id?: string | null
           topic_id?: string
           updated_at?: string | null
+          vote_score?: number | null
         }
         Relationships: [
           {
@@ -237,6 +282,48 @@ export type Database = {
           },
         ]
       }
+      topic_votes: {
+        Row: {
+          created_at: string
+          id: string
+          topic_id: string
+          updated_at: string
+          user_id: string | null
+          vote_type: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          topic_id: string
+          updated_at?: string
+          user_id?: string | null
+          vote_type: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          topic_id?: string
+          updated_at?: string
+          user_id?: string | null
+          vote_type?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_votes_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topic_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       topics: {
         Row: {
           anonymous_ip: unknown | null
@@ -254,6 +341,7 @@ export type Database = {
           title: string
           updated_at: string | null
           view_count: number | null
+          vote_score: number | null
         }
         Insert: {
           anonymous_ip?: unknown | null
@@ -271,6 +359,7 @@ export type Database = {
           title: string
           updated_at?: string | null
           view_count?: number | null
+          vote_score?: number | null
         }
         Update: {
           anonymous_ip?: unknown | null
@@ -288,6 +377,7 @@ export type Database = {
           title?: string
           updated_at?: string | null
           view_count?: number | null
+          vote_score?: number | null
         }
         Relationships: [
           {
@@ -372,6 +462,30 @@ export type Database = {
           total_topics: number
           total_posts: number
           total_members: number
+        }[]
+      }
+      get_hot_topics: {
+        Args: { limit_count?: number }
+        Returns: {
+          id: string
+          title: string
+          content: string
+          author_id: string
+          category_id: string
+          is_pinned: boolean
+          is_locked: boolean
+          view_count: number
+          reply_count: number
+          vote_score: number
+          last_reply_at: string
+          created_at: string
+          updated_at: string
+          is_anonymous: boolean
+          username: string
+          avatar_url: string
+          category_name: string
+          category_color: string
+          hot_score: number
         }[]
       }
       has_role: {

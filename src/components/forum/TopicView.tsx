@@ -10,6 +10,8 @@ import { useTopic } from '@/hooks/useTopic';
 import { usePosts } from '@/hooks/usePosts';
 import { useCreatePost } from '@/hooks/useCreatePost';
 import { useAnonymousPosting } from '@/hooks/useAnonymousPosting';
+import { useTopicVote, usePostVote } from '@/hooks/useVoting';
+import { VoteButtons } from './VoteButtons';
 import { AdUnit } from '../ads/AdUnit';
 import { AnonymousPostingNotice } from './AnonymousPostingNotice';
 import { ReportModal } from './ReportModal';
@@ -37,6 +39,7 @@ export const TopicView = () => {
   const { data: posts, isLoading: postsLoading } = usePosts(topicId || '');
   const createPostMutation = useCreatePost();
   const anonymousPosting = useAnonymousPosting();
+  const { userVote: topicVote, vote: voteOnTopic, isVoting: isVotingTopic } = useTopicVote(topicId || '');
 
   const handleReplySubmit = async () => {
     if (!newReply.trim()) {
@@ -126,80 +129,92 @@ export const TopicView = () => {
     return topLevelReplies.map(addChildren);
   };
 
-  const renderPost = (post: any, depth = 0) => (
-    <div 
-      key={post.id} 
-      className={`border border-border rounded-lg p-4 mb-4 bg-card ${
-        depth > 0 ? 'ml-6 border-l-4 border-l-primary/20' : ''
-      }`}
-    >
-      <div className="flex items-start space-x-4">
-        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-          <User className="h-5 w-5 text-primary" />
-        </div>
-        <div className="flex-1 min-w-0">
-          {/* User info header with improved contrast */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-3">
-              <span className="font-semibold text-foreground text-base">
-                {post.is_anonymous ? 'Anonymous User' : (post.profiles?.username || 'Unknown')}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                {formatDistanceToNow(new Date(post.created_at))} ago
-              </span>
-              {replyingTo === post.id && (
-                <Badge variant="secondary" className="text-xs">
-                  replying to this
-                </Badge>
-              )}
+  const renderPost = (post: any, depth = 0) => {
+    const { userVote: postVote, vote: voteOnPost, isVoting: isVotingPost } = usePostVote(post.id);
+    
+    return (
+      <div 
+        key={post.id} 
+        className={`border border-border rounded-lg p-4 mb-4 bg-card ${
+          depth > 0 ? 'ml-6 border-l-4 border-l-primary/20' : ''
+        }`}
+      >
+        <div className="flex items-start space-x-4">
+          {/* Vote buttons for posts */}
+          <div className="flex-shrink-0">
+            <VoteButtons
+              voteScore={post.vote_score || 0}
+              userVote={postVote}
+              onVote={voteOnPost}
+              isVoting={isVotingPost}
+              orientation="vertical"
+              size="sm"
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            {/* User info header with improved contrast */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-3">
+                <span className="font-semibold text-foreground text-base">
+                  {post.is_anonymous ? 'Anonymous User' : (post.profiles?.username || 'Unknown')}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {formatDistanceToNow(new Date(post.created_at))} ago
+                </span>
+                {replyingTo === post.id && (
+                  <Badge variant="secondary" className="text-xs">
+                    replying to this
+                  </Badge>
+                )}
+              </div>
+              
+              {/* Action buttons with better visibility */}
+              <div className="flex items-center space-x-1">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
+                >
+                  <Reply className="h-4 w-4 mr-1" />
+                  Reply
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                >
+                  <ThumbsUp className="h-4 w-4 mr-1" />
+                  0
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => handleReport('post', post.id)}
+                  title="Report this post"
+                >
+                  <Flag className="h-4 w-4 text-orange-500 hover:text-red-500" />
+                </Button>
+              </div>
             </div>
             
-            {/* Action buttons with better visibility */}
-            <div className="flex items-center space-x-1">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-muted-foreground hover:text-primary hover:bg-primary/10"
-                onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
-              >
-                <Reply className="h-4 w-4 mr-1" />
-                Reply
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-muted-foreground hover:text-primary hover:bg-primary/10"
-              >
-                <ThumbsUp className="h-4 w-4 mr-1" />
-                0
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                onClick={() => handleReport('post', post.id)}
-                title="Report this post"
-              >
-                <Flag className="h-4 w-4 text-orange-500 hover:text-red-500" />
-              </Button>
+            {/* Post content with clear separation */}
+            <div className="bg-muted/30 rounded-md p-3 border border-border/50">
+              <p className="text-foreground leading-relaxed whitespace-pre-wrap">{post.content}</p>
             </div>
+            
+            {/* Nested replies */}
+            {post.children && post.children.length > 0 && (
+              <div className="mt-6 space-y-4">
+                {post.children.map((child: any) => renderPost(child, depth + 1))}
+              </div>
+            )}
           </div>
-          
-          {/* Post content with clear separation */}
-          <div className="bg-muted/30 rounded-md p-3 border border-border/50">
-            <p className="text-foreground leading-relaxed whitespace-pre-wrap">{post.content}</p>
-          </div>
-          
-          {/* Nested replies */}
-          {post.children && post.children.length > 0 && (
-            <div className="mt-6 space-y-4">
-              {post.children.map((child: any) => renderPost(child, depth + 1))}
-            </div>
-          )}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (topicLoading) {
     return (
@@ -248,51 +263,66 @@ export const TopicView = () => {
 
       {/* Topic Header */}
       <Card className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">{topic.title}</h1>
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
-              <div className="flex items-center space-x-1">
-                <User className="h-4 w-4" />
-                <span>{topic.is_anonymous ? 'Anonymous User' : (topic.profiles?.username || 'Unknown')}</span>
+        <div className="flex items-start space-x-4">
+          {/* Vote buttons for topic */}
+          <div className="flex-shrink-0">
+            <VoteButtons
+              voteScore={topic.vote_score || 0}
+              userVote={topicVote}
+              onVote={voteOnTopic}
+              isVoting={isVotingTopic}
+              orientation="vertical"
+            />
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold text-foreground mb-2">{topic.title}</h1>
+                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                  <div className="flex items-center space-x-1">
+                    <User className="h-4 w-4" />
+                    <span>{topic.is_anonymous ? 'Anonymous User' : (topic.profiles?.username || 'Unknown')}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Clock className="h-4 w-4" />
+                    <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <MessageSquare className="h-4 w-4" />
+                    <span>{topic.reply_count || 0} comments</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center space-x-1">
-                <Clock className="h-4 w-4" />
-                <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <MessageSquare className="h-4 w-4" />
-                <span>{topic.reply_count || 0} replies</span>
+              <div className="flex space-x-2">
+                <Badge 
+                  variant="secondary"
+                  style={{ 
+                    borderColor: topic.categories?.color,
+                    color: topic.categories?.color 
+                  }}
+                >
+                  {topic.categories?.name}
+                </Badge>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 border-orange-200"
+                  onClick={() => handleReport('topic', undefined, topic.id)}
+                  title="Report this topic"
+                >
+                  <Flag className="h-4 w-4 text-orange-500 hover:text-red-500" />
+                </Button>
               </div>
             </div>
-          </div>
-          <div className="flex space-x-2">
-            <Badge 
-              variant="secondary"
-              style={{ 
-                borderColor: topic.categories?.color,
-                color: topic.categories?.color 
-              }}
-            >
-              {topic.categories?.name}
-            </Badge>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 border-orange-200"
-              onClick={() => handleReport('topic', undefined, topic.id)}
-              title="Report this topic"
-            >
-              <Flag className="h-4 w-4 text-orange-500 hover:text-red-500" />
-            </Button>
+            
+            {topic.content && (
+              <div className="bg-muted/30 rounded-md p-4 border border-border/50">
+                <p className="text-foreground leading-relaxed whitespace-pre-wrap">{topic.content}</p>
+              </div>
+            )}
           </div>
         </div>
-        
-        {topic.content && (
-          <div className="prose max-w-none">
-            <p className="text-gray-700 whitespace-pre-wrap">{topic.content}</p>
-          </div>
-        )}
       </Card>
 
       {/* Ad between topic and replies */}
@@ -302,10 +332,10 @@ export const TopicView = () => {
         className="my-6"
       />
 
-      {/* Replies */}
+      {/* Comments */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Replies ({posts?.length || 0})
+        <h2 className="text-lg font-semibold text-foreground mb-4">
+          Comments ({posts?.length || 0})
         </h2>
         
         {postsLoading ? (
