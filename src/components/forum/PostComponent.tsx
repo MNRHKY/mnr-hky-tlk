@@ -135,7 +135,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
         
         {/* Compact action bar */}
         <TooltipProvider>
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
             {/* Compact voting section */}
             <div className="flex items-center space-x-1">
               <Button
