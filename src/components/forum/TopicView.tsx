@@ -129,52 +129,70 @@ export const TopicView = () => {
   const renderPost = (post: any, depth = 0) => (
     <div 
       key={post.id} 
-      className={`border-b border-gray-200 pb-6 last:border-b-0 last:pb-0 ${depth > 0 ? 'ml-8 border-l-2 border-gray-100 pl-4' : ''}`}
+      className={`border border-border rounded-lg p-4 mb-4 bg-card ${
+        depth > 0 ? 'ml-6 border-l-4 border-l-primary/20' : ''
+      }`}
     >
       <div className="flex items-start space-x-4">
-        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-          <User className="h-5 w-5 text-gray-600" />
+        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+          <User className="h-5 w-5 text-primary" />
         </div>
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-2">
-              <span className="font-medium text-gray-900">
+        <div className="flex-1 min-w-0">
+          {/* User info header with improved contrast */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-3">
+              <span className="font-semibold text-foreground text-base">
                 {post.is_anonymous ? 'Anonymous User' : (post.profiles?.username || 'Unknown')}
               </span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-muted-foreground">
                 {formatDistanceToNow(new Date(post.created_at))} ago
               </span>
               {replyingTo === post.id && (
-                <span className="text-xs text-blue-600 font-medium">replying to this</span>
+                <Badge variant="secondary" className="text-xs">
+                  replying to this
+                </Badge>
               )}
             </div>
-            <div className="flex items-center space-x-2">
+            
+            {/* Action buttons with better visibility */}
+            <div className="flex items-center space-x-1">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-gray-500 hover:text-blue-600"
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10"
                 onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
               >
                 <Reply className="h-4 w-4 mr-1" />
                 Reply
               </Button>
-              <Button variant="ghost" size="sm" className="text-gray-500 hover:text-blue-600">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+              >
                 <ThumbsUp className="h-4 w-4 mr-1" />
                 0
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 onClick={() => handleReport('post', post.id)}
+                title="Report this post"
               >
-                <Flag className="h-4 w-4" />
+                <Flag className="h-4 w-4 text-orange-500 hover:text-red-500" />
               </Button>
             </div>
           </div>
-          <p className="text-gray-700 whitespace-pre-wrap">{post.content}</p>
           
+          {/* Post content with clear separation */}
+          <div className="bg-muted/30 rounded-md p-3 border border-border/50">
+            <p className="text-foreground leading-relaxed whitespace-pre-wrap">{post.content}</p>
+          </div>
+          
+          {/* Nested replies */}
           {post.children && post.children.length > 0 && (
-            <div className="mt-4 space-y-4">
+            <div className="mt-6 space-y-4">
               {post.children.map((child: any) => renderPost(child, depth + 1))}
             </div>
           )}
@@ -261,9 +279,11 @@ export const TopicView = () => {
             <Button 
               variant="outline" 
               size="sm"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 border-orange-200"
               onClick={() => handleReport('topic', undefined, topic.id)}
+              title="Report this topic"
             >
-              <Flag className="h-4 w-4" />
+              <Flag className="h-4 w-4 text-orange-500 hover:text-red-500" />
             </Button>
           </div>
         </div>
