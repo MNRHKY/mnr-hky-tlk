@@ -13,8 +13,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, Ban, CheckCircle, Clock, UserX, Wifi, WifiOff } from 'lucide-react';
+import { AlertTriangle, Ban, CheckCircle, Clock, UserX, Wifi, WifiOff, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { formatDistanceToNow } from 'date-fns';
 
 interface ModerationItem {
   id: string;
@@ -28,6 +29,156 @@ interface ModerationItem {
   is_anonymous?: boolean;
   ip_address?: string | null;
 }
+
+const ReportsTab = () => {
+  const { toast } = useToast();
+
+  const { data: reports, isLoading, refetch } = useQuery({
+    queryKey: ['reports'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('reports')
+        .select(`
+          *,
+          reporter:profiles!reports_reporter_id_fkey(username),
+          post:posts(id, content, profiles!posts_author_id_fkey(username)),
+          topic:topics(id, title, content, profiles!topics_author_id_fkey(username))
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const handleResolveReport = async (reportId: string, action: 'resolved' | 'dismissed') => {
+    try {
+      const { error } = await supabase
+        .from('reports')
+        .update({
+          status: action,
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq('id', reportId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Report updated',
+        description: `Report has been ${action}`,
+      });
+
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update report',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="p-6">
+        <div className="text-center">Loading reports...</div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <div className="p-6">
+        <h2 className="text-xl font-semibold mb-4">User Reports</h2>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Reporter</TableHead>
+              <TableHead>Content Type</TableHead>
+              <TableHead>Reason</TableHead>
+              <TableHead>Content Preview</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Reported</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {reports?.map((report) => (
+              <TableRow key={report.id}>
+                <TableCell>{report.reporter?.username || 'Unknown'}</TableCell>
+                <TableCell>
+                  <Badge variant={report.reported_post_id ? 'secondary' : 'default'}>
+                    {report.reported_post_id ? 'Post' : 'Topic'}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div>
+                    <div className="font-medium">{report.reason}</div>
+                    {report.description && (
+                      <div className="text-sm text-muted-foreground">{report.description}</div>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="max-w-md">
+                  <div className="truncate text-sm">
+                    {report.post?.content || report.topic?.content || report.topic?.title}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    by {report.post?.profiles?.username || report.topic?.profiles?.username || 'Unknown'}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge 
+                    variant={
+                      report.status === 'pending' ? 'destructive' :
+                      report.status === 'resolved' ? 'default' : 'secondary'
+                    }
+                  >
+                    {report.status}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  {formatDistanceToNow(new Date(report.created_at))} ago
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleResolveReport(report.id, 'resolved')}
+                      className="text-green-600 hover:text-green-700"
+                      disabled={report.status !== 'pending'}
+                      title="Mark as resolved"
+                    >
+                      <CheckCircle className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleResolveReport(report.id, 'dismissed')}
+                      className="text-gray-600 hover:text-gray-700"
+                      disabled={report.status !== 'pending'}
+                      title="Dismiss report"
+                    >
+                      <Eye className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {(!reports || reports.length === 0) && (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                  No reports to display
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </Card>
+  );
+};
 
 const AdminModeration = () => {
   const { toast } = useToast();
@@ -375,12 +526,7 @@ const AdminModeration = () => {
         </TabsContent>
 
         <TabsContent value="reports">
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">User Reports</h2>
-            <div className="text-center text-muted-foreground py-8">
-              No reports to display. This feature would require implementing a reporting system.
-            </div>
-          </Card>
+          <ReportsTab />
         </TabsContent>
 
         <TabsContent value="banned">
