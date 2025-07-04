@@ -84,17 +84,14 @@ const SearchPage = () => {
       {/* Search Form */}
       <Card className="p-4">
         <form onSubmit={handleSearch} className="space-y-3">
-          <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder={getPlaceholderText()}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button type="submit">Search</Button>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder={getPlaceholderText()}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-full"
+            />
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Filter:</span>
@@ -109,6 +106,7 @@ const SearchPage = () => {
                 <SelectItem value="posts">Posts</SelectItem>
               </SelectContent>
             </Select>
+            <Button type="submit">Search</Button>
           </div>
         </form>
       </Card>
