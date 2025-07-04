@@ -145,7 +145,7 @@ export const TopicView = () => {
             <VoteButtons
               voteScore={post.vote_score || 0}
               userVote={postVote}
-              onVote={voteOnPost}
+              onVote={(voteType) => voteOnPost({ voteType })}
               isVoting={isVotingPost}
               orientation="vertical"
               size="sm"
@@ -269,7 +269,7 @@ export const TopicView = () => {
             <VoteButtons
               voteScore={topic.vote_score || 0}
               userVote={topicVote}
-              onVote={voteOnTopic}
+              onVote={(voteType) => voteOnTopic({ voteType })}
               isVoting={isVotingTopic}
               orientation="vertical"
             />

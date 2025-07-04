@@ -26,7 +26,7 @@ export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
           <VoteButtons
             voteScore={topic.vote_score}
             userVote={userVote}
-            onVote={vote}
+            onVote={(voteType) => vote({ voteType })}
             isVoting={isVoting}
             orientation="vertical"
             size="sm"
