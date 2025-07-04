@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Search, Bell, User, Settings, Shield, Menu } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { SharedMenuContent } from './SharedMenuContent';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,71 +40,35 @@ export const ForumHeader = () => {
     }
   };
 
-  const MobileNav = () => (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Menu className="h-5 w-5" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-80">
-        <div className="flex flex-col space-y-4 mt-8">
-          {/* Search in mobile menu */}
-          <form onSubmit={handleSearch} className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Search forums..."
-              className="pl-10 pr-4"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </form>
+  const MobileNav = () => {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-          {user ? (
-            <div className="space-y-4">
-              <div className="pb-4 border-b">
-                <p className="font-medium">{user.username}</p>
-              </div>
-              
-              <Button variant="ghost" className="w-full justify-start" asChild>
-                <Link to="/profile">Profile</Link>
-              </Button>
-              
-              <Button variant="ghost" className="w-full justify-start" asChild>
-                <Link to="/settings">Settings</Link>
-              </Button>
-              
-              {isAdmin && (
-                <Button variant="ghost" className="w-full justify-start text-red-600" asChild>
-                  <Link to="/admin">
-                    <Shield className="mr-2 h-4 w-4" />
-                    Admin Panel
-                  </Link>
-                </Button>
-              )}
-              
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start" 
-                onClick={handleSignOut}
-              >
-                Sign Out
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <Button className="w-full" asChild>
-                <Link to="/login">Sign In</Link>
-              </Button>
-              <Button variant="outline" className="w-full" asChild>
-                <Link to="/register">Register</Link>
-              </Button>
-            </div>
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
+    return (
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <Menu className="h-5 w-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="right" className="w-80">
+          <div className="flex flex-col space-y-4 mt-8">
+            {/* Search in mobile menu */}
+            <form onSubmit={handleSearch} className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search forums..."
+                className="pl-10 pr-4"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </form>
+
+            <SharedMenuContent onNavigate={() => setMobileMenuOpen(false)} />
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  };
 
   return (
     <header className="bg-background border-b border-border shadow-sm sticky top-0 z-50">
