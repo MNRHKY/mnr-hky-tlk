@@ -9,10 +9,11 @@ import { toast } from '@/hooks/use-toast';
 
 interface InlineReplyFormProps {
   topicId: string;
-  parentPostId: string;
+  parentPostId: string | null;
   parentPost?: any;
   onCancel: () => void;
   onSuccess: () => void;
+  isTopicReply?: boolean;
 }
 
 export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
@@ -21,6 +22,7 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
   parentPost,
   onCancel,
   onSuccess,
+  isTopicReply = false,
 }) => {
   const { user } = useAuth();
   const [content, setContent] = useState('');
@@ -100,16 +102,16 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
   };
 
   return (
-    <div className="mt-3 border-l-2 border-l-primary/20 pl-3 bg-muted/30 rounded-r-md p-3">
+    <div className={`${isTopicReply ? 'bg-primary/5 rounded-md p-4' : 'mt-3 border-l-2 border-l-primary/20 pl-3 bg-muted/30 rounded-r-md p-3'}`}>
       {/* Reply context */}
       {parentPost && (
         <div className="mb-3 text-sm text-muted-foreground">
           <span>Replying to </span>
           <span className="font-medium text-foreground">
-            @{parentPost.is_anonymous ? 'Anonymous' : (parentPost.profiles?.username || 'Unknown')}
+            {isTopicReply ? 'Original Post' : `@${parentPost.is_anonymous ? 'Anonymous' : (parentPost.profiles?.username || 'Unknown')}`}
           </span>
-          <div className="text-xs mt-1 bg-background/50 rounded p-2 italic line-clamp-2">
-            "{parentPost.content.substring(0, 100)}{parentPost.content.length > 100 ? '...' : ''}"
+          <div className="text-xs mt-1 bg-primary/10 border-l-4 border-primary rounded p-2 italic">
+            "{(isTopicReply ? parentPost.title : parentPost.content).substring(0, 100)}{(isTopicReply ? parentPost.title : parentPost.content).length > 100 ? '...' : ''}"
           </div>
         </div>
       )}

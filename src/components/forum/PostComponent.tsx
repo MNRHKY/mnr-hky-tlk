@@ -35,89 +35,88 @@ export const PostComponent: React.FC<PostComponentProps> = ({
         depth > 0 ? 'ml-4 md:ml-6 border-l-2 border-l-border/50 pl-3 md:pl-4' : ''
       } ${depth === 0 ? 'border-b border-border/50 pb-4 mb-4' : 'mb-3'}`}
     >
-      <div className="bg-card p-3 md:p-4 rounded-md"
-    >
-        <div className="flex space-x-3">
-          {/* Vote buttons for posts - mobile optimized */}
-          <div className="flex flex-col items-center space-y-1 min-w-[40px]">
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`h-8 w-8 p-0 ${postVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
-              onClick={() => voteOnPost({ voteType: postVote?.vote_type === 1 ? 0 : 1 })}
-              disabled={isVotingPost}
-            >
-              <ArrowUp className="h-4 w-4" />
-            </Button>
-            <span className={`text-sm font-medium ${(post.vote_score || 0) > 0 ? 'text-orange-500' : (post.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
-              {post.vote_score || 0}
+      <div className="bg-card p-3 md:p-4 rounded-md">
+        {/* User info header */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center flex-wrap gap-2">
+            <span className="font-medium text-foreground text-sm">
+              {post.is_anonymous ? 'Anonymous' : (post.profiles?.username || 'Unknown')}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`h-8 w-8 p-0 ${postVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
-              onClick={() => voteOnPost({ voteType: postVote?.vote_type === -1 ? 0 : -1 })}
-              disabled={isVotingPost}
-            >
-              <ArrowDown className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="flex-1 min-w-0">
-            {/* User info header */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center flex-wrap gap-2">
-                <span className="font-medium text-foreground text-sm">
-                  {post.is_anonymous ? 'Anonymous' : (post.profiles?.username || 'Unknown')}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(post.created_at))} ago
-                </span>
-                {hasReplies && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                  >
-                    {isCollapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
-                  </Button>
-                )}
-              </div>
-            </div>
-            
-            {/* Post content */}
-            <div className="mb-3">
-              <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm">{post.content}</p>
-            </div>
-            
-            {/* Action buttons */}
-            <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 px-3 text-xs text-muted-foreground hover:text-primary hover:bg-primary/10"
-                onClick={() => setShowReplyForm(!showReplyForm)}
-              >
-                <Reply className="h-3 w-3 mr-1" />
-                Reply
-              </Button>
-              {hasReplies && (
-                <div className="flex items-center space-x-1">
-                  <MessageSquare className="h-3 w-3" />
-                  <span>{post.children.length}</span>
-                </div>
-              )}
-              <Button 
-                variant="ghost" 
+            <span className="text-xs text-muted-foreground">
+              {formatDistanceToNow(new Date(post.created_at))} ago
+            </span>
+            {hasReplies && (
+              <Button
+                variant="ghost"
                 size="sm"
-                className="h-8 px-3 text-xs text-muted-foreground hover:text-destructive"
-                onClick={() => onReport('post', post.id)}
+                className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
+                onClick={() => setIsCollapsed(!isCollapsed)}
               >
-                <Flag className="h-3 w-3 mr-1" />
-                Report
+                {isCollapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        {/* Post content - Full width */}
+        <div className="mb-4">
+          <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm">{post.content}</p>
+        </div>
+        
+        {/* Vote buttons below content - Reddit style */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 w-8 p-0 ${postVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
+                onClick={() => voteOnPost({ voteType: postVote?.vote_type === 1 ? 0 : 1 })}
+                disabled={isVotingPost}
+              >
+                <ArrowUp className="h-4 w-4" />
+              </Button>
+              <span className={`text-sm font-medium min-w-[20px] text-center ${(post.vote_score || 0) > 0 ? 'text-orange-500' : (post.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
+                {post.vote_score || 0}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 w-8 p-0 ${postVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
+                onClick={() => voteOnPost({ voteType: postVote?.vote_type === -1 ? 0 : -1 })}
+                disabled={isVotingPost}
+              >
+                <ArrowDown className="h-4 w-4" />
               </Button>
             </div>
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-3 text-xs text-muted-foreground hover:text-primary hover:bg-primary/10"
+              onClick={() => setShowReplyForm(!showReplyForm)}
+            >
+              <Reply className="h-3 w-3 mr-1" />
+              Reply
+            </Button>
+            
+            {hasReplies && (
+              <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                <MessageSquare className="h-3 w-3" />
+                <span>{post.children.length}</span>
+              </div>
+            )}
           </div>
+          
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="h-8 px-3 text-xs text-muted-foreground hover:text-destructive"
+            onClick={() => onReport('post', post.id)}
+          >
+            <Flag className="h-3 w-3 mr-1" />
+            Report
+          </Button>
         </div>
 
         {/* Inline reply form */}

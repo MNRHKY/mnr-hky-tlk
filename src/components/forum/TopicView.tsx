@@ -16,6 +16,7 @@ import { AdUnit } from '../ads/AdUnit';
 
 import { ReportModal } from './ReportModal';
 import { PostComponent } from './PostComponent';
+import { InlineReplyForm } from './InlineReplyForm';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 
@@ -23,6 +24,7 @@ export const TopicView = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [showTopicReply, setShowTopicReply] = useState(false);
   
   const [reportModal, setReportModal] = useState<{
     isOpen: boolean;
@@ -201,9 +203,19 @@ export const TopicView = () => {
       {/* Comments */}
       <div className="bg-card">
         <div className="p-3 md:p-6 border-b border-border">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">
-            Comments ({posts?.length || 0})
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base md:text-lg font-semibold text-foreground">
+              Comments ({posts?.length || 0})
+            </h2>
+            <Button 
+              onClick={() => setShowTopicReply(!showTopicReply)}
+              size="sm"
+              variant="outline"
+              className="text-xs"
+            >
+              Reply to Post
+            </Button>
+          </div>
         </div>
         
         {postsLoading ? (
@@ -225,6 +237,20 @@ export const TopicView = () => {
           </div>
         ) : (
           <p className="text-muted-foreground text-center py-8 px-3">No replies yet. Be the first to reply!</p>
+        )}
+
+        {/* Reply to topic form */}
+        {showTopicReply && (
+          <div className="border-t border-border p-3 md:p-6">
+            <InlineReplyForm
+              topicId={topicId || ''}
+              parentPostId={null}
+              parentPost={topic}
+              onCancel={() => setShowTopicReply(false)}
+              onSuccess={() => setShowTopicReply(false)}
+              isTopicReply={true}
+            />
+          </div>
         )}
       </div>
 
