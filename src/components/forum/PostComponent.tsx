@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Reply, ArrowUp, ArrowDown, Flag, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
+import { Reply, ArrowUp, ArrowDown, Flag, ChevronDown, ChevronUp, MessageSquare, MessageCircle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatDistanceToNow } from 'date-fns';
 import { usePostVote } from '@/hooks/useVoting';
 import { InlineReplyForm } from './InlineReplyForm';
@@ -85,61 +86,77 @@ export const PostComponent: React.FC<PostComponentProps> = ({
           <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm">{post.content}</p>
         </div>
         
-        {/* Vote buttons below content - Reddit style */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
+        {/* Compact action bar */}
+        <TooltipProvider>
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Compact voting section */}
+            <div className="flex items-center space-x-1">
               <Button
                 variant="ghost"
                 size="sm"
-                className={`h-8 w-8 p-0 ${postVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
+                className={`h-6 w-6 p-0 ${postVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
                 onClick={() => voteOnPost({ voteType: postVote?.vote_type === 1 ? 0 : 1 })}
                 disabled={isVotingPost}
               >
-                <ArrowUp className="h-4 w-4" />
+                <ArrowUp className="h-3 w-3" />
               </Button>
-              <span className={`text-sm font-medium min-w-[20px] text-center ${(post.vote_score || 0) > 0 ? 'text-orange-500' : (post.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
+              <span className={`text-xs font-medium min-w-[16px] text-center ${(post.vote_score || 0) > 0 ? 'text-orange-500' : (post.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
                 {post.vote_score || 0}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
-                className={`h-8 w-8 p-0 ${postVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
+                className={`h-6 w-6 p-0 ${postVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
                 onClick={() => voteOnPost({ voteType: postVote?.vote_type === -1 ? 0 : -1 })}
                 disabled={isVotingPost}
               >
-                <ArrowDown className="h-4 w-4" />
+                <ArrowDown className="h-3 w-3" />
               </Button>
             </div>
             
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-8 px-3 text-xs text-muted-foreground hover:text-primary hover:bg-primary/10"
-              onClick={() => setShowReplyForm(!showReplyForm)}
-            >
-              <Reply className="h-3 w-3 mr-1" />
-              Reply
-            </Button>
+            {/* Reply button - icon only */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  onClick={() => setShowReplyForm(!showReplyForm)}
+                >
+                  <MessageCircle className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Reply</p>
+              </TooltipContent>
+            </Tooltip>
             
+            {/* Reply count */}
             {hasReplies && (
               <div className="flex items-center space-x-1 text-xs text-muted-foreground">
                 <MessageSquare className="h-3 w-3" />
                 <span>{post.children.length}</span>
               </div>
             )}
+            
+            {/* Report button - icon only with red color */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 ml-auto"
+                  onClick={() => onReport('post', post.id)}
+                >
+                  <Flag className="h-3 w-3 fill-current" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Report</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
-          
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="h-8 px-3 text-xs text-muted-foreground hover:text-destructive"
-            onClick={() => onReport('post', post.id)}
-          >
-            <Flag className="h-3 w-3 mr-1" />
-            Report
-          </Button>
-        </div>
+        </TooltipProvider>
 
         {/* Inline reply form */}
         {showReplyForm && (
