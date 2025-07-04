@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Reply, ArrowUp, ArrowDown, Flag, ChevronDown, ChevronUp, MessageSquare, MessageCircle } from 'lucide-react';
+import { Reply, ArrowUp, ArrowDown, Flag, ChevronDown, ChevronUp, MessageSquare, MessageCircle, Share } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatDistanceToNow } from 'date-fns';
 import { usePostVote } from '@/hooks/useVoting';
 import { InlineReplyForm } from './InlineReplyForm';
+import { useToast } from '@/hooks/use-toast';
 
 interface PostComponentProps {
   post: any;
@@ -23,11 +24,50 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   const { userVote: postVote, vote: voteOnPost, isVoting: isVotingPost } = usePostVote(post.id);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { toast } = useToast();
   
   const hasReplies = post.children && post.children.length > 0;
   
   const handleReplySuccess = () => {
     setShowReplyForm(false);
+  };
+
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/topic/${topicId}#post-${post.id}`;
+    const shareData = {
+      title: 'Forum Post',
+      text: `Check out this post: ${post.content.slice(0, 100)}${post.content.length > 100 ? '...' : ''}`,
+      url: shareUrl,
+    };
+
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (error) {
+        // User cancelled share or error occurred
+        if (error.name !== 'AbortError') {
+          handleClipboardShare(shareUrl);
+        }
+      }
+    } else {
+      handleClipboardShare(shareUrl);
+    }
+  };
+
+  const handleClipboardShare = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Link copied!",
+        description: "Post link has been copied to clipboard",
+      });
+    } catch (error) {
+      toast({
+        title: "Share failed",
+        description: "Could not copy link to clipboard",
+        variant: "destructive",
+      });
+    }
   };
   
   // Color system for thread levels using semantic tokens
@@ -138,6 +178,23 @@ export const PostComponent: React.FC<PostComponentProps> = ({
                 <span>{post.children.length}</span>
               </div>
             )}
+            
+            {/* Share button - icon only */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  onClick={handleShare}
+                >
+                  <Share className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Share</p>
+              </TooltipContent>
+            </Tooltip>
             
             {/* Report button - icon only with red color */}
             <Tooltip>
