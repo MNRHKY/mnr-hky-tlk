@@ -36,18 +36,43 @@ const ReportsTab = () => {
   const { data: reports, isLoading, refetch } = useQuery({
     queryKey: ['reports'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: reportsData, error: reportsError } = await supabase
         .from('reports')
-        .select(`
-          *,
-          reporter:profiles!reports_reporter_id_fkey(username),
-          post:posts(id, content, profiles!posts_author_id_fkey(username)),
-          topic:topics(id, title, content, profiles!topics_author_id_fkey(username))
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (reportsError) throw reportsError;
+
+      // Fetch reporter profiles
+      const reporterIds = reportsData.map(r => r.reporter_id).filter(Boolean);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .in('id', reporterIds);
+
+      // Fetch posts with author profiles
+      const postIds = reportsData.map(r => r.reported_post_id).filter(Boolean);
+      const { data: posts } = await supabase
+        .from('posts')
+        .select('id, content, author_id, profiles!posts_author_id_fkey(username)')
+        .in('id', postIds);
+
+      // Fetch topics with author profiles
+      const topicIds = reportsData.map(r => r.reported_topic_id).filter(Boolean);
+      const { data: topics } = await supabase
+        .from('topics')
+        .select('id, title, content, author_id, profiles!topics_author_id_fkey(username)')
+        .in('id', topicIds);
+
+      // Combine the data
+      const enrichedReports = reportsData.map(report => ({
+        ...report,
+        reporter: profiles?.find(p => p.id === report.reporter_id),
+        post: posts?.find(p => p.id === report.reported_post_id),
+        topic: topics?.find(t => t.id === report.reported_topic_id)
+      }));
+
+      return enrichedReports;
     },
   });
 
