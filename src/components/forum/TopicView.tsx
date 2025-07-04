@@ -8,12 +8,12 @@ import { MessageSquare, User, Clock, ArrowLeft, ThumbsUp, Flag, Reply } from 'lu
 import { useAuth } from '@/hooks/useAuth';
 import { useTopic } from '@/hooks/useTopic';
 import { usePosts } from '@/hooks/usePosts';
-import { useCreatePost } from '@/hooks/useCreatePost';
-import { useAnonymousPosting } from '@/hooks/useAnonymousPosting';
+
+
 import { useTopicVote } from '@/hooks/useVoting';
 import { VoteButtons } from './VoteButtons';
 import { AdUnit } from '../ads/AdUnit';
-import { AnonymousPostingNotice } from './AnonymousPostingNotice';
+
 import { ReportModal } from './ReportModal';
 import { PostComponent } from './PostComponent';
 import { formatDistanceToNow } from 'date-fns';
@@ -23,9 +23,7 @@ export const TopicView = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [newReply, setNewReply] = useState('');
-  const [contentErrors, setContentErrors] = useState<string[]>([]);
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  
   const [reportModal, setReportModal] = useState<{
     isOpen: boolean;
     postId?: string;
@@ -38,74 +36,8 @@ export const TopicView = () => {
 
   const { data: topic, isLoading: topicLoading, error: topicError } = useTopic(topicId || '');
   const { data: posts, isLoading: postsLoading } = usePosts(topicId || '');
-  const createPostMutation = useCreatePost();
-  const anonymousPosting = useAnonymousPosting();
   const { userVote: topicVote, vote: voteOnTopic, isVoting: isVotingTopic } = useTopicVote(topicId || '');
 
-  const handleReplySubmit = async () => {
-    if (!newReply.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a reply",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!topicId) return;
-
-    // Validate content for anonymous users
-    if (!user) {
-      if (!anonymousPosting.canPost) {
-        toast({
-          title: "Rate limit exceeded",
-          description: "You've reached the limit of 3 posts per 12 hours for anonymous users",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const validation = anonymousPosting.validateContent(newReply);
-      if (!validation.isValid) {
-        setContentErrors(validation.errors);
-        toast({
-          title: "Content not allowed",
-          description: validation.errors.join(', '),
-          variant: "destructive",
-        });
-        return;
-      }
-      setContentErrors([]);
-    }
-
-    try {
-      await createPostMutation.mutateAsync({
-        content: newReply,
-        topic_id: topicId,
-        parent_post_id: replyingTo,
-        is_anonymous: !user
-      });
-
-      // Record the post for anonymous users
-      if (!user) {
-        await anonymousPosting.recordPost();
-      }
-
-      setNewReply('');
-      setReplyingTo(null);
-      toast({
-        title: "Success",
-        description: "Reply posted successfully!",
-      });
-    } catch (error) {
-      console.error('Error creating post:', error);
-      toast({
-        title: "Error",
-        description: "Failed to post reply. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleReport = (contentType: 'post' | 'topic', postId?: string, topicId?: string) => {
     setReportModal({
@@ -130,9 +62,6 @@ export const TopicView = () => {
     return topLevelReplies.map(addChildren);
   };
 
-  const handleReplyToPost = (postId: string) => {
-    setReplyingTo(replyingTo === postId ? null : postId);
-  };
 
   if (topicLoading) {
     return (
@@ -284,13 +213,12 @@ export const TopicView = () => {
             ))}
           </div>
         ) : posts && posts.length > 0 ? (
-          <div className="divide-y divide-border">
+          <div className="space-y-1">
             {organizeReplies(posts).map((reply) => (
               <PostComponent
                 key={reply.id}
                 post={reply}
-                replyingTo={replyingTo}
-                onReply={handleReplyToPost}
+                topicId={topicId || ''}
                 onReport={handleReport}
               />
             ))}
@@ -300,76 +228,6 @@ export const TopicView = () => {
         )}
       </div>
 
-      {/* Reply Form - Now available for everyone */}
-      <div className="bg-card border-t border-border">
-        <div className="p-3 md:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base md:text-lg font-semibold text-foreground">
-              {replyingTo ? 'Reply to Post' : 'Post a Reply'}
-            </h3>
-            {replyingTo && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setReplyingTo(null)}
-                className="text-sm"
-              >
-                Cancel
-              </Button>
-            )}
-          </div>
-        
-        {/* Show anonymous posting notice for non-authenticated users */}
-        {!user && (
-          <div className="mb-4">
-            <AnonymousPostingNotice
-              remainingPosts={anonymousPosting.remainingPosts}
-              canPost={anonymousPosting.canPost}
-            />
-          </div>
-        )}
-
-          <div className="space-y-4">
-            <Textarea
-              placeholder={user ? "Write your reply..." : "Write your reply as an anonymous user (no images or links allowed)..."}
-              value={newReply}
-              onChange={(e) => setNewReply(e.target.value)}
-              rows={4}
-              className="w-full text-base"
-            />
-            
-            {contentErrors.length > 0 && (
-              <div className="text-sm text-destructive">
-                <ul className="list-disc list-inside">
-                  {contentErrors.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="flex justify-end space-x-2">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setNewReply('');
-                  setReplyingTo(null);
-                }}
-                size="sm"
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleReplySubmit}
-                disabled={!newReply.trim() || createPostMutation.isPending || (!user && !anonymousPosting.canPost)}
-                size="sm"
-              >
-                {createPostMutation.isPending ? 'Posting...' : 'Post Reply'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <ReportModal
         isOpen={reportModal.isOpen}
