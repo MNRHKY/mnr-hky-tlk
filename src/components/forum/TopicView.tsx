@@ -10,11 +10,12 @@ import { useTopic } from '@/hooks/useTopic';
 import { usePosts } from '@/hooks/usePosts';
 import { useCreatePost } from '@/hooks/useCreatePost';
 import { useAnonymousPosting } from '@/hooks/useAnonymousPosting';
-import { useTopicVote, usePostVote } from '@/hooks/useVoting';
+import { useTopicVote } from '@/hooks/useVoting';
 import { VoteButtons } from './VoteButtons';
 import { AdUnit } from '../ads/AdUnit';
 import { AnonymousPostingNotice } from './AnonymousPostingNotice';
 import { ReportModal } from './ReportModal';
+import { PostComponent } from './PostComponent';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 
@@ -129,91 +130,8 @@ export const TopicView = () => {
     return topLevelReplies.map(addChildren);
   };
 
-  const renderPost = (post: any, depth = 0) => {
-    const { userVote: postVote, vote: voteOnPost, isVoting: isVotingPost } = usePostVote(post.id);
-    
-    return (
-      <div 
-        key={post.id} 
-        className={`border border-border rounded-lg p-4 mb-4 bg-card ${
-          depth > 0 ? 'ml-6 border-l-4 border-l-primary/20' : ''
-        }`}
-      >
-        <div className="flex items-start space-x-4">
-          {/* Vote buttons for posts */}
-          <div className="flex-shrink-0">
-            <VoteButtons
-              voteScore={post.vote_score || 0}
-              userVote={postVote}
-              onVote={(voteType) => voteOnPost({ voteType })}
-              isVoting={isVotingPost}
-              orientation="vertical"
-              size="sm"
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            {/* User info header with improved contrast */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-3">
-                <span className="font-semibold text-foreground text-base">
-                  {post.is_anonymous ? 'Anonymous User' : (post.profiles?.username || 'Unknown')}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  {formatDistanceToNow(new Date(post.created_at))} ago
-                </span>
-                {replyingTo === post.id && (
-                  <Badge variant="secondary" className="text-xs">
-                    replying to this
-                  </Badge>
-                )}
-              </div>
-              
-              {/* Action buttons with better visibility */}
-              <div className="flex items-center space-x-1">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-muted-foreground hover:text-primary hover:bg-primary/10"
-                  onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
-                >
-                  <Reply className="h-4 w-4 mr-1" />
-                  Reply
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-muted-foreground hover:text-primary hover:bg-primary/10"
-                >
-                  <ThumbsUp className="h-4 w-4 mr-1" />
-                  0
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => handleReport('post', post.id)}
-                  title="Report this post"
-                >
-                  <Flag className="h-4 w-4 text-orange-500 hover:text-red-500" />
-                </Button>
-              </div>
-            </div>
-            
-            {/* Post content with clear separation */}
-            <div className="bg-muted/30 rounded-md p-3 border border-border/50">
-              <p className="text-foreground leading-relaxed whitespace-pre-wrap">{post.content}</p>
-            </div>
-            
-            {/* Nested replies */}
-            {post.children && post.children.length > 0 && (
-              <div className="mt-6 space-y-4">
-                {post.children.map((child: any) => renderPost(child, depth + 1))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
+  const handleReplyToPost = (postId: string) => {
+    setReplyingTo(replyingTo === postId ? null : postId);
   };
 
   if (topicLoading) {
@@ -346,7 +264,15 @@ export const TopicView = () => {
           </div>
         ) : posts && posts.length > 0 ? (
           <div className="space-y-6">
-            {organizeReplies(posts).map((reply) => renderPost(reply))}
+            {organizeReplies(posts).map((reply) => (
+              <PostComponent
+                key={reply.id}
+                post={reply}
+                replyingTo={replyingTo}
+                onReply={handleReplyToPost}
+                onReport={handleReport}
+              />
+            ))}
           </div>
         ) : (
           <p className="text-gray-600 text-center py-8">No replies yet. Be the first to reply!</p>
