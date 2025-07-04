@@ -29,13 +29,35 @@ export const PostComponent: React.FC<PostComponentProps> = ({
     setShowReplyForm(false);
   };
   
+  // Color system for thread levels using semantic tokens
+  const threadColors = [
+    'border-l-primary/60 bg-primary/5',
+    'border-l-accent/60 bg-accent/5', 
+    'border-l-secondary/60 bg-secondary/10',
+    'border-l-muted-foreground/60 bg-muted/20',
+    'border-l-destructive/40 bg-destructive/5'
+  ];
+  
+  const colorIndex = depth % threadColors.length;
+  const threadColorClass = depth > 0 ? threadColors[colorIndex] : '';
+  
   return (
     <div 
       className={`relative ${
-        depth > 0 ? 'ml-4 md:ml-6 border-l-2 border-l-border/50 pl-3 md:pl-4' : ''
+        depth > 0 ? `border-l-4 ${threadColorClass} pl-3` : ''
       } ${depth === 0 ? 'border-b border-border/50 pb-4 mb-4' : 'mb-3'}`}
     >
       <div className="bg-card p-3 md:p-4 rounded-md">
+        {/* Reply context for nested replies */}
+        {depth > 0 && post.parent_post_id && (
+          <div className="mb-2 text-xs text-muted-foreground">
+            <span>Replying to </span>
+            <span className="font-medium text-primary">
+              @{post.profiles?.username || 'Anonymous'}
+            </span>
+          </div>
+        )}
+        
         {/* User info header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center flex-wrap gap-2">
