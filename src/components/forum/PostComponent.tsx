@@ -1,9 +1,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Reply, ThumbsUp, Flag } from 'lucide-react';
+import { Reply, ArrowUp, ArrowDown, Flag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { VoteButtons } from './VoteButtons';
 import { usePostVote } from '@/hooks/useVoting';
 
 interface PostComponentProps {
@@ -25,78 +24,83 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   
   return (
     <div 
-      className={`border border-border rounded-lg p-4 mb-4 bg-card ${
-        depth > 0 ? 'ml-6 border-l-4 border-l-primary/20' : ''
+      className={`p-3 md:p-4 bg-card ${
+        depth > 0 ? 'ml-3 md:ml-6 border-l-2 border-l-primary/20 pl-3 md:pl-4' : ''
       }`}
     >
-      <div className="flex items-start space-x-4">
-        {/* Vote buttons for posts */}
-        <div className="flex-shrink-0">
-          <VoteButtons
-            voteScore={post.vote_score || 0}
-            userVote={postVote}
-            onVote={(voteType) => voteOnPost({ voteType })}
-            isVoting={isVotingPost}
-            orientation="vertical"
+      <div className="flex space-x-3">
+        {/* Vote buttons for posts - mobile optimized */}
+        <div className="flex flex-col items-center space-y-1 min-w-[32px]">
+          <Button
+            variant="ghost"
             size="sm"
-          />
+            className={`h-6 w-6 p-0 ${postVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
+            onClick={() => voteOnPost({ voteType: postVote?.vote_type === 1 ? 0 : 1 })}
+            disabled={isVotingPost}
+          >
+            <ArrowUp className="h-3 w-3" />
+          </Button>
+          <span className={`text-xs font-medium ${post.vote_score && post.vote_score > 0 ? 'text-orange-500' : post.vote_score && post.vote_score < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
+            {post.vote_score || 0}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-6 w-6 p-0 ${postVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
+            onClick={() => voteOnPost({ voteType: postVote?.vote_type === -1 ? 0 : -1 })}
+            disabled={isVotingPost}
+          >
+            <ArrowDown className="h-3 w-3" />
+          </Button>
         </div>
         <div className="flex-1 min-w-0">
-          {/* User info header with improved contrast */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-3">
-              <span className="font-semibold text-foreground text-base">
-                {post.is_anonymous ? 'Anonymous User' : (post.profiles?.username || 'Unknown')}
+          {/* User info header */}
+          <div className="flex items-center justify-between mb-2 md:mb-3">
+            <div className="flex items-center flex-wrap gap-2 md:gap-3">
+              <span className="font-semibold text-foreground text-sm md:text-base">
+                {post.is_anonymous ? 'Anonymous' : (post.profiles?.username || 'Unknown')}
               </span>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-xs md:text-sm text-muted-foreground">
                 {formatDistanceToNow(new Date(post.created_at))} ago
               </span>
               {replyingTo === post.id && (
                 <Badge variant="secondary" className="text-xs">
-                  replying to this
+                  replying
                 </Badge>
               )}
             </div>
             
-            {/* Action buttons with better visibility */}
+            {/* Action buttons */}
             <div className="flex items-center space-x-1">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                className="h-6 w-6 p-0 md:h-8 md:w-auto md:px-2 text-muted-foreground hover:text-primary"
                 onClick={() => onReply(post.id)}
               >
-                <Reply className="h-4 w-4 mr-1" />
-                Reply
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-muted-foreground hover:text-primary hover:bg-primary/10"
-              >
-                <ThumbsUp className="h-4 w-4 mr-1" />
-                0
+                <Reply className="h-3 w-3 md:mr-1" />
+                <span className="hidden md:inline">Reply</span>
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm"
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
                 onClick={() => onReport('post', post.id)}
-                title="Report this post"
+                title="Report"
               >
-                <Flag className="h-4 w-4 text-orange-500 hover:text-red-500" />
+                <Flag className="h-3 w-3" />
               </Button>
             </div>
           </div>
           
-          {/* Post content with clear separation */}
+          {/* Post content */}
           <div className="bg-muted/30 rounded-md p-3 border border-border/50">
-            <p className="text-foreground leading-relaxed whitespace-pre-wrap">{post.content}</p>
+            <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm md:text-base">{post.content}</p>
           </div>
           
           {/* Nested replies */}
           {post.children && post.children.length > 0 && (
-            <div className="mt-6 space-y-4">
+            <div className="mt-3 md:mt-6">
               {post.children.map((child: any) => (
                 <PostComponent
                   key={child.id}

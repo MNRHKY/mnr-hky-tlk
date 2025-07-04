@@ -161,63 +161,63 @@ export const TopicView = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Breadcrumb */}
-      <div className="flex items-center space-x-2 text-sm text-gray-600">
-        <Link to="/" className="hover:text-blue-600">Forum</Link>
+    <div className="space-y-4 md:space-y-6">
+      {/* Breadcrumb - desktop only */}
+      <div className="hidden md:flex items-center space-x-2 text-sm text-muted-foreground">
+        <Link to="/" className="hover:text-primary">Forum</Link>
         <span>/</span>
-        <Link to={`/category/${topic.categories?.slug}`} className="hover:text-blue-600">
+        <Link to={`/category/${topic.categories?.slug}`} className="hover:text-primary">
           {topic.categories?.name}
         </Link>
         <span>/</span>
-        <span className="text-gray-900">{topic.title}</span>
+        <span className="text-foreground">{topic.title}</span>
       </div>
 
-      {/* Back Button */}
-      <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
+      {/* Back Button - mobile optimized */}
+      <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="md:hidden">
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back
       </Button>
 
       {/* Topic Header */}
-      <Card className="p-6">
-        <div className="flex items-start space-x-4">
-          {/* Vote buttons for topic */}
-          <div className="flex-shrink-0">
-            <VoteButtons
-              voteScore={topic.vote_score || 0}
-              userVote={topicVote}
-              onVote={(voteType) => voteOnTopic({ voteType })}
-              isVoting={isVotingTopic}
-              orientation="vertical"
-            />
-          </div>
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-foreground mb-2">{topic.title}</h1>
-                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                  <div className="flex items-center space-x-1">
-                    <User className="h-4 w-4" />
-                    <span>{topic.is_anonymous ? 'Anonymous User' : (topic.profiles?.username || 'Unknown')}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Clock className="h-4 w-4" />
-                    <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <MessageSquare className="h-4 w-4" />
-                    <span>{topic.reply_count || 0} comments</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex space-x-2">
+      <div className="bg-card border-b border-border">
+        <div className="p-3 md:p-6">
+          <div className="flex space-x-3">
+            {/* Vote buttons for topic - mobile optimized */}
+            <div className="flex flex-col items-center space-y-1 min-w-[40px]">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 w-8 p-0 ${topicVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
+                onClick={() => voteOnTopic({ voteType: topicVote?.vote_type === 1 ? 0 : 1 })}
+                disabled={isVotingTopic}
+              >
+                <ArrowLeft className="h-4 w-4 rotate-90" />
+              </Button>
+              <span className={`text-sm font-medium ${topic.vote_score && topic.vote_score > 0 ? 'text-orange-500' : topic.vote_score && topic.vote_score < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
+                {topic.vote_score || 0}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 w-8 p-0 ${topicVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
+                onClick={() => voteOnTopic({ voteType: topicVote?.vote_type === -1 ? 0 : -1 })}
+                disabled={isVotingTopic}
+              >
+                <ArrowLeft className="h-4 w-4 -rotate-90" />
+              </Button>
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              {/* Category and meta */}
+              <div className="flex items-center flex-wrap gap-2 mb-3">
                 <Badge 
                   variant="secondary"
+                  className="text-xs"
                   style={{ 
                     borderColor: topic.categories?.color,
-                    color: topic.categories?.color 
+                    color: topic.categories?.color,
+                    backgroundColor: `${topic.categories?.color}10`
                   }}
                 >
                   {topic.categories?.name}
@@ -225,23 +225,42 @@ export const TopicView = () => {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 border-orange-200"
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive ml-auto md:ml-0"
                   onClick={() => handleReport('topic', undefined, topic.id)}
                   title="Report this topic"
                 >
-                  <Flag className="h-4 w-4 text-orange-500 hover:text-red-500" />
+                  <Flag className="h-3 w-3" />
                 </Button>
               </div>
-            </div>
-            
-            {topic.content && (
-              <div className="bg-muted/30 rounded-md p-4 border border-border/50">
-                <p className="text-foreground leading-relaxed whitespace-pre-wrap">{topic.content}</p>
+
+              {/* Title */}
+              <h1 className="text-lg md:text-2xl font-bold text-foreground mb-3 leading-tight">{topic.title}</h1>
+              
+              {/* Meta info */}
+              <div className="flex items-center flex-wrap gap-3 text-xs md:text-sm text-muted-foreground mb-3">
+                <div className="flex items-center space-x-1">
+                  <User className="h-3 w-3 md:h-4 md:w-4" />
+                  <span>{topic.is_anonymous ? 'Anonymous' : (topic.profiles?.username || 'Unknown')}</span>
+                </div>
+                <span className="hidden sm:inline">•</span>
+                <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
+                <span className="hidden sm:inline">•</span>
+                <div className="flex items-center space-x-1">
+                  <MessageSquare className="h-3 w-3 md:h-4 md:w-4" />
+                  <span>{topic.reply_count || 0} comments</span>
+                </div>
               </div>
-            )}
+              
+              {/* Content */}
+              {topic.content && (
+                <div className="bg-muted/30 rounded-md p-3 md:p-4 border border-border/50">
+                  <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm md:text-base">{topic.content}</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Ad between topic and replies */}
       <AdUnit 
@@ -251,10 +270,12 @@ export const TopicView = () => {
       />
 
       {/* Comments */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">
-          Comments ({posts?.length || 0})
-        </h2>
+      <div className="bg-card">
+        <div className="p-3 md:p-6 border-b border-border">
+          <h2 className="text-base md:text-lg font-semibold text-foreground">
+            Comments ({posts?.length || 0})
+          </h2>
+        </div>
         
         {postsLoading ? (
           <div className="space-y-6">
@@ -263,7 +284,7 @@ export const TopicView = () => {
             ))}
           </div>
         ) : posts && posts.length > 0 ? (
-          <div className="space-y-6">
+          <div className="divide-y divide-border">
             {organizeReplies(posts).map((reply) => (
               <PostComponent
                 key={reply.id}
@@ -275,25 +296,28 @@ export const TopicView = () => {
             ))}
           </div>
         ) : (
-          <p className="text-gray-600 text-center py-8">No replies yet. Be the first to reply!</p>
+          <p className="text-muted-foreground text-center py-8 px-3">No replies yet. Be the first to reply!</p>
         )}
-      </Card>
+      </div>
 
       {/* Reply Form - Now available for everyone */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {replyingTo ? 'Reply to Post' : 'Post a Reply'}
-          {replyingTo && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setReplyingTo(null)}
-              className="ml-2 text-sm"
-            >
-              Cancel Reply
-            </Button>
-          )}
-        </h3>
+      <div className="bg-card border-t border-border">
+        <div className="p-3 md:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base md:text-lg font-semibold text-foreground">
+              {replyingTo ? 'Reply to Post' : 'Post a Reply'}
+            </h3>
+            {replyingTo && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setReplyingTo(null)}
+                className="text-sm"
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
         
         {/* Show anonymous posting notice for non-authenticated users */}
         {!user && (
@@ -305,44 +329,47 @@ export const TopicView = () => {
           </div>
         )}
 
-        <div className="space-y-4">
-          <Textarea
-            placeholder={user ? "Write your reply..." : "Write your reply as an anonymous user (no images or links allowed)..."}
-            value={newReply}
-            onChange={(e) => setNewReply(e.target.value)}
-            rows={4}
-            className="w-full"
-          />
-          
-          {contentErrors.length > 0 && (
-            <div className="text-sm text-red-600">
-              <ul className="list-disc list-inside">
-                {contentErrors.map((error, index) => (
-                  <li key={index}>{error}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <div className="space-y-4">
+            <Textarea
+              placeholder={user ? "Write your reply..." : "Write your reply as an anonymous user (no images or links allowed)..."}
+              value={newReply}
+              onChange={(e) => setNewReply(e.target.value)}
+              rows={4}
+              className="w-full text-base"
+            />
+            
+            {contentErrors.length > 0 && (
+              <div className="text-sm text-destructive">
+                <ul className="list-disc list-inside">
+                  {contentErrors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-          <div className="flex justify-end space-x-2">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setNewReply('');
-                setReplyingTo(null);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleReplySubmit}
-              disabled={!newReply.trim() || createPostMutation.isPending || (!user && !anonymousPosting.canPost)}
-            >
-              {createPostMutation.isPending ? 'Posting...' : 'Post Reply'}
-            </Button>
+            <div className="flex justify-end space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setNewReply('');
+                  setReplyingTo(null);
+                }}
+                size="sm"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleReplySubmit}
+                disabled={!newReply.trim() || createPostMutation.isPending || (!user && !anonymousPosting.canPost)}
+                size="sm"
+              >
+                {createPostMutation.isPending ? 'Posting...' : 'Post Reply'}
+              </Button>
+            </div>
           </div>
         </div>
-      </Card>
+      </div>
 
       <ReportModal
         isOpen={reportModal.isOpen}

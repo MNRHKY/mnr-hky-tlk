@@ -106,18 +106,18 @@ export const ForumHeader = () => {
   );
 
   return (
-    <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-2 sm:px-4">
-        <div className="flex items-center justify-between h-14 sm:h-16">
+    <header className="bg-background border-b border-border shadow-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4">
+        <div className="flex items-center justify-between h-12 sm:h-14">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary rounded-md flex items-center justify-center">
-              <span className="text-white font-bold text-xs sm:text-sm">MHT</span>
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-primary rounded-md flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-xs sm:text-sm">MHT</span>
             </div>
-            <span className="font-bold text-sm sm:text-lg text-gray-900 hidden xs:block">
+            <span className="font-bold text-base sm:text-lg text-foreground hidden xs:block">
               Minor Hockey Talks
             </span>
-            <span className="font-bold text-sm text-gray-900 xs:hidden">
+            <span className="font-bold text-sm text-foreground xs:hidden">
               MHT
             </span>
           </Link>

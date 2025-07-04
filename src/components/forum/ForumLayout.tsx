@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { ForumHeader } from './ForumHeader';
 import { ForumSidebarNav } from './ForumSidebarNav';
 import { ForumStats } from './ForumStats';
+import { MobileBottomNav } from './MobileBottomNav';
 import { AdUnit } from '../ads/AdUnit';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -11,7 +12,7 @@ export const ForumLayout = () => {
   const isMobile = useIsMobile();
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background overflow-x-hidden pb-16 md:pb-0">
       <ForumHeader />
       
       {/* Header Ad - hidden on mobile */}
@@ -25,7 +26,7 @@ export const ForumLayout = () => {
         </div>
       )}
 
-      <div className="w-full max-w-7xl mx-auto px-4 py-6 overflow-x-hidden">
+      <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6 overflow-x-hidden">
         <div className="flex gap-6 w-full">
           {/* Sidebar - Left side on desktop, hidden on mobile */}
           {!isMobile && (
@@ -48,8 +49,11 @@ export const ForumLayout = () => {
         </div>
       </div>
 
-      {/* Forum Stats at the bottom */}
-      <ForumStats />
+      {/* Forum Stats at the bottom - hidden on mobile */}
+      {!isMobile && <ForumStats />}
+      
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 };

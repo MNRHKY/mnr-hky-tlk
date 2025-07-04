@@ -1,14 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Clock, User, Pin, Lock, Flag } from 'lucide-react';
+import { MessageSquare, ArrowUp, ArrowDown, Pin, Lock, Flag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { VoteButtons } from './VoteButtons';
 import { useTopicVote } from '@/hooks/useVoting';
 import { HotTopic } from '@/hooks/useHotTopics';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PostCardProps {
   topic: HotTopic;
@@ -17,127 +15,119 @@ interface PostCardProps {
 
 export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
   const { userVote, vote, isVoting } = useTopicVote(topic.id);
+  const isMobile = useIsMobile();
 
   return (
-    <Card className="hover:shadow-md transition-shadow duration-200 bg-card border border-border">
-      <div className="flex p-4 space-x-3">
-        {/* Vote buttons on the left */}
-        <div className="flex-shrink-0">
-          <VoteButtons
-            voteScore={topic.vote_score}
-            userVote={userVote}
-            onVote={(voteType) => vote({ voteType })}
-            isVoting={isVoting}
-            orientation="vertical"
+    <div className="bg-card border-b border-border hover:bg-muted/50 transition-colors">
+      <div className="p-3 md:p-4">
+        {/* Mobile-first layout */}
+        <div className="flex space-x-3">
+          {/* Vote buttons - compact on mobile */}
+          <div className="flex flex-col items-center space-y-1 min-w-[40px]">
+            <Button
+              variant="ghost"
+              size="sm"
+            className={`h-6 w-6 p-0 ${userVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
+            onClick={() => vote({ voteType: userVote?.vote_type === 1 ? 0 : 1 })}
+            disabled={isVoting}
+          >
+            <ArrowUp className="h-4 w-4" />
+          </Button>
+          <span className={`text-xs font-medium ${topic.vote_score > 0 ? 'text-orange-500' : topic.vote_score < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
+            {topic.vote_score || 0}
+          </span>
+          <Button
+            variant="ghost"
             size="sm"
-          />
-        </div>
-
-        {/* Main content */}
-        <div className="flex-1 min-w-0">
-          {/* Header with meta info */}
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-2">
-            <Badge 
-              variant="secondary" 
-              className="text-xs"
-              style={{ 
-                borderColor: topic.category_color,
-                color: topic.category_color 
-              }}
+            className={`h-6 w-6 p-0 ${userVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
+            onClick={() => vote({ voteType: userVote?.vote_type === -1 ? 0 : -1 })}
+              disabled={isVoting}
             >
-              {topic.category_name}
-            </Badge>
-            <span>•</span>
-            <div className="flex items-center space-x-1">
-              <span>by</span>
-              <span className="font-medium">
-                {topic.is_anonymous ? 'Anonymous' : (topic.username || 'Unknown')}
-              </span>
-            </div>
-            <span>•</span>
-            <div className="flex items-center space-x-1">
-              <Clock className="h-3 w-3" />
-              <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
-            </div>
-            {topic.is_pinned && (
-              <>
-                <span>•</span>
-                <Pin className="h-3 w-3 text-green-600" />
-                <span className="text-green-600 font-medium">Pinned</span>
-              </>
-            )}
-            {topic.is_locked && (
-              <>
-                <span>•</span>
-                <Lock className="h-3 w-3 text-red-600" />
-                <span className="text-red-600 font-medium">Locked</span>
-              </>
-            )}
+              <ArrowDown className="h-4 w-4" />
+            </Button>
           </div>
 
-          {/* Title and content */}
-          <div className="mb-3">
-            <Link 
-              to={`/topic/${topic.id}`}
-              className="block group"
-            >
-              <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
-                {topic.title}
-              </h3>
-              {topic.content && (
-                <p className="text-muted-foreground text-sm line-clamp-3 leading-relaxed">
-                  {topic.content}
-                </p>
-              )}
-            </Link>
-          </div>
-
-          {/* Footer with actions */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-              <Link 
-                to={`/topic/${topic.id}`}
-                className="flex items-center space-x-1 hover:text-primary transition-colors"
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            {/* Category and meta info */}
+            <div className="flex items-center flex-wrap gap-2 mb-2">
+              <Badge 
+                variant="secondary" 
+                className="text-xs px-2 py-0.5"
+                style={{ 
+                  borderColor: topic.category_color,
+                  color: topic.category_color,
+                  backgroundColor: `${topic.category_color}10`
+                }}
               >
-                <MessageSquare className="h-4 w-4" />
-                <span>{topic.reply_count} comments</span>
-              </Link>
-              <div className="flex items-center space-x-1">
-                <User className="h-4 w-4" />
-                <span>{topic.view_count} views</span>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              {/* Last reply info */}
-              {topic.last_reply_at && topic.last_reply_at !== topic.created_at && (
-                <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                  <Avatar className="h-5 w-5">
-                    <AvatarImage src={topic.avatar_url || undefined} />
-                    <AvatarFallback className="text-xs">
-                      {topic.username?.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span>last reply {formatDistanceToNow(new Date(topic.last_reply_at))} ago</span>
+                {topic.category_name}
+              </Badge>
+              {topic.is_pinned && (
+                <div className="flex items-center space-x-1 text-green-600">
+                  <Pin className="h-3 w-3" />
+                  <span className="text-xs font-medium">Pinned</span>
                 </div>
               )}
+              {topic.is_locked && (
+                <div className="flex items-center space-x-1 text-red-600">
+                  <Lock className="h-3 w-3" />
+                  <span className="text-xs font-medium">Locked</span>
+                </div>
+              )}
+            </div>
 
-              {/* Report button */}
+            {/* Title */}
+            <Link 
+              to={`/topic/${topic.id}`}
+              className="block group mb-2"
+            >
+              <h3 className="text-base md:text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                {topic.title}
+              </h3>
+            </Link>
+
+            {/* Content preview - only on desktop */}
+            {!isMobile && topic.content && (
+              <p className="text-muted-foreground text-sm line-clamp-2 leading-relaxed mb-3">
+                {topic.content}
+              </p>
+            )}
+
+            {/* Footer */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <div className="flex items-center space-x-3">
+                <span className="font-medium">
+                  {topic.is_anonymous ? 'Anonymous' : (topic.username || 'Unknown')}
+                </span>
+                <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
+                <Link 
+                  to={`/topic/${topic.id}`}
+                  className="flex items-center space-x-1 hover:text-primary transition-colors"
+                >
+                  <MessageSquare className="h-3 w-3" />
+                  <span>{topic.reply_count}</span>
+                </Link>
+              </div>
+
+              {/* Report button - mobile friendly */}
               {onReport && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onReport(topic.id)}
-                  className="text-muted-foreground hover:text-orange-500 hover:bg-orange-50"
-                  title="Report this post"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onReport(topic.id);
+                  }}
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-orange-500"
+                  title="Report"
                 >
-                  <Flag className="h-4 w-4" />
+                  <Flag className="h-3 w-3" />
                 </Button>
               )}
             </div>
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
