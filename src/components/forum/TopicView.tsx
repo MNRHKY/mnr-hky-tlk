@@ -105,7 +105,18 @@ export const TopicView = () => {
       </div>
 
       {/* Back Button - mobile optimized */}
-      <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="md:hidden">
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={() => {
+          if (window.history.length > 1) {
+            navigate(-1);
+          } else {
+            navigate('/');
+          }
+        }} 
+        className="md:hidden"
+      >
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back
       </Button>
