@@ -44,7 +44,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   return (
     <div 
       className={`relative ${
-        depth > 0 ? `border-l-4 ${threadColorClass} pl-3` : ''
+        depth > 0 ? `border-l-4 ${threadColorClass}` : ''
       } ${depth === 0 ? 'border-b border-border/50 pb-4 mb-4' : 'mb-3'}`}
     >
       <div className="bg-card p-3 md:p-4 rounded-md">
