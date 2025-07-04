@@ -20,6 +20,9 @@ import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/admin/AdminPage";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminContent from "./pages/admin/AdminContent";
+import AdminModeration from "./pages/admin/AdminModeration";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +42,9 @@ const App = () => (
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminPage />} />
               <Route path="users" element={<AdminUsers />} />
+              <Route path="content" element={<AdminContent />} />
+              <Route path="moderation" element={<AdminModeration />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
             
             {/* Forum routes - wrapped in ForumLayout */}
