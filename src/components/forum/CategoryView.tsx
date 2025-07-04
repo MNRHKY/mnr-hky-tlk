@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { MessageSquare, User, Clock, Pin, Plus, ChevronRight, Home, HelpCircle } from 'lucide-react';
 import { AdUnit } from '../ads/AdUnit';
 import { useCategoriesByActivity } from '@/hooks/useCategoriesByActivity';
-import { useCategoryBySlug } from '@/hooks/useCategories';
+import { useCategoryById } from '@/hooks/useCategories';
 import { useTopics } from '@/hooks/useTopics';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategoryStats } from '@/hooks/useCategoryStats';
@@ -27,7 +27,7 @@ const SubcategoryCard = ({ subcat }: { subcat: any }) => {
   const { data: stats } = useCategoryStats(subcat.id);
   
   return (
-    <Link to={`/category/${subcat.slug}`}>
+    <Link to={`/category/${subcat.id}`}>
       <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
@@ -79,7 +79,7 @@ export const CategoryView = () => {
   const { categoryId } = useParams();
   const { user } = useAuth();
   
-  const { data: category, isLoading: categoryLoading } = useCategoryBySlug(categoryId || '');
+  const { data: category, isLoading: categoryLoading } = useCategoryById(categoryId || '');
   const { data: subcategories, isLoading: subcategoriesLoading } = useCategoriesByActivity(category?.id, category?.level ? category.level + 1 : undefined);
   const { data: topics, isLoading: topicsLoading } = useTopics(category?.id);
 
