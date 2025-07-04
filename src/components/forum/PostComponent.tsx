@@ -40,16 +40,23 @@ export const PostComponent: React.FC<PostComponentProps> = ({
       url: shareUrl,
     };
 
+    // Check if Web Share API is available and supported
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
       try {
         await navigator.share(shareData);
-      } catch (error) {
+        toast({
+          title: "Shared successfully!",
+          description: "Post shared using your device's share menu",
+        });
+      } catch (error: any) {
         // User cancelled share or error occurred
         if (error.name !== 'AbortError') {
+          console.log('Web Share failed, falling back to clipboard:', error);
           handleClipboardShare(shareUrl);
         }
       }
     } else {
+      console.log('Web Share API not available, using clipboard fallback');
       handleClipboardShare(shareUrl);
     }
   };
@@ -202,7 +209,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 ml-auto"
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                   onClick={() => onReport('post', post.id)}
                 >
                   <Flag className="h-3 w-3 fill-current" />
