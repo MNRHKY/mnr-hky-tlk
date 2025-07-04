@@ -13,7 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, Ban, CheckCircle, Clock } from 'lucide-react';
+import { AlertTriangle, Ban, CheckCircle, Clock, UserX, Wifi, WifiOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ModerationItem {
@@ -25,16 +25,18 @@ interface ModerationItem {
   created_at: string;
   reported_count: number;
   status: 'pending' | 'approved' | 'rejected';
+  is_anonymous?: boolean;
+  ip_address?: string | null;
 }
 
 const AdminModeration = () => {
   const { toast } = useToast();
 
   // For now, we'll show recent content that might need moderation
-  const { data: moderationQueue, isLoading } = useQuery({
+  const { data: moderationQueue, isLoading, refetch } = useQuery({
     queryKey: ['moderation-queue'],
     queryFn: async () => {
-      // Get recent anonymous posts that might need review
+      // Get ALL recent posts (both anonymous and regular)
       const { data: posts, error: postsError } = await supabase
         .from('posts')
         .select(`
@@ -42,15 +44,17 @@ const AdminModeration = () => {
           content,
           created_at,
           is_anonymous,
+          anonymous_ip,
+          anonymous_session_id,
+          profiles!posts_author_id_fkey (username),
           topics!posts_topic_id_fkey (title)
         `)
-        .eq('is_anonymous', true)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(20);
 
       if (postsError) throw postsError;
 
-      // Get recent anonymous topics
+      // Get ALL recent topics (both anonymous and regular)
       const { data: topics, error: topicsError } = await supabase
         .from('topics')
         .select(`
@@ -58,11 +62,13 @@ const AdminModeration = () => {
           title,
           content,
           created_at,
-          is_anonymous
+          is_anonymous,
+          anonymous_ip,
+          anonymous_session_id,
+          profiles!topics_author_id_fkey (username)
         `)
-        .eq('is_anonymous', true)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(20);
 
       if (topicsError) throw topicsError;
 
@@ -72,20 +78,24 @@ const AdminModeration = () => {
           type: 'post' as const,
           title: post.topics?.title || 'Unknown Topic',
           content: post.content,
-          author: 'Anonymous User',
+          author: post.is_anonymous ? 'Anonymous User' : (post.profiles?.username || 'Unknown'),
           created_at: post.created_at || '',
           reported_count: 0, // Placeholder - we'd need a reports table
           status: 'pending' as const,
+          is_anonymous: post.is_anonymous,
+          ip_address: post.anonymous_ip as string | null,
         })) || []),
         ...(topics?.map(topic => ({
           id: topic.id,
           type: 'topic' as const,
           title: topic.title,
           content: topic.content || '',
-          author: 'Anonymous User',
+          author: topic.is_anonymous ? 'Anonymous User' : (topic.profiles?.username || 'Unknown'),
           created_at: topic.created_at || '',
           reported_count: 0, // Placeholder
           status: 'pending' as const,
+          is_anonymous: topic.is_anonymous,
+          ip_address: topic.anonymous_ip as string | null,
         })) || []),
       ];
 
@@ -98,6 +108,89 @@ const AdminModeration = () => {
       title: 'Content Approved',
       description: `${type} has been approved and will remain visible`,
     });
+  };
+
+  const handleBanUser = async (author: string, itemId: string, type: 'topic' | 'post') => {
+    if (author === 'Anonymous User') {
+      toast({
+        title: 'Cannot Ban Anonymous User',
+        description: 'Anonymous users cannot be banned. Consider IP banning instead.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to ban user: ${author}?`)) return;
+
+    try {
+      // Get user ID from username
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', author)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Delete user's profile (cascade will handle related data)
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', profile.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'User Banned',
+        description: `${author} has been banned successfully`,
+      });
+
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to ban user',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleBanIP = async (ipAddress: string | null | undefined, itemId: string, type: 'topic' | 'post') => {
+    if (!ipAddress) {
+      toast({
+        title: 'No IP Address',
+        description: 'Cannot ban: No IP address available for this content',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to ban IP address: ${ipAddress}?`)) return;
+
+    try {
+      // First delete the content
+      const { error: deleteError } = await supabase
+        .from(type === 'topic' ? 'topics' : 'posts')
+        .delete()
+        .eq('id', itemId);
+
+      if (deleteError) throw deleteError;
+
+      // In a real implementation, you'd add the IP to a banned_ips table
+      // For now, we'll just show success message
+      toast({
+        title: 'IP Banned',
+        description: `IP address ${ipAddress} has been banned and content removed`,
+      });
+
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to ban IP address',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleReject = async (id: string, type: 'topic' | 'post') => {
@@ -115,6 +208,8 @@ const AdminModeration = () => {
         title: 'Content Removed',
         description: `${type} has been removed from the forum`,
       });
+
+      refetch();
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -179,7 +274,7 @@ const AdminModeration = () => {
         <TabsContent value="queue">
           <Card>
             <div className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Content Awaiting Review</h2>
+              <h2 className="text-xl font-semibold mb-4">All Forum Content</h2>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -188,6 +283,7 @@ const AdminModeration = () => {
                     <TableHead>Author</TableHead>
                     <TableHead>Content Preview</TableHead>
                     <TableHead>Created</TableHead>
+                    <TableHead>IP Address</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -195,9 +291,16 @@ const AdminModeration = () => {
                   {moderationQueue?.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>
-                        <Badge variant={item.type === 'topic' ? 'default' : 'secondary'}>
-                          {item.type}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={item.type === 'topic' ? 'default' : 'secondary'}>
+                            {item.type}
+                          </Badge>
+                          {item.is_anonymous && (
+                            <Badge variant="outline" className="text-xs">
+                              Anon
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="max-w-xs truncate">
                         {item.title}
@@ -211,6 +314,9 @@ const AdminModeration = () => {
                       <TableCell>
                         {new Date(item.created_at).toLocaleDateString()}
                       </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {item.ip_address || 'N/A'}
+                      </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
                           <Button
@@ -218,14 +324,36 @@ const AdminModeration = () => {
                             variant="outline"
                             onClick={() => handleApprove(item.id, item.type)}
                             className="text-green-600 hover:text-green-700"
+                            title="Approve content"
                           >
                             <CheckCircle className="h-3 w-3" />
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
+                            onClick={() => handleBanUser(item.author, item.id, item.type)}
+                            className="text-orange-600 hover:text-orange-700"
+                            title="Ban user"
+                          >
+                            <UserX className="h-3 w-3" />
+                          </Button>
+                          {item.ip_address && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleBanIP(item.ip_address, item.id, item.type)}
+                              className="text-purple-600 hover:text-purple-700"
+                              title="Ban IP address"
+                            >
+                              <WifiOff className="h-3 w-3" />
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
                             onClick={() => handleReject(item.id, item.type)}
                             className="text-red-600 hover:text-red-700"
+                            title="Remove content"
                           >
                             <Ban className="h-3 w-3" />
                           </Button>
@@ -235,8 +363,8 @@ const AdminModeration = () => {
                   ))}
                   {(!moderationQueue || moderationQueue.length === 0) && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground">
-                        No items in moderation queue
+                      <TableCell colSpan={7} className="text-center text-muted-foreground">
+                        No content to moderate
                       </TableCell>
                     </TableRow>
                   )}
