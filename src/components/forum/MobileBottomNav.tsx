@@ -11,6 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { QuickTopicModal } from './QuickTopicModal';
 
 export const MobileBottomNav = () => {
   const location = useLocation();
@@ -21,7 +22,7 @@ export const MobileBottomNav = () => {
   const navItems = [
     { icon: Home, label: 'Home', href: '/', active: location.pathname === '/' },
     { icon: Search, label: 'Search', href: '/search', active: location.pathname === '/search' },
-    { icon: Plus, label: 'Create', href: '/create', active: location.pathname === '/create' },
+    { icon: Plus, label: 'Create', href: '#', active: false, isCreate: true },
     { icon: User, label: user ? 'Profile' : 'Login', href: user ? '/profile' : '/login', active: location.pathname === (user ? '/profile' : '/login') },
     { icon: Menu, label: 'Menu', href: '#', active: false, isMenu: true },
   ];
@@ -39,9 +40,19 @@ export const MobileBottomNav = () => {
                 ? 'text-primary bg-primary/10' 
                 : 'text-muted-foreground hover:text-foreground'
             }`}
-            asChild={!item.isMenu}
+            asChild={!item.isMenu && !item.isCreate}
           >
-            {item.isMenu ? (
+            {item.isCreate ? (
+              <QuickTopicModal
+                trigger={
+                  <div className="flex flex-col items-center">
+                    <item.icon className="h-5 w-5 mb-0.5" />
+                    <span className="text-xs">{item.label}</span>
+                  </div>
+                }
+                size="sm"
+              />
+            ) : item.isMenu ? (
               <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                 <SheetTrigger asChild>
                   <div className="flex flex-col items-center">

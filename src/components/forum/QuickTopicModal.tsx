@@ -9,7 +9,7 @@ import { MessageSquare, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateTopic } from '@/hooks/useCreateTopic';
 import { useAnonymousPosting } from '@/hooks/useAnonymousPosting';
-import { SmartCategorySelector } from './SmartCategorySelector';
+import { HierarchicalCategorySelector } from './HierarchicalCategorySelector';
 import { AnonymousPostingNotice } from './AnonymousPostingNotice';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -144,10 +144,9 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
             />
           </div>
 
-          <SmartCategorySelector
+          <HierarchicalCategorySelector
             value={formData.category_id}
             onChange={(value) => setFormData({ ...formData, category_id: value })}
-            currentCategoryId={preselectedCategoryId}
             required
           />
 
