@@ -12,7 +12,7 @@ export const ForumLayout = () => {
   const isMobile = useIsMobile();
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden pb-16 md:pb-0">
+    <div className="min-h-screen bg-background overflow-x-hidden pb-16">
       <ForumHeader />
       
       {/* Header Ad - hidden on mobile */}
