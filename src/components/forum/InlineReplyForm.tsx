@@ -110,7 +110,7 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
           <span className="font-medium text-foreground">
             {isTopicReply ? 'Original Post' : `@${parentPost.is_anonymous ? 'Anonymous' : (parentPost.profiles?.username || 'Unknown')}`}
           </span>
-          <div className="text-xs mt-1 bg-primary/10 border-l-4 border-primary rounded p-2 italic">
+          <div className="text-xs mt-1 bg-accent/20 border-l-4 border-accent rounded-r p-2 italic text-accent">
             "{(isTopicReply ? parentPost.title : parentPost.content).substring(0, 100)}{(isTopicReply ? parentPost.title : parentPost.content).length > 100 ? '...' : ''}"
           </div>
         </div>

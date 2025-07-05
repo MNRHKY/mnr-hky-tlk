@@ -90,15 +90,17 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   const replyTextColor = depth > 0 ? replyTextColors[colorIndex] : 'text-foreground';
   
   return (
-    <div className="relative border-b border-border/50 pb-4 mb-4">
-      <div className="bg-card p-3 md:p-4 rounded-md">
+    <div className="relative border-b border-border/50 pb-4 mb-4 w-full">
+      <div className="bg-card p-3 md:p-4 rounded-md w-full">
         {/* Reply context for nested replies */}
         {depth > 0 && post.parent_post_id && (
-          <div className="mb-2 text-xs text-muted-foreground">
-            <span>Replying to </span>
-            <span className="font-medium text-primary">
-              @{post.profiles?.username || 'Anonymous'}
-            </span>
+          <div className="mb-3 text-xs">
+            <div className="bg-accent/20 border-l-4 border-accent rounded-r p-2">
+              <span className="text-muted-foreground">Replying to </span>
+              <span className="font-medium text-accent">
+                @{post.profiles?.username || 'Anonymous'}
+              </span>
+            </div>
           </div>
         )}
         
@@ -229,9 +231,9 @@ export const PostComponent: React.FC<PostComponentProps> = ({
           />
         )}
 
-        {/* Nested replies */}
+        {/* Nested replies - no indentation, just flat structure */}
         {hasReplies && !isCollapsed && (
-          <div className="mt-3">
+          <div className="mt-3 space-y-3">
             {post.children.map((child: any) => (
               <PostComponent
                 key={child.id}
