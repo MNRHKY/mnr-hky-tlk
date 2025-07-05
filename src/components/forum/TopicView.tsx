@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageSquare, User, Clock, ArrowLeft, ThumbsUp, Flag, Reply } from 'lucide-react';
+import { MessageSquare, User, Clock, ArrowLeft, ThumbsUp, Flag, Reply, ArrowUp, ArrowDown, MessageCircle, Share } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTopic } from '@/hooks/useTopic';
 import { usePosts } from '@/hooks/usePosts';
@@ -124,81 +124,153 @@ export const TopicView = () => {
       {/* Topic Header */}
       <div className="bg-card border-b border-border">
         <div className="p-3 md:p-6">
-          <div className="flex space-x-3">
-            {/* Vote buttons for topic - mobile optimized */}
-            <div className="flex flex-col items-center space-y-1 min-w-[40px]">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-8 w-8 p-0 ${topicVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
-                onClick={() => voteOnTopic({ voteType: topicVote?.vote_type === 1 ? 0 : 1 })}
-                disabled={isVotingTopic}
+          <div className="space-y-4">
+            {/* Category and meta */}
+            <div className="flex items-center flex-wrap gap-2">
+              <Badge 
+                variant="secondary"
+                className="text-xs"
+                style={{ 
+                  borderColor: topic.categories?.color,
+                  color: topic.categories?.color,
+                  backgroundColor: `${topic.categories?.color}10`
+                }}
               >
-                <ArrowLeft className="h-4 w-4 rotate-90" />
-              </Button>
-              <span className={`text-sm font-medium ${topic.vote_score && topic.vote_score > 0 ? 'text-orange-500' : topic.vote_score && topic.vote_score < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
-                {topic.vote_score || 0}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-8 w-8 p-0 ${topicVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
-                onClick={() => voteOnTopic({ voteType: topicVote?.vote_type === -1 ? 0 : -1 })}
-                disabled={isVotingTopic}
-              >
-                <ArrowLeft className="h-4 w-4 -rotate-90" />
-              </Button>
+                {topic.categories?.name}
+              </Badge>
+            </div>
+
+            {/* Title */}
+            <h1 className="text-lg md:text-2xl font-bold text-foreground leading-tight">{topic.title}</h1>
+            
+            {/* Meta info */}
+            <div className="flex items-center flex-wrap gap-3 text-xs md:text-sm text-muted-foreground">
+              <div className="flex items-center space-x-1">
+                <User className="h-3 w-3 md:h-4 md:w-4" />
+                <span>{topic.is_anonymous ? 'Anonymous' : (topic.profiles?.username || 'Unknown')}</span>
+              </div>
+              <span className="hidden sm:inline">•</span>
+              <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
+              <span className="hidden sm:inline">•</span>
+              <div className="flex items-center space-x-1">
+                <MessageSquare className="h-3 w-3 md:h-4 md:w-4" />
+                <span>{topic.reply_count || 0} comments</span>
+              </div>
             </div>
             
-            <div className="flex-1 min-w-0">
-              {/* Category and meta */}
-              <div className="flex items-center flex-wrap gap-2 mb-3">
-                <Badge 
-                  variant="secondary"
-                  className="text-xs"
-                  style={{ 
-                    borderColor: topic.categories?.color,
-                    color: topic.categories?.color,
-                    backgroundColor: `${topic.categories?.color}10`
-                  }}
-                >
-                  {topic.categories?.name}
-                </Badge>
-                <Button 
-                  variant="outline" 
+            {/* Content */}
+            {topic.content && (
+              <div className="bg-muted/30 rounded-md p-3 md:p-4 border border-border/50 mb-4">
+                <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm md:text-base">{topic.content}</p>
+              </div>
+            )}
+
+            {/* Action bar - consistent with PostComponent */}
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+              {/* Voting section */}
+              <div className="flex items-center space-x-1">
+                <Button
+                  variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive ml-auto md:ml-0"
-                  onClick={() => handleReport('topic', undefined, topic.id)}
-                  title="Report this topic"
+                  className={`h-6 w-6 p-0 ${topicVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
+                  onClick={() => voteOnTopic({ voteType: topicVote?.vote_type === 1 ? 0 : 1 })}
+                  disabled={isVotingTopic}
                 >
-                  <Flag className="h-3 w-3" />
+                  <ArrowUp className="h-3 w-3" />
+                </Button>
+                <span className={`text-xs font-medium min-w-[16px] text-center ${(topic.vote_score || 0) > 0 ? 'text-orange-500' : (topic.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
+                  {topic.vote_score || 0}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`h-6 w-6 p-0 ${topicVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
+                  onClick={() => voteOnTopic({ voteType: topicVote?.vote_type === -1 ? 0 : -1 })}
+                  disabled={isVotingTopic}
+                >
+                  <ArrowDown className="h-3 w-3" />
                 </Button>
               </div>
 
-              {/* Title */}
-              <h1 className="text-lg md:text-2xl font-bold text-foreground mb-3 leading-tight">{topic.title}</h1>
-              
-              {/* Meta info */}
-              <div className="flex items-center flex-wrap gap-3 text-xs md:text-sm text-muted-foreground mb-3">
-                <div className="flex items-center space-x-1">
-                  <User className="h-3 w-3 md:h-4 md:w-4" />
-                  <span>{topic.is_anonymous ? 'Anonymous' : (topic.profiles?.username || 'Unknown')}</span>
-                </div>
-                <span className="hidden sm:inline">•</span>
-                <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
-                <span className="hidden sm:inline">•</span>
-                <div className="flex items-center space-x-1">
-                  <MessageSquare className="h-3 w-3 md:h-4 md:w-4" />
-                  <span>{topic.reply_count || 0} comments</span>
-                </div>
+              {/* Reply button */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                onClick={() => setShowTopicReply(!showTopicReply)}
+              >
+                <MessageCircle className="h-3 w-3" />
+              </Button>
+
+              {/* Reply count */}
+              <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                <MessageSquare className="h-3 w-3" />
+                <span>{topic.reply_count || 0}</span>
               </div>
-              
-              {/* Content */}
-              {topic.content && (
-                <div className="bg-muted/30 rounded-md p-3 md:p-4 border border-border/50">
-                  <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm md:text-base">{topic.content}</p>
-                </div>
-              )}
+
+              {/* Share button */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                onClick={() => {
+                  const shareUrl = `${window.location.origin}/topic/${topic.id}`;
+                  const shareData = {
+                    title: topic.title,
+                    text: `Check out this topic: ${topic.title}`,
+                    url: shareUrl,
+                  };
+
+                  if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                    navigator.share(shareData).then(() => {
+                      toast({
+                        title: "Shared successfully!",
+                        description: "Topic shared using your device's share menu",
+                      });
+                    }).catch((error: any) => {
+                      if (error.name !== 'AbortError') {
+                        navigator.clipboard.writeText(shareUrl).then(() => {
+                          toast({
+                            title: "Link copied!",
+                            description: "Topic link has been copied to clipboard",
+                          });
+                        }).catch(() => {
+                          toast({
+                            title: "Share failed",
+                            description: "Could not copy link to clipboard",
+                            variant: "destructive",
+                          });
+                        });
+                      }
+                    });
+                  } else {
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                      toast({
+                        title: "Link copied!",
+                        description: "Topic link has been copied to clipboard",
+                      });
+                    }).catch(() => {
+                      toast({
+                        title: "Share failed",
+                        description: "Could not copy link to clipboard",
+                        variant: "destructive",
+                      });
+                    });
+                  }
+                }}
+              >
+                <Share className="h-3 w-3" />
+              </Button>
+
+              {/* Report button */}
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                onClick={() => handleReport('topic', undefined, topic.id)}
+              >
+                <Flag className="h-3 w-3 fill-current" />
+              </Button>
             </div>
           </div>
         </div>
