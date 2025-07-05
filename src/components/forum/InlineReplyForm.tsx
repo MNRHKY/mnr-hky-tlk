@@ -102,7 +102,7 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
   };
 
   return (
-    <div className={`${isTopicReply ? 'bg-primary/5 rounded-md p-4' : 'mt-3 border-l-2 border-l-primary/20 pl-3 bg-muted/30 rounded-r-md p-3'}`}>
+    <div className={`w-full min-w-0 ${isTopicReply ? 'bg-primary/5 rounded-md p-4' : 'mt-3 bg-muted/30 rounded-md p-3'}`}>
       {/* Reply context */}
       {parentPost && (
         <div className="mb-3 text-sm text-muted-foreground">

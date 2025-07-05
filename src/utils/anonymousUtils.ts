@@ -40,7 +40,17 @@ export const validateAnonymousContent = (content: string): { isValid: boolean; e
 };
 
 export const getClientIP = async (): Promise<string> => {
-  // In a real application, you'd get this from the server
-  // For now, we'll use a placeholder
-  return '127.0.0.1';
+  try {
+    // Try to get real IP from external service
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = await response.json();
+    return data.ip || '127.0.0.1';
+  } catch (error) {
+    console.warn('Failed to get real IP, using fallback');
+    // Fallback: use a combination of user agent and timestamp for uniqueness
+    const userAgent = navigator.userAgent;
+    const timestamp = Date.now();
+    const hash = btoa(`${userAgent}-${timestamp}`).slice(0, 15);
+    return `192.168.1.${hash.slice(-3).replace(/[^0-9]/g, '1')}`;
+  }
 };

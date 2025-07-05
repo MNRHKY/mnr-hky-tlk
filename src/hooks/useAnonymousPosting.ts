@@ -66,17 +66,15 @@ export const useAnonymousPosting = () => {
   const recordPost = async () => {
     try {
       const clientIP = await getClientIP();
+      console.log('Recording anonymous post for IP:', clientIP, 'Session:', state.sessionId);
+      
       await supabase.rpc('record_anonymous_post', {
         user_ip: clientIP,
         session_id: state.sessionId
       });
       
-      // Update local state
-      setState(prev => ({
-        ...prev,
-        remainingPosts: Math.max(0, prev.remainingPosts - 1),
-        canPost: prev.remainingPosts > 1
-      }));
+      // Re-check rate limit after recording
+      await checkRateLimit(state.sessionId);
     } catch (error) {
       console.error('Error recording anonymous post:', error);
     }

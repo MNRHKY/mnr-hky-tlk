@@ -77,24 +77,20 @@ export const PostComponent: React.FC<PostComponentProps> = ({
     }
   };
   
-  // Color system for thread levels using semantic tokens
-  const threadColors = [
-    'border-l-primary/60 bg-primary/5',
-    'border-l-accent/60 bg-accent/5', 
-    'border-l-secondary/60 bg-secondary/10',
-    'border-l-muted-foreground/60 bg-muted/20',
-    'border-l-destructive/40 bg-destructive/5'
+  // Color system for replies using text colors instead of indentation
+  const replyTextColors = [
+    'text-primary',
+    'text-accent', 
+    'text-secondary',
+    'text-muted-foreground',
+    'text-orange-600'
   ];
   
-  const colorIndex = depth % threadColors.length;
-  const threadColorClass = depth > 0 ? threadColors[colorIndex] : '';
+  const colorIndex = depth % replyTextColors.length;
+  const replyTextColor = depth > 0 ? replyTextColors[colorIndex] : 'text-foreground';
   
   return (
-    <div 
-      className={`relative ${
-        depth > 0 ? `border-l-4 ${threadColorClass}` : ''
-      } ${depth === 0 ? 'border-b border-border/50 pb-4 mb-4' : 'mb-3'}`}
-    >
+    <div className="relative border-b border-border/50 pb-4 mb-4">
       <div className="bg-card p-3 md:p-4 rounded-md">
         {/* Reply context for nested replies */}
         {depth > 0 && post.parent_post_id && (
@@ -130,7 +126,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
         
         {/* Post content - Full width */}
         <div className="mb-4">
-          <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm">{post.content}</p>
+          <p className={`${replyTextColor} leading-relaxed whitespace-pre-wrap text-sm`}>{post.content}</p>
         </div>
         
         {/* Compact action bar */}
