@@ -28,7 +28,7 @@ export const ForumHome = () => {
   
   const { data: hotTopics, isLoading: hotTopicsLoading } = useHotTopics(25);
   const { data: newTopics, isLoading: newTopicsLoading } = useTopics();
-  const { data: categories } = useCategories();
+  const { data: level1Forums } = useCategories(null, 1); // Only Level 1 forums
   
 
   const handleSortChange = (value: string) => {
@@ -191,38 +191,38 @@ export const ForumHome = () => {
         </div>
         
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {categories?.map((category) => (
+          {level1Forums?.map((forum) => (
             <Link
-              key={category.id}
-              to={`/category/${category.slug}`}
+              key={forum.id}
+              to={`/category/${forum.slug}`}
               className="block"
             >
               <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div className="flex items-center space-x-3 mb-3">
                   <div 
                     className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: category.color }}
+                    style={{ backgroundColor: forum.color }}
                   />
                   <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {category.name}
+                    {forum.name}
                   </h3>
                 </div>
-                {category.description && (
+                {forum.description && (
                   <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {category.description}
+                    {forum.description}
                   </p>
                 )}
                 <div className="flex items-center text-xs text-muted-foreground space-x-4">
-                  {category.region && <span>Region: {category.region}</span>}
-                  {category.birth_year && <span>Birth Year: {category.birth_year}</span>}
-                  {category.play_level && <span>Level: {category.play_level}</span>}
+                  {forum.region && <span>Region: {forum.region}</span>}
+                  {forum.birth_year && <span>Birth Year: {forum.birth_year}</span>}
+                  {forum.play_level && <span>Level: {forum.play_level}</span>}
                 </div>
               </Card>
             </Link>
           ))}
         </div>
         
-        {(!categories || categories.length === 0) && (
+        {(!level1Forums || level1Forums.length === 0) && (
           <Card className="p-8 text-center">
             <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No forums available</h3>

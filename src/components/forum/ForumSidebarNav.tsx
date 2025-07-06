@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Clock, Star, Plus, Home, Users } from 'lucide-react';
 import { useCategories } from '@/hooks/useCategories';
+import { useCategoriesByActivity } from '@/hooks/useCategoriesByActivity';
 import { QuickTopicModal } from './QuickTopicModal';
 import { cn } from '@/lib/utils';
 
 export const ForumSidebarNav = () => {
   const location = useLocation();
-  const { data: categories } = useCategories();
+  const { data: categories } = useCategoriesByActivity(null, 3); // Level 3 categories by activity
   
   const isActive = (path: string) => location.pathname === path;
 
