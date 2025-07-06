@@ -52,18 +52,9 @@ export const ForumHome = () => {
   return (
     <div className="space-y-6 relative w-full overflow-x-hidden max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Minor Hockey Talk</h1>
-          <p className="text-muted-foreground">Connect with hockey parents and players across Canada</p>
-        </div>
-        <QuickTopicModal 
-          trigger={
-            <Button>
-              Create Post
-            </Button>
-          }
-        />
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Minor Hockey Talk</h1>
+        <p className="text-muted-foreground">Connect with hockey parents and players across Canada</p>
       </div>
 
 
