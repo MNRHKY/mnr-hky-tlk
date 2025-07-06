@@ -10,13 +10,15 @@ interface HierarchicalCategorySelectorProps {
   onChange: (value: string) => void;
   preselectedCategoryId?: string;
   required?: boolean;
+  onPathChange?: (path: { level1Id: string; level2Id: string; level3Id: string }) => void;
 }
 
 export const HierarchicalCategorySelector = ({ 
   value, 
   onChange, 
   preselectedCategoryId,
-  required = false 
+  required = false,
+  onPathChange
 }: HierarchicalCategorySelectorProps) => {
   const [selectedLevel1, setSelectedLevel1] = useState<string>('');
   const [selectedLevel2, setSelectedLevel2] = useState<string>('');
@@ -57,6 +59,17 @@ export const HierarchicalCategorySelector = ({
       }
     }
   }, [preselectedCategoryId, preselectedCategory, level1Categories, allLevel2Categories, onChange]);
+
+  // Notify parent of path changes
+  useEffect(() => {
+    if (onPathChange) {
+      onPathChange({
+        level1Id: selectedLevel1,
+        level2Id: selectedLevel2,
+        level3Id: value
+      });
+    }
+  }, [selectedLevel1, selectedLevel2, value, onPathChange]);
 
   const handleLevel1Select = (categoryId: string) => {
     setSelectedLevel1(categoryId);

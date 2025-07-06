@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { MessageSquare, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateTopic } from '@/hooks/useCreateTopic';
@@ -31,10 +32,24 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
     category_id: preselectedCategoryId || ''
   });
   const [contentErrors, setContentErrors] = useState<string[]>([]);
+  const [navigationPath, setNavigationPath] = useState({
+    level1Id: '',
+    level2Id: '',
+    level3Id: ''
+  });
 
   const createTopicMutation = useCreateTopic();
   const anonymousPosting = useAnonymousPosting();
   const { data: currentSelectedCategory } = useCategoryById(formData.category_id || preselectedCategoryId || '');
+  
+  // Get category data for breadcrumb path
+  const { data: level1Category } = useCategoryById(navigationPath.level1Id);
+  const { data: level2Category } = useCategoryById(navigationPath.level2Id);
+  const { data: level3Category } = useCategoryById(navigationPath.level3Id);
+
+  const handlePathChange = (path: { level1Id: string; level2Id: string; level3Id: string }) => {
+    setNavigationPath(path);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,11 +150,65 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
         )}
 
         {/* Show current forum selection when any category is selected */}
-        {(formData.category_id || preselectedCategoryId) && (
+        {(level1Category || level2Category || level3Category || (formData.category_id && currentSelectedCategory)) && (
           <div className="bg-muted/50 p-3 rounded-md border">
-            <div className="text-sm text-muted-foreground">Posting in:</div>
-            <div className="font-medium text-sm mt-1">{currentSelectedCategory?.name || 'Current Forum'}</div>
-            <div className="text-xs text-muted-foreground mt-1">
+            <div className="text-sm text-muted-foreground mb-2">Posting in:</div>
+            <Breadcrumb>
+              <BreadcrumbList>
+                {level1Category && (
+                  <>
+                    <BreadcrumbItem>
+                      <BreadcrumbPage className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: level1Category.color }}
+                        />
+                        {level1Category.name}
+                      </BreadcrumbPage>
+                    </BreadcrumbItem>
+                    {(level2Category || level3Category) && <BreadcrumbSeparator />}
+                  </>
+                )}
+                {level2Category && (
+                  <>
+                    <BreadcrumbItem>
+                      <BreadcrumbPage className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: level2Category.color }}
+                        />
+                        {level2Category.name}
+                      </BreadcrumbPage>
+                    </BreadcrumbItem>
+                    {level3Category && <BreadcrumbSeparator />}
+                  </>
+                )}
+                {level3Category && (
+                  <BreadcrumbItem>
+                    <BreadcrumbPage className="flex items-center gap-2 font-semibold">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: level3Category.color }}
+                      />
+                      {level3Category.name}
+                    </BreadcrumbPage>
+                  </BreadcrumbItem>
+                )}
+                {/* Fallback for preselected category when no navigation path exists */}
+                {!level1Category && !level2Category && !level3Category && currentSelectedCategory && (
+                  <BreadcrumbItem>
+                    <BreadcrumbPage className="flex items-center gap-2 font-semibold">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: currentSelectedCategory.color }}
+                      />
+                      {currentSelectedCategory.name}
+                    </BreadcrumbPage>
+                  </BreadcrumbItem>
+                )}
+              </BreadcrumbList>
+            </Breadcrumb>
+            <div className="text-xs text-muted-foreground mt-2">
               You can change the forum selection below if needed
             </div>
           </div>
@@ -182,6 +251,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
             value={formData.category_id}
             onChange={(value) => setFormData({ ...formData, category_id: value })}
             preselectedCategoryId={preselectedCategoryId}
+            onPathChange={handlePathChange}
             required
           />
 
