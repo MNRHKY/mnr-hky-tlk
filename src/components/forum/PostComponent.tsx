@@ -52,6 +52,15 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   };
 
   const canEdit = user && (user.id === post.author_id || user.role === 'admin' || user.role === 'moderator');
+  
+  // Debug logging
+  console.log('PostComponent Debug:', {
+    user: user,
+    postAuthorId: post.author_id,
+    postIsAnonymous: post.is_anonymous,
+    canEdit: canEdit,
+    userIdMatch: user?.id === post.author_id
+  });
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/topic/${topicId}#post-${post.id}`;
