@@ -94,6 +94,8 @@ export type Database = {
       }
       post_votes: {
         Row: {
+          anonymous_ip: unknown | null
+          anonymous_session_id: string | null
           created_at: string
           id: string
           post_id: string
@@ -102,6 +104,8 @@ export type Database = {
           vote_type: number
         }
         Insert: {
+          anonymous_ip?: unknown | null
+          anonymous_session_id?: string | null
           created_at?: string
           id?: string
           post_id: string
@@ -110,6 +114,8 @@ export type Database = {
           vote_type: number
         }
         Update: {
+          anonymous_ip?: unknown | null
+          anonymous_session_id?: string | null
           created_at?: string
           id?: string
           post_id?: string
@@ -284,6 +290,8 @@ export type Database = {
       }
       topic_votes: {
         Row: {
+          anonymous_ip: unknown | null
+          anonymous_session_id: string | null
           created_at: string
           id: string
           topic_id: string
@@ -292,6 +300,8 @@ export type Database = {
           vote_type: number
         }
         Insert: {
+          anonymous_ip?: unknown | null
+          anonymous_session_id?: string | null
           created_at?: string
           id?: string
           topic_id: string
@@ -300,6 +310,8 @@ export type Database = {
           vote_type: number
         }
         Update: {
+          anonymous_ip?: unknown | null
+          anonymous_session_id?: string | null
           created_at?: string
           id?: string
           topic_id?: string
@@ -426,9 +438,17 @@ export type Database = {
         Args: { user_ip: unknown; session_id: string }
         Returns: boolean
       }
+      check_anonymous_vote_limit: {
+        Args: { user_ip: unknown; session_id: string }
+        Returns: boolean
+      }
       cleanup_old_anonymous_tracking: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      generate_anonymous_session_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_categories_by_activity: {
         Args: { p_parent_category_id?: string; p_category_level?: number }
