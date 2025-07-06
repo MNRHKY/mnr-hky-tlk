@@ -140,7 +140,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
                 variant="ghost"
                 size="sm"
                 className={`h-6 w-6 p-0 ${postVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
-                onClick={() => voteOnPost({ voteType: postVote?.vote_type === 1 ? 0 : 1 })}
+                onClick={() => voteOnPost({ voteType: 1 })}
                 disabled={isVotingPost}
               >
                 <ArrowUp className="h-3 w-3" />
@@ -152,7 +152,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
                 variant="ghost"
                 size="sm"
                 className={`h-6 w-6 p-0 ${postVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
-                onClick={() => voteOnPost({ voteType: postVote?.vote_type === -1 ? 0 : -1 })}
+                onClick={() => voteOnPost({ voteType: -1 })}
                 disabled={isVotingPost}
               >
                 <ArrowDown className="h-3 w-3" />

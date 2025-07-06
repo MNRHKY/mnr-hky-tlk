@@ -173,7 +173,7 @@ export const TopicView = () => {
                   variant="ghost"
                   size="sm"
                   className={`h-6 w-6 p-0 ${topicVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
-                  onClick={() => voteOnTopic({ voteType: topicVote?.vote_type === 1 ? 0 : 1 })}
+                  onClick={() => voteOnTopic({ voteType: 1 })}
                   disabled={isVotingTopic}
                 >
                   <ArrowUp className="h-3 w-3" />
@@ -185,7 +185,7 @@ export const TopicView = () => {
                   variant="ghost"
                   size="sm"
                   className={`h-6 w-6 p-0 ${topicVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
-                  onClick={() => voteOnTopic({ voteType: topicVote?.vote_type === -1 ? 0 : -1 })}
+                  onClick={() => voteOnTopic({ voteType: -1 })}
                   disabled={isVotingTopic}
                 >
                   <ArrowDown className="h-3 w-3" />
