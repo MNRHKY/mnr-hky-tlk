@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Reply, ArrowUp, ArrowDown, Flag, ChevronDown, ChevronUp, MessageSquare, MessageCircle, Share } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Reply, ArrowUp, ArrowDown, Flag, ChevronDown, ChevronUp, MessageSquare, MessageCircle, Share, Edit } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatDistanceToNow } from 'date-fns';
 import { usePostVote } from '@/hooks/useVoting';
 import { InlineReplyForm } from './InlineReplyForm';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { useEditPost } from '@/hooks/useEditPost';
 
 interface PostComponentProps {
   post: any;
@@ -21,9 +24,13 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   depth = 0, 
   onReport 
 }) => {
+  const { user } = useAuth();
   const { userVote: postVote, vote: voteOnPost, isVoting: isVotingPost } = usePostVote(post.id);
+  const { mutate: editPost, isPending: isEditingPost } = useEditPost();
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
   const { toast } = useToast();
   
   const hasReplies = post.children && post.children.length > 0;
@@ -31,6 +38,20 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   const handleReplySuccess = () => {
     setShowReplyForm(false);
   };
+
+  const handleEditSave = () => {
+    if (editContent.trim() !== post.content) {
+      editPost({ postId: post.id, content: editContent.trim() });
+    }
+    setIsEditing(false);
+  };
+
+  const handleEditCancel = () => {
+    setEditContent(post.content);
+    setIsEditing(false);
+  };
+
+  const canEdit = user && (user.id === post.author_id || user.role === 'admin' || user.role === 'moderator');
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/topic/${topicId}#post-${post.id}`;
@@ -128,7 +149,42 @@ export const PostComponent: React.FC<PostComponentProps> = ({
         
         {/* Post content - Full width */}
         <div className="mb-4">
-          <p className={`${replyTextColor} leading-relaxed whitespace-pre-wrap text-sm`}>{post.content}</p>
+          {isEditing ? (
+            <div className="space-y-3">
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="min-h-[100px] text-sm"
+                placeholder="Edit your post..."
+              />
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleEditSave}
+                  disabled={isEditingPost || !editContent.trim()}
+                >
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleEditCancel}
+                  disabled={isEditingPost}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className={`${replyTextColor} leading-relaxed whitespace-pre-wrap text-sm`}>{post.content}</p>
+              {post.updated_at !== post.created_at && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  (edited {formatDistanceToNow(new Date(post.updated_at))} ago)
+                </p>
+              )}
+            </>
+          )}
         </div>
         
         {/* Compact action bar */}
@@ -184,6 +240,25 @@ export const PostComponent: React.FC<PostComponentProps> = ({
               </div>
             )}
             
+            {/* Edit button - icon only (show only for post author or moderators) */}
+            {canEdit && !isEditing && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Edit</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
             {/* Share button - icon only */}
             <Tooltip>
               <TooltipTrigger asChild>
