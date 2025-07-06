@@ -34,7 +34,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
 
   const createTopicMutation = useCreateTopic();
   const anonymousPosting = useAnonymousPosting();
-  const { data: preselectedCategory } = useCategoryById(preselectedCategoryId || '');
+  const { data: currentSelectedCategory } = useCategoryById(formData.category_id || preselectedCategoryId || '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +138,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
         {preselectedCategoryId && (
           <div className="bg-muted/50 p-3 rounded-md border">
             <div className="text-sm text-muted-foreground">Posting in:</div>
-            <div className="font-medium text-sm mt-1">{preselectedCategory?.name || 'Current Forum'}</div>
+            <div className="font-medium text-sm mt-1">{currentSelectedCategory?.name || 'Current Forum'}</div>
             <div className="text-xs text-muted-foreground mt-1">
               You can change the forum selection below if needed
             </div>
