@@ -56,6 +56,9 @@ export const useCategories = (parentId?: string | null, level?: number) => {
 };
 
 export const useCategoryById = (categoryId: string) => {
+  const isValidId = categoryId && categoryId.length > 0 && categoryId !== '' && 
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(categoryId);
+  
   return useQuery({
     queryKey: ['category', categoryId],
     queryFn: async () => {
@@ -76,6 +79,7 @@ export const useCategoryById = (categoryId: string) => {
       console.log('Category fetched:', data);
       return data as Category;
     },
+    enabled: isValidId, // Only run query if ID is valid
   });
 };
 
