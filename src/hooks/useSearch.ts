@@ -26,11 +26,12 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
       }
 
       const searchTerm = query.trim();
+      const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0);
       const results: SearchResult[] = [];
       
       // Search in topics (if filter allows)
       if (filter === 'all' || filter === 'topics') {
-        const { data: topicResults, error: topicError } = await supabase
+        let topicQuery = supabase
           .from('topics')
           .select(`
             id,
@@ -42,18 +43,33 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             is_anonymous,
             profiles:author_id (username),
             categories (name, color)
-          `)
-          .or(`title.ilike.%${searchTerm}%,content.ilike.%${searchTerm}%`)
+          `);
+
+        // For multiple words, get broader results and filter client-side
+        const searchConditions = searchWords.map(word => 
+          `title.ilike.%${word}%,content.ilike.%${word}%`
+        ).join(',');
+        
+        const { data: topicResults, error: topicError } = await topicQuery
+          .or(searchConditions)
           .order('created_at', { ascending: false })
-          .limit(50);
+          .limit(200); // Increased limit for client-side filtering
 
         if (topicError) {
           console.error('Error searching topics:', topicError);
           throw topicError;
         }
 
+        // Filter results client-side to ensure ALL words are present
+        const filteredTopics = topicResults?.filter((topic) => {
+          const titleContent = `${topic.title} ${topic.content || ''}`.toLowerCase();
+          return searchWords.every(word => 
+            titleContent.includes(word.toLowerCase())
+          );
+        }) || [];
+
         // Add topic results
-        topicResults?.forEach((topic) => {
+        filteredTopics.forEach((topic) => {
           results.push({
             id: topic.id,
             title: topic.title,
@@ -72,6 +88,11 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
 
       // Search in posts (if filter allows)
       if (filter === 'all' || filter === 'posts') {
+        // For posts, search in content field
+        const searchConditions = searchWords.map(word => 
+          `content.ilike.%${word}%`
+        ).join(',');
+
         const { data: postResults, error: postError } = await supabase
           .from('posts')
           .select(`
@@ -88,17 +109,25 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
               categories (name, color)
             )
           `)
-          .ilike('content', `%${searchTerm}%`)
+          .or(searchConditions)
           .order('created_at', { ascending: false })
-          .limit(50);
+          .limit(200); // Increased limit for client-side filtering
 
         if (postError) {
           console.error('Error searching posts:', postError);
           throw postError;
         }
 
+        // Filter results client-side to ensure ALL words are present
+        const filteredPosts = postResults?.filter((post) => {
+          const content = post.content.toLowerCase();
+          return searchWords.every(word => 
+            content.includes(word.toLowerCase())
+          );
+        }) || [];
+
         // Add post results
-        postResults?.forEach((post) => {
+        filteredPosts.forEach((post) => {
           results.push({
             id: post.id,
             title: post.topics.title,
@@ -117,6 +146,11 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
 
       // Search in categories (if filter allows)
       if (filter === 'all' || filter === 'categories') {
+        // For categories, search in name and description
+        const searchConditions = searchWords.map(word => 
+          `name.ilike.%${word}%,description.ilike.%${word}%`
+        ).join(',');
+
         const { data: categoryResults, error: categoryError } = await supabase
           .from('categories')
           .select(`
@@ -126,18 +160,26 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             color,
             created_at
           `)
-          .or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
+          .or(searchConditions)
           .eq('is_active', true)
           .order('created_at', { ascending: false })
-          .limit(50);
+          .limit(100); // Increased limit for client-side filtering
 
         if (categoryError) {
           console.error('Error searching categories:', categoryError);
           throw categoryError;
         }
 
+        // Filter results client-side to ensure ALL words are present
+        const filteredCategories = categoryResults?.filter((category) => {
+          const nameDescription = `${category.name} ${category.description || ''}`.toLowerCase();
+          return searchWords.every(word => 
+            nameDescription.includes(word.toLowerCase())
+          );
+        }) || [];
+
         // Add category results
-        categoryResults?.forEach((category) => {
+        filteredCategories.forEach((category) => {
           results.push({
             id: category.id,
             title: category.name,
