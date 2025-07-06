@@ -50,15 +50,6 @@ export const ForumSidebarNav = () => {
 
   return (
     <div className="space-y-4">
-      {/* Create Post Button */}
-      <QuickTopicModal 
-        trigger={
-          <Button className="w-full" size="lg">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Post
-          </Button>
-        }
-      />
 
       {/* Navigation */}
       <Card className="p-4">

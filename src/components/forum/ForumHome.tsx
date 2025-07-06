@@ -97,10 +97,7 @@ export const ForumHome = () => {
             <Card className="p-8 text-center">
               <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
-              <p className="text-muted-foreground mb-4">Be the first to start a discussion!</p>
-              <QuickTopicModal 
-                trigger={<Button>Create First Post</Button>}
-              />
+              <p className="text-muted-foreground">Be the first to start a discussion!</p>
             </Card>
           )}
         </TabsContent>
@@ -135,10 +132,7 @@ export const ForumHome = () => {
             <Card className="p-8 text-center">
               <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
-              <p className="text-muted-foreground mb-4">Be the first to start a discussion!</p>
-              <QuickTopicModal 
-                trigger={<Button>Create First Post</Button>}
-              />
+              <p className="text-muted-foreground">Be the first to start a discussion!</p>
             </Card>
           )}
         </TabsContent>
@@ -167,10 +161,7 @@ export const ForumHome = () => {
             <Card className="p-8 text-center">
               <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
-              <p className="text-muted-foreground mb-4">Be the first to start a discussion!</p>
-              <QuickTopicModal 
-                trigger={<Button>Create First Post</Button>}
-              />
+              <p className="text-muted-foreground">Be the first to start a discussion!</p>
             </Card>
           )}
         </TabsContent>

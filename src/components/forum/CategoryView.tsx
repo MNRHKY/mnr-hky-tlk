@@ -38,18 +38,6 @@ const SubcategoryCard = ({ subcat }: { subcat: any }) => {
             <h3 className="font-semibold text-sm text-gray-900">{subcat.name}</h3>
           </div>
           <div className="flex items-center space-x-2">
-            <QuickTopicModal 
-              trigger={
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
-              }
-            />
             <ChevronRight className="h-4 w-4 text-gray-400" />
           </div>
         </div>
@@ -175,26 +163,9 @@ export const CategoryView = () => {
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             {/* Enhanced topic creation buttons */}
-            {isLevel3Category ? (
-              <QuickTopicModal 
-                preselectedCategoryId={category.id}
-                trigger={
-                  <Button size="sm" className="w-full sm:w-auto">
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Topic
-                  </Button>
-                }
-              />
-            ) : (
-              <QuickTopicModal 
-                trigger={
-                  <Button size="sm" className="w-full sm:w-auto">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Start Discussion
-                  </Button>
-                }
-              />
-            )}
+            <div className="text-sm text-muted-foreground">
+              Browse categories below or explore existing topics
+            </div>
             
             {/* Category request button */}
             <CategoryRequestModal 
@@ -239,12 +210,6 @@ export const CategoryView = () => {
         <>
           <div className="flex items-center justify-between">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Topics</h2>
-            <div className="flex items-center space-x-2">
-              <QuickTopicModal 
-                preselectedCategoryId={category.id}
-                size="sm"
-              />
-            </div>
           </div>
           <Card className="p-3 sm:p-6 w-full">
             {topicsLoading ? (
@@ -306,13 +271,7 @@ export const CategoryView = () => {
               <div className="text-center py-6 sm:py-8">
                 <MessageSquare className="h-10 sm:h-12 w-10 sm:w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">No topics yet</h3>
-                <p className="text-gray-600 mb-4 text-sm sm:text-base">Be the first to start a discussion in this category!</p>
-                <QuickTopicModal 
-                  preselectedCategoryId={category.id}
-                  trigger={
-                    <Button size="sm" className="w-full sm:w-auto">Create First Topic</Button>
-                  }
-                />
+                <p className="text-gray-600 text-sm sm:text-base">Be the first to start a discussion in this category!</p>
               </div>
             )}
           </Card>
