@@ -155,6 +155,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
             <div className="text-sm text-muted-foreground mb-2">Posting in:</div>
             <Breadcrumb>
               <BreadcrumbList>
+                {/* Show navigation path if it exists */}
                 {level1Category && (
                   <>
                     <BreadcrumbItem>
@@ -194,8 +195,8 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
                     </BreadcrumbPage>
                   </BreadcrumbItem>
                 )}
-                {/* Fallback for preselected category when no navigation path exists */}
-                {!level1Category && !level2Category && !level3Category && currentSelectedCategory && (
+                {/* Fallback for when final category is selected but no navigation path */}
+                {!level1Category && !level2Category && !level3Category && formData.category_id && currentSelectedCategory && (
                   <BreadcrumbItem>
                     <BreadcrumbPage className="flex items-center gap-2 font-semibold">
                       <div 

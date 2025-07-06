@@ -42,12 +42,23 @@ export const HierarchicalCategorySelector = ({
       // Set the value immediately
       onChange(preselectedCategoryId);
       
-      // If it's a level 3 category, we need to find its parent chain
-      if (preselectedCategory.level === 3 && preselectedCategory.parent_category_id) {
-        // Find the level 2 parent
+      // Handle different category levels
+      if (preselectedCategory.level === 1) {
+        // Level 1 category - set as level 1 selection
+        setSelectedLevel1(preselectedCategory.id);
+        setStep(2);
+      } else if (preselectedCategory.level === 2 && preselectedCategory.parent_category_id) {
+        // Level 2 category - find parent and set both levels
+        const level1Parent = level1Categories.find(cat => cat.id === preselectedCategory.parent_category_id);
+        if (level1Parent) {
+          setSelectedLevel1(level1Parent.id);
+          setSelectedLevel2(preselectedCategory.id);
+          setStep(3);
+        }
+      } else if (preselectedCategory.level === 3 && preselectedCategory.parent_category_id) {
+        // Level 3 category - find the parent chain
         const level2Parent = allLevel2Categories.find(cat => cat.id === preselectedCategory.parent_category_id);
         if (level2Parent && level2Parent.parent_category_id) {
-          // Find the level 1 grandparent
           const level1Parent = level1Categories.find(cat => cat.id === level2Parent.parent_category_id);
           
           if (level1Parent) {
@@ -95,6 +106,7 @@ export const HierarchicalCategorySelector = ({
     } else if (step === 3) {
       setStep(2);
       setSelectedLevel2('');
+      onChange('');
     }
   };
 
