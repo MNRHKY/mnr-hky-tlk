@@ -134,8 +134,8 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
           />
         )}
 
-        {/* Show current forum selection when preselected */}
-        {preselectedCategoryId && (
+        {/* Show current forum selection when any category is selected */}
+        {(formData.category_id || preselectedCategoryId) && (
           <div className="bg-muted/50 p-3 rounded-md border">
             <div className="text-sm text-muted-foreground">Posting in:</div>
             <div className="font-medium text-sm mt-1">{currentSelectedCategory?.name || 'Current Forum'}</div>
