@@ -8,6 +8,7 @@ import { TrendingUp, Clock, Star, MessageSquare, User as UserIcon } from 'lucide
 import { useHotTopics } from '@/hooks/useHotTopics';
 import { useTopics } from '@/hooks/useTopics';
 import { useAuth } from '@/hooks/useAuth';
+import { useCategories } from '@/hooks/useCategories';
 
 import { PostCard } from './PostCard';
 import { ReportModal } from './ReportModal';
@@ -27,6 +28,7 @@ export const ForumHome = () => {
   
   const { data: hotTopics, isLoading: hotTopicsLoading } = useHotTopics(25);
   const { data: newTopics, isLoading: newTopicsLoading } = useTopics();
+  const { data: categories } = useCategories();
   
 
   const handleSortChange = (value: string) => {
@@ -181,6 +183,53 @@ export const ForumHome = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Forums Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-foreground">Browse Forums</h2>
+        </div>
+        
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {categories?.map((category) => (
+            <Link
+              key={category.id}
+              to={`/category/${category.slug}`}
+              className="block"
+            >
+              <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div 
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: category.color }}
+                  />
+                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {category.name}
+                  </h3>
+                </div>
+                {category.description && (
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                    {category.description}
+                  </p>
+                )}
+                <div className="flex items-center text-xs text-muted-foreground space-x-4">
+                  {category.region && <span>Region: {category.region}</span>}
+                  {category.birth_year && <span>Birth Year: {category.birth_year}</span>}
+                  {category.play_level && <span>Level: {category.play_level}</span>}
+                </div>
+              </Card>
+            </Link>
+          ))}
+        </div>
+        
+        {(!categories || categories.length === 0) && (
+          <Card className="p-8 text-center">
+            <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No forums available</h3>
+            <p className="text-muted-foreground">Forums will appear here once they are created.</p>
+          </Card>
+        )}
+      </div>
 
       {/* Report Modal */}
       <ReportModal
