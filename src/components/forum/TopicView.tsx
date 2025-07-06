@@ -4,13 +4,15 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageSquare, User, Clock, ArrowLeft, ThumbsUp, Flag, Reply, ArrowUp, ArrowDown, MessageCircle, Share } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { MessageSquare, User, Clock, ArrowLeft, ThumbsUp, Flag, Reply, ArrowUp, ArrowDown, MessageCircle, Share, Edit } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTopic } from '@/hooks/useTopic';
 import { usePosts } from '@/hooks/usePosts';
 
 
 import { useTopicVote } from '@/hooks/useVoting';
+import { useEditTopic } from '@/hooks/useEditTopic';
 import { VoteButtons } from './VoteButtons';
 
 
@@ -25,6 +27,9 @@ export const TopicView = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showTopicReply, setShowTopicReply] = useState(false);
+  const [isEditingTopic, setIsEditingTopic] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
   
   const [reportModal, setReportModal] = useState<{
     isOpen: boolean;
@@ -39,6 +44,7 @@ export const TopicView = () => {
   const { data: topic, isLoading: topicLoading, error: topicError } = useTopic(topicId || '');
   const { data: posts, isLoading: postsLoading } = usePosts(topicId || '');
   const { userVote: topicVote, vote: voteOnTopic, isVoting: isVotingTopic } = useTopicVote(topicId || '');
+  const { mutate: editTopic, isPending: isUpdatingTopic } = useEditTopic();
 
 
   const handleReport = (contentType: 'post' | 'topic', postId?: string, topicId?: string) => {
@@ -49,6 +55,34 @@ export const TopicView = () => {
       topicId,
     });
   };
+
+  const handleEditTopic = () => {
+    setEditTitle(topic?.title || '');
+    setEditContent(topic?.content || '');
+    setIsEditingTopic(true);
+  };
+
+  const handleSaveTopic = () => {
+    if (!topic || !editTitle.trim()) return;
+    
+    editTopic({
+      topicId: topic.id,
+      title: editTitle.trim(),
+      content: editContent.trim()
+    }, {
+      onSuccess: () => {
+        setIsEditingTopic(false);
+      }
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingTopic(false);
+    setEditTitle('');
+    setEditContent('');
+  };
+
+  const canEditTopic = user && (user.id === topic?.author_id || user.role === 'admin' || user.role === 'moderator');
 
   const organizeReplies = (posts: any[]) => {
     const topLevelReplies = posts.filter(post => !post.parent_post_id);
@@ -141,7 +175,16 @@ export const TopicView = () => {
             </div>
 
             {/* Title */}
-            <h1 className="text-lg md:text-2xl font-bold text-foreground leading-tight">{topic.title}</h1>
+            {isEditingTopic ? (
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="text-lg md:text-2xl font-bold"
+                placeholder="Topic title"
+              />
+            ) : (
+              <h1 className="text-lg md:text-2xl font-bold text-foreground leading-tight">{topic.title}</h1>
+            )}
             
             {/* Meta info */}
             <div className="flex items-center flex-wrap gap-3 text-xs md:text-sm text-muted-foreground">
@@ -159,9 +202,39 @@ export const TopicView = () => {
             </div>
             
             {/* Content */}
-            {topic.content && (
+            {isEditingTopic ? (
+              <div className="bg-muted/30 rounded-md p-3 md:p-4 border border-border/50 mb-4">
+                <Textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="min-h-[100px] text-sm md:text-base"
+                  placeholder="Topic content (optional)"
+                />
+              </div>
+            ) : topic.content ? (
               <div className="bg-muted/30 rounded-md p-3 md:p-4 border border-border/50 mb-4">
                 <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm md:text-base">{topic.content}</p>
+              </div>
+            ) : null}
+
+            {/* Save/Cancel buttons for editing */}
+            {isEditingTopic && (
+              <div className="flex items-center gap-2 mb-4">
+                <Button 
+                  size="sm" 
+                  onClick={handleSaveTopic}
+                  disabled={isUpdatingTopic || !editTitle.trim()}
+                >
+                  {isUpdatingTopic ? 'Saving...' : 'Save Changes'}
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleCancelEdit}
+                  disabled={isUpdatingTopic}
+                >
+                  Cancel
+                </Button>
               </div>
             )}
 
@@ -191,6 +264,18 @@ export const TopicView = () => {
                   <ArrowDown className="h-3 w-3" />
                 </Button>
               </div>
+
+              {/* Edit button - only for authors and moderators */}
+              {canEditTopic && !isEditingTopic && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  onClick={handleEditTopic}
+                >
+                  <Edit className="h-3 w-3" />
+                </Button>
+              )}
 
               {/* Reply button */}
               <Button 
