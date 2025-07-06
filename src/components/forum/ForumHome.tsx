@@ -8,7 +8,7 @@ import { TrendingUp, Clock, Star, MessageSquare, User as UserIcon } from 'lucide
 import { useHotTopics } from '@/hooks/useHotTopics';
 import { useTopics } from '@/hooks/useTopics';
 import { useAuth } from '@/hooks/useAuth';
-import { useForumStats } from '@/hooks/useForumStats';
+
 import { PostCard } from './PostCard';
 import { ReportModal } from './ReportModal';
 import { QuickTopicModal } from './QuickTopicModal';
@@ -27,7 +27,7 @@ export const ForumHome = () => {
   
   const { data: hotTopics, isLoading: hotTopicsLoading } = useHotTopics(25);
   const { data: newTopics, isLoading: newTopicsLoading } = useTopics();
-  const { data: forumStats, isLoading: statsLoading } = useForumStats();
+  
 
   const handleSortChange = (value: string) => {
     if (value === 'hot') {
@@ -63,25 +63,6 @@ export const ForumHome = () => {
         />
       </div>
 
-      {/* Forum Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-orange-600">
-            {statsLoading ? '...' : forumStats?.total_topics || 0}
-          </div>
-          <div className="text-sm text-muted-foreground">Posts</div>
-        </Card>
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">
-            {statsLoading ? '...' : forumStats?.total_members || 0}
-          </div>
-          <div className="text-sm text-muted-foreground">Members</div>
-        </Card>
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">42</div>
-          <div className="text-sm text-muted-foreground">Online Now</div>
-        </Card>
-      </div>
 
       {/* Sort Tabs */}
       <Tabs value={sortBy} onValueChange={handleSortChange}>
