@@ -79,7 +79,29 @@ export const CategoryView = () => {
   const { categoryId } = useParams();
   const { user } = useAuth();
   
-  const { data: category, isLoading: categoryLoading } = useCategoryBySlug(categoryId || '');
+  // Check if categoryId is a UUID (contains hyphens and is 36 chars) or a slug
+  const isUUID = categoryId && categoryId.includes('-') && categoryId.length === 36;
+  
+  // We'll modify the hooks to accept conditional enabling
+  const { data: categoryBySlug, isLoading: categoryBySlugLoading, error: slugError } = useCategoryBySlug(categoryId || '');
+  const { data: categoryById, isLoading: categoryByIdLoading, error: idError } = useCategoryById(categoryId || '');
+  
+  // Use the appropriate result based on what we think the categoryId is
+  let category, categoryLoading;
+  
+  if (isUUID) {
+    category = categoryById;
+    categoryLoading = categoryByIdLoading;
+  } else {
+    category = categoryBySlug;
+    categoryLoading = categoryBySlugLoading;
+    
+    // If slug lookup failed and the parameter might be a UUID, fallback to ID lookup
+    if (!category && !categoryLoading && slugError && categoryId && categoryId.includes('-')) {
+      category = categoryById;
+      categoryLoading = categoryByIdLoading;
+    }
+  }
   const { data: subcategories, isLoading: subcategoriesLoading } = useCategoriesByActivity(category?.id, category?.level ? category.level + 1 : undefined);
   const { data: topics, isLoading: topicsLoading } = useTopics(category?.id);
 
