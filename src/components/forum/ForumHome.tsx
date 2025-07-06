@@ -29,6 +29,7 @@ export const ForumHome = () => {
   const { data: hotTopics, isLoading: hotTopicsLoading } = useHotTopics(25);
   const { data: newTopics, isLoading: newTopicsLoading } = useTopics();
   const { data: level1Forums } = useCategories(null, 1); // Only Level 1 forums
+  const { data: level2Forums } = useCategories(null, 2); // Province/State forums
   
 
   const handleSortChange = (value: string) => {
@@ -227,6 +228,75 @@ export const ForumHome = () => {
             <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No forums available</h3>
             <p className="text-muted-foreground">Forums will appear here once they are created.</p>
+          </Card>
+        )}
+      </div>
+
+      {/* Province/State Forums Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-foreground">Browse Province / State Forums</h2>
+        </div>
+        
+        {level2Forums && level2Forums.length > 0 ? (
+          <div className="space-y-6">
+            {(() => {
+              // Group forums by country (region field contains country info)
+              const forumsByCountry = level2Forums.reduce((acc, forum) => {
+                // Extract country from region or use region as country
+                const country = forum.region || 'Other';
+                if (!acc[country]) {
+                  acc[country] = [];
+                }
+                acc[country].push(forum);
+                return acc;
+              }, {} as Record<string, typeof level2Forums>);
+              
+              // Sort countries and forums within each country
+              return Object.keys(forumsByCountry)
+                .sort()
+                .map(country => (
+                  <div key={country} className="space-y-3">
+                    <h3 className="text-lg font-semibold text-foreground border-b pb-2">
+                      {country}
+                    </h3>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      {forumsByCountry[country]
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((forum) => (
+                          <Link
+                            key={forum.id}
+                            to={`/category/${forum.slug}`}
+                            className="block"
+                          >
+                            <Card className="p-3 hover:shadow-md transition-shadow cursor-pointer">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <div 
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: forum.color }}
+                                />
+                                <h4 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">
+                                  {forum.name}
+                                </h4>
+                              </div>
+                              {forum.description && (
+                                <p className="text-xs text-muted-foreground line-clamp-2">
+                                  {forum.description}
+                                </p>
+                              )}
+                            </Card>
+                          </Link>
+                        ))}
+                    </div>
+                  </div>
+                ));
+            })()}
+          </div>
+        ) : (
+          <Card className="p-8 text-center">
+            <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No province/state forums available</h3>
+            <p className="text-muted-foreground">Province and state forums will appear here once they are created.</p>
           </Card>
         )}
       </div>
