@@ -9,6 +9,7 @@ import { MessageSquare, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateTopic } from '@/hooks/useCreateTopic';
 import { useAnonymousPosting } from '@/hooks/useAnonymousPosting';
+import { useCategoryById } from '@/hooks/useCategories';
 import { HierarchicalCategorySelector } from './HierarchicalCategorySelector';
 import { AnonymousPostingNotice } from './AnonymousPostingNotice';
 import { toast } from '@/hooks/use-toast';
@@ -33,6 +34,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
 
   const createTopicMutation = useCreateTopic();
   const anonymousPosting = useAnonymousPosting();
+  const { data: preselectedCategory } = useCategoryById(preselectedCategoryId || '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,7 +138,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
         {preselectedCategoryId && (
           <div className="bg-muted/50 p-3 rounded-md border">
             <div className="text-sm text-muted-foreground">Posting in:</div>
-            <div className="font-medium text-sm mt-1">Current Forum</div>
+            <div className="font-medium text-sm mt-1">{preselectedCategory?.name || 'Current Forum'}</div>
             <div className="text-xs text-muted-foreground mt-1">
               You can change the forum selection below if needed
             </div>
