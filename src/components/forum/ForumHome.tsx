@@ -187,7 +187,7 @@ export const ForumHome = () => {
       {/* Forums Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-foreground">Browse Forums</h2>
+          <h2 className="text-xl font-bold text-foreground">Browse Main Forums</h2>
         </div>
         
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
