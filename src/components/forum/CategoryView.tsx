@@ -163,9 +163,14 @@ export const CategoryView = () => {
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             {/* Enhanced topic creation buttons */}
-            <div className="text-sm text-muted-foreground">
-              Browse categories below or explore existing topics
-            </div>
+            <QuickTopicModal 
+              trigger={
+                <Button size="sm" className="w-full sm:w-auto">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Start Discussion
+                </Button>
+              }
+            />
             
             {/* Category request button */}
             <CategoryRequestModal 
