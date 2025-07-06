@@ -12,7 +12,7 @@ import { usePosts } from '@/hooks/usePosts';
 
 import { useTopicVote } from '@/hooks/useVoting';
 import { VoteButtons } from './VoteButtons';
-import { AdUnit } from '../ads/AdUnit';
+
 
 import { ReportModal } from './ReportModal';
 import { PostComponent } from './PostComponent';
@@ -276,12 +276,6 @@ export const TopicView = () => {
         </div>
       </div>
 
-      {/* Ad between topic and replies */}
-      <AdUnit 
-        slot="content-middle" 
-        format="horizontal" 
-        className="my-6"
-      />
 
       {/* Comments */}
       <div className="bg-card">

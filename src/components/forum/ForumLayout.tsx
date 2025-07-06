@@ -5,7 +5,7 @@ import { ForumHeader } from './ForumHeader';
 import { ForumSidebarNav } from './ForumSidebarNav';
 import { ForumStats } from './ForumStats';
 import { MobileBottomNav } from './MobileBottomNav';
-import { AdUnit } from '../ads/AdUnit';
+
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export const ForumLayout = () => {
@@ -15,16 +15,6 @@ export const ForumLayout = () => {
     <div className="min-h-screen bg-background overflow-x-hidden pb-16">
       <ForumHeader />
       
-      {/* Header Ad - hidden on mobile */}
-      {!isMobile && (
-        <div className="border-b overflow-hidden">
-          <AdUnit 
-            slot="header-banner" 
-            format="horizontal" 
-            className="max-w-full mx-auto px-4 py-2"
-          />
-        </div>
-      )}
 
       <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6 overflow-x-hidden">
         <div className="flex gap-6 w-full">
@@ -33,12 +23,6 @@ export const ForumLayout = () => {
             <aside className="w-80 flex-shrink-0 space-y-6 overflow-x-hidden">
               <ForumSidebarNav />
               
-              {/* Sidebar Ad */}
-              <AdUnit 
-                slot="sidebar-rectangle" 
-                format="rectangle" 
-                className="sticky top-6 max-w-full"
-              />
             </aside>
           )}
 

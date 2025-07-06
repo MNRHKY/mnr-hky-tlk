@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, User, Clock, Pin, Plus, ChevronRight, Home, HelpCircle } from 'lucide-react';
-import { AdUnit } from '../ads/AdUnit';
+
 import { useCategoriesByActivity } from '@/hooks/useCategoriesByActivity';
 import { useCategoryById } from '@/hooks/useCategories';
 import { useTopics } from '@/hooks/useTopics';
@@ -189,12 +189,6 @@ export const CategoryView = () => {
         </div>
       </Card>
 
-      {/* Ad */}
-      <AdUnit 
-        slot="category-banner" 
-        format="horizontal" 
-        className="my-4 sm:my-6 w-full max-w-full overflow-hidden"
-      />
 
       {/* Subcategories or Topics */}
       {hasSubcategories ? (

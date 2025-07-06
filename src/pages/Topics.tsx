@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MessageSquare, User, Clock, Pin, Search } from 'lucide-react';
-import { AdUnit } from '@/components/ads/AdUnit';
+
 import { useTopics } from '@/hooks/useTopics';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -65,12 +65,6 @@ const Topics = () => {
         </div>
       </Card>
 
-      {/* Ad */}
-      <AdUnit 
-        slot="topics-banner" 
-        format="horizontal" 
-        className="my-6"
-      />
 
       {/* Topics List */}
       <Card className="p-6">
