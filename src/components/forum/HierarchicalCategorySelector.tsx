@@ -97,6 +97,14 @@ export const HierarchicalCategorySelector = ({
 
   const handleLevel3Select = (categoryId: string) => {
     onChange(categoryId);
+    // Immediately update the path with the level 3 selection
+    if (onPathChange) {
+      onPathChange({
+        level1Id: selectedLevel1,
+        level2Id: selectedLevel2,
+        level3Id: categoryId
+      });
+    }
   };
 
   const handleBack = () => {
