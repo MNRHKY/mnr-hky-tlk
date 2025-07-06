@@ -6,8 +6,34 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Clock, Star, Plus, Home, Users } from 'lucide-react';
 import { useCategories } from '@/hooks/useCategories';
 import { useCategoriesByActivity } from '@/hooks/useCategoriesByActivity';
+import { useCategoryStats } from '@/hooks/useCategoryStats';
 import { QuickTopicModal } from './QuickTopicModal';
 import { cn } from '@/lib/utils';
+
+// Component to display category stats
+const CategoryItem = ({ category }: { category: any }) => {
+  const { data: stats, isLoading } = useCategoryStats(category.id);
+  
+  return (
+    <Link
+      to={`/category/${category.slug}`}
+      className="flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors hover:bg-muted/50 group"
+    >
+      <div className="flex items-center space-x-2">
+        <div 
+          className="w-3 h-3 rounded-full"
+          style={{ backgroundColor: category.color }}
+        />
+        <span className="text-foreground group-hover:text-primary transition-colors">
+          {category.name}
+        </span>
+      </div>
+      <Badge variant="secondary" className="text-xs">
+        {isLoading ? '...' : (stats?.topic_count || 0)}
+      </Badge>
+    </Link>
+  );
+};
 
 export const ForumSidebarNav = () => {
   const location = useLocation();
@@ -65,24 +91,7 @@ export const ForumSidebarNav = () => {
         </h3>
         <div className="space-y-2">
           {categories?.slice(0, 8).map((category) => (
-            <Link
-              key={category.id}
-              to={`/category/${category.slug}`}
-              className="flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors hover:bg-muted/50 group"
-            >
-              <div className="flex items-center space-x-2">
-                <div 
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: category.color }}
-                />
-                <span className="text-foreground group-hover:text-primary transition-colors">
-                  {category.name}
-                </span>
-              </div>
-              <Badge variant="secondary" className="text-xs">
-                {Math.floor(Math.random() * 50) + 1}
-              </Badge>
-            </Link>
+            <CategoryItem key={category.id} category={category} />
           ))}
           
           {categories && categories.length > 8 && (
