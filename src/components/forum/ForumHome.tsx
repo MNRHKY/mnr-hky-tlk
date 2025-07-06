@@ -29,7 +29,7 @@ export const ForumHome = () => {
   const { data: hotTopics, isLoading: hotTopicsLoading } = useHotTopics(25);
   const { data: newTopics, isLoading: newTopicsLoading } = useTopics();
   const { data: level1Forums } = useCategories(null, 1); // Only Level 1 forums
-  const { data: level2Forums } = useCategories(null, 2); // Province/State forums
+  const { data: level2Forums } = useCategories(undefined, 2); // Province/State forums
   
 
   const handleSortChange = (value: string) => {
