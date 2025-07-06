@@ -84,6 +84,8 @@ export const useCategoryById = (categoryId: string) => {
 };
 
 export const useCategoryBySlug = (slug: string) => {
+  const isValidSlug = slug && slug.length > 0 && slug !== '';
+  
   return useQuery({
     queryKey: ['category-slug', slug],
     queryFn: async () => {
@@ -104,5 +106,6 @@ export const useCategoryBySlug = (slug: string) => {
       console.log('Category by slug fetched:', data);
       return data as Category;
     },
+    enabled: isValidSlug, // Only run query if slug is valid
   });
 };

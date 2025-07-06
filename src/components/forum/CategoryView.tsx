@@ -70,9 +70,13 @@ export const CategoryView = () => {
   // Check if categoryId is a UUID (contains hyphens and is 36 chars) or a slug
   const isUUID = categoryId && categoryId.includes('-') && categoryId.length === 36;
   
-  // We'll modify the hooks to accept conditional enabling
-  const { data: categoryBySlug, isLoading: categoryBySlugLoading, error: slugError } = useCategoryBySlug(categoryId || '');
-  const { data: categoryById, isLoading: categoryByIdLoading, error: idError } = useCategoryById(categoryId || '');
+  // Only call hooks with valid parameters to prevent errors
+  const { data: categoryBySlug, isLoading: categoryBySlugLoading, error: slugError } = useCategoryBySlug(
+    (!isUUID && categoryId) ? categoryId : ''
+  );
+  const { data: categoryById, isLoading: categoryByIdLoading, error: idError } = useCategoryById(
+    (isUUID && categoryId) ? categoryId : ''
+  );
   
   // Use the appropriate result based on what we think the categoryId is
   let category, categoryLoading;
