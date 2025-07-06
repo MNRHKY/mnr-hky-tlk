@@ -164,6 +164,7 @@ export const CategoryView = () => {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             {/* Enhanced topic creation buttons */}
             <QuickTopicModal 
+              preselectedCategoryId={category.id}
               trigger={
                 <Button size="sm" className="w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />

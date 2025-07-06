@@ -132,6 +132,17 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
           />
         )}
 
+        {/* Show current forum selection when preselected */}
+        {preselectedCategoryId && (
+          <div className="bg-muted/50 p-3 rounded-md border">
+            <div className="text-sm text-muted-foreground">Posting in:</div>
+            <div className="font-medium text-sm mt-1">Current Forum</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              You can change the forum selection below if needed
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Topic Title</Label>
@@ -143,12 +154,6 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
               required
             />
           </div>
-
-          <HierarchicalCategorySelector
-            value={formData.category_id}
-            onChange={(value) => setFormData({ ...formData, category_id: value })}
-            required
-          />
 
           <div className="space-y-2">
             <Label htmlFor="content">Content</Label>
@@ -170,6 +175,13 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
               </div>
             )}
           </div>
+
+          <HierarchicalCategorySelector
+            value={formData.category_id}
+            onChange={(value) => setFormData({ ...formData, category_id: value })}
+            preselectedCategoryId={preselectedCategoryId}
+            required
+          />
 
           <div className="flex justify-end space-x-2">
             <Button 

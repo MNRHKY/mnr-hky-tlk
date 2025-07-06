@@ -1,29 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
-import { useCategories } from '@/hooks/useCategories';
+import { useCategories, useCategoryById } from '@/hooks/useCategories';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface HierarchicalCategorySelectorProps {
   value: string;
   onChange: (value: string) => void;
+  preselectedCategoryId?: string;
   required?: boolean;
 }
 
 export const HierarchicalCategorySelector = ({ 
   value, 
   onChange, 
+  preselectedCategoryId,
   required = false 
 }: HierarchicalCategorySelectorProps) => {
   const [selectedLevel1, setSelectedLevel1] = useState<string>('');
   const [selectedLevel2, setSelectedLevel2] = useState<string>('');
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
+  // Get preselected category data to initialize the selector
+  const { data: preselectedCategory } = useCategoryById(preselectedCategoryId || '');
+  
   // Get categories for each level
   const { data: level1Categories } = useCategories(null, 1);
   const { data: level2Categories } = useCategories(selectedLevel1 || undefined, 2);
   const { data: level3Categories } = useCategories(selectedLevel2 || undefined, 3);
+  
+  // Also get all level 2 and 3 categories to find parent relationships
+  const { data: allLevel2Categories } = useCategories(undefined, 2);
+  const { data: allLevel3Categories } = useCategories(undefined, 3);
+
+  // Initialize with preselected category
+  useEffect(() => {
+    if (preselectedCategoryId && preselectedCategory && level1Categories && allLevel2Categories) {
+      // Set the value immediately
+      onChange(preselectedCategoryId);
+      
+      // If it's a level 3 category, we need to find its parent chain
+      if (preselectedCategory.level === 3 && preselectedCategory.parent_category_id) {
+        // Find the level 2 parent
+        const level2Parent = allLevel2Categories.find(cat => cat.id === preselectedCategory.parent_category_id);
+        if (level2Parent && level2Parent.parent_category_id) {
+          // Find the level 1 grandparent
+          const level1Parent = level1Categories.find(cat => cat.id === level2Parent.parent_category_id);
+          
+          if (level1Parent) {
+            setSelectedLevel1(level1Parent.id);
+            setSelectedLevel2(level2Parent.id);
+            setStep(3);
+          }
+        }
+      }
+    }
+  }, [preselectedCategoryId, preselectedCategory, level1Categories, allLevel2Categories, onChange]);
 
   const handleLevel1Select = (categoryId: string) => {
     setSelectedLevel1(categoryId);
@@ -78,7 +111,9 @@ export const HierarchicalCategorySelector = ({
     }
   };
 
-  const selectedCategory = level3Categories?.find(cat => cat.id === value);
+  const selectedCategory = (value && preselectedCategory?.id === value) 
+    ? preselectedCategory 
+    : level3Categories?.find(cat => cat.id === value);
 
   return (
     <div className="space-y-4">
