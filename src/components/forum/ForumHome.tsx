@@ -24,7 +24,7 @@ export const ForumHome = () => {
     isOpen: false,
   });
   
-  const sortBy = searchParams.get('sort') || 'hot';
+  const sortBy = searchParams.get('sort') || 'new';
   
   const { data: hotTopics, isLoading: hotTopicsLoading } = useHotTopics(25);
   const { data: newTopics, isLoading: newTopicsLoading } = useTopics();
@@ -33,7 +33,7 @@ export const ForumHome = () => {
   
 
   const handleSortChange = (value: string) => {
-    if (value === 'hot') {
+    if (value === 'new') {
       setSearchParams({});
     } else {
       setSearchParams({ sort: value });
@@ -70,13 +70,13 @@ export const ForumHome = () => {
       {/* Sort Tabs */}
       <Tabs value={sortBy} onValueChange={handleSortChange}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="hot" className="flex items-center space-x-2">
-            <TrendingUp className="h-4 w-4" />
-            <span>Hot</span>
-          </TabsTrigger>
           <TabsTrigger value="new" className="flex items-center space-x-2">
             <Clock className="h-4 w-4" />
             <span>New</span>
+          </TabsTrigger>
+          <TabsTrigger value="hot" className="flex items-center space-x-2">
+            <TrendingUp className="h-4 w-4" />
+            <span>Hot</span>
           </TabsTrigger>
           <TabsTrigger value="top" className="flex items-center space-x-2">
             <Star className="h-4 w-4" />
