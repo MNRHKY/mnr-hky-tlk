@@ -241,55 +241,56 @@ export const ForumHome = () => {
         {level2Forums && level2Forums.length > 0 ? (
           <div className="space-y-6">
             {(() => {
-              // Group forums by country (region field contains country info)
-              const forumsByCountry = level2Forums.reduce((acc, forum) => {
-                // Extract country from region or use region as country
-                const country = forum.region || 'Other';
-                if (!acc[country]) {
-                  acc[country] = [];
-                }
-                acc[country].push(forum);
-                return acc;
-              }, {} as Record<string, typeof level2Forums>);
+              // Filter out tournament forums and group by country using parent_category_id
+              const canadianForums = level2Forums.filter(forum => 
+                forum.parent_category_id === '11111111-1111-1111-1111-111111111111'
+              ).sort((a, b) => (a.region || '').localeCompare(b.region || ''));
               
-              // Sort countries and forums within each country
-              return Object.keys(forumsByCountry)
-                .sort()
-                .map(country => (
-                  <div key={country} className="space-y-3">
-                    <h3 className="text-lg font-semibold text-foreground border-b pb-2">
-                      {country}
-                    </h3>
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                      {forumsByCountry[country]
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map((forum) => (
-                          <Link
-                            key={forum.id}
-                            to={`/category/${forum.slug}`}
-                            className="block"
-                          >
-                            <Card className="p-3 hover:shadow-md transition-shadow cursor-pointer">
-                              <div className="flex items-center space-x-2 mb-2">
-                                <div 
-                                  className="w-3 h-3 rounded-full"
-                                  style={{ backgroundColor: forum.color }}
-                                />
-                                <h4 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">
-                                  {forum.name}
-                                </h4>
-                              </div>
-                              {forum.description && (
-                                <p className="text-xs text-muted-foreground line-clamp-2">
-                                  {forum.description}
-                                </p>
-                              )}
-                            </Card>
-                          </Link>
-                        ))}
-                    </div>
+              const usaForums = level2Forums.filter(forum => 
+                forum.parent_category_id === '22222222-2222-2222-2222-222222222222'
+              ).sort((a, b) => (a.region || '').localeCompare(b.region || ''));
+              
+              const countries = [];
+              if (canadianForums.length > 0) {
+                countries.push({ name: 'Canada', forums: canadianForums });
+              }
+              if (usaForums.length > 0) {
+                countries.push({ name: 'USA', forums: usaForums });
+              }
+              
+              return countries.map(country => (
+                <div key={country.name} className="space-y-3">
+                  <h3 className="text-lg font-semibold text-foreground border-b pb-2">
+                    {country.name}
+                  </h3>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {country.forums.map((forum) => (
+                      <Link
+                        key={forum.id}
+                        to={`/category/${forum.slug}`}
+                        className="block"
+                      >
+                        <Card className="p-3 hover:shadow-md transition-shadow cursor-pointer">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <div 
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: forum.color }}
+                            />
+                            <h4 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">
+                              {forum.region}
+                            </h4>
+                          </div>
+                          {forum.description && (
+                            <p className="text-xs text-muted-foreground line-clamp-2">
+                              {forum.description}
+                            </p>
+                          )}
+                        </Card>
+                      </Link>
+                    ))}
                   </div>
-                ));
+                </div>
+              ));
             })()}
           </div>
         ) : (
