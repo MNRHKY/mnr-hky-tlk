@@ -123,8 +123,9 @@ export const ForumHome = () => {
                     category_name: topic.categories?.name || 'General',
                     category_color: topic.categories?.color || '#3b82f6',
                     category_slug: topic.categories?.slug || '',
+                    slug: topic.slug,
                     hot_score: 0
-                  }} 
+                  }}
                   onReport={handleReport}
                 />
               ))}

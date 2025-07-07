@@ -110,7 +110,12 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
         category_id: preselectedCategoryId || ''
       });
       
-      navigate(`/topic/${topic.id}`);
+      // Navigate using slug-based URL if available, fallback to UUID
+      if (topic.slug && topic.categories?.slug) {
+        navigate(`/${topic.categories.slug}/${topic.slug}`);
+      } else {
+        navigate(`/topic/${topic.id}`);
+      }
     } catch (error) {
       console.error('Error creating topic:', error);
       toast({

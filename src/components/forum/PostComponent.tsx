@@ -63,7 +63,8 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   });
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/topic/${topicId}#post-${post.id}`;
+    // Use current URL which should already be in slug format
+    const shareUrl = `${window.location.origin}${window.location.pathname}#post-${post.id}`;
     const shareData = {
       title: 'Forum Post',
       text: `Check out this post: ${post.content.slice(0, 100)}${post.content.length > 100 ? '...' : ''}`,

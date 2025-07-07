@@ -85,7 +85,12 @@ export const CreateTopic = () => {
         title: "Success",
         description: "Topic created successfully!",
       });
-      navigate(`/topic/${topic.id}`);
+      // Navigate using slug-based URL if available, fallback to UUID
+      if (topic.slug && topic.categories?.slug) {
+        navigate(`/${topic.categories.slug}/${topic.slug}`);
+      } else {
+        navigate(`/topic/${topic.id}`);
+      }
     } catch (error) {
       console.error('Error creating topic:', error);
       toast({

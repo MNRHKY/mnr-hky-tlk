@@ -69,7 +69,10 @@ export const useCreateTopic = () => {
       const { data: topic, error } = await supabase
         .from('topics')
         .insert(topicData)
-        .select()
+        .select(`
+          *,
+          categories (name, slug, color)
+        `)
         .single();
 
       if (error) {

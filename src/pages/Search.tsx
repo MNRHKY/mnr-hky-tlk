@@ -149,7 +149,12 @@ const SearchPage = () => {
                         </Badge>
                       </div>
                       <Link 
-                        to={result.type === 'category' ? `/category/${result.id}` : `/topic/${result.id}`}
+                        to={result.type === 'category' 
+                          ? `/category/${result.category_slug || result.id}` 
+                          : (result.category_slug && result.slug 
+                            ? `/${result.category_slug}/${result.slug}` 
+                            : `/topic/${result.id}`)
+                        }
                         className="font-medium text-foreground hover:text-primary text-lg"
                       >
                         {result.title}

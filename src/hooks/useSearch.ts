@@ -9,6 +9,8 @@ export interface SearchResult {
   author_username: string;
   category_name: string;
   category_color: string;
+  category_slug?: string;
+  slug?: string;
   reply_count: number;
   view_count: number;
   created_at: string;
@@ -37,12 +39,13 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             id,
             title,
             content,
+            slug,
             created_at,
             reply_count,
             view_count,
             is_anonymous,
             profiles:author_id (username),
-            categories (name, color)
+            categories (name, color, slug)
           `);
 
         // For multiple words, get broader results and filter client-side
@@ -78,6 +81,8 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             author_username: topic.is_anonymous ? 'Anonymous' : (topic.profiles?.username || 'Unknown'),
             category_name: topic.categories?.name || 'Unknown',
             category_color: topic.categories?.color || '#3b82f6',
+            category_slug: topic.categories?.slug,
+            slug: topic.slug,
             reply_count: topic.reply_count || 0,
             view_count: topic.view_count || 0,
             created_at: topic.created_at,
@@ -104,9 +109,10 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             topics!inner (
               id,
               title,
+              slug,
               reply_count,
               view_count,
-              categories (name, color)
+              categories (name, color, slug)
             )
           `)
           .or(searchConditions)
@@ -136,6 +142,8 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             author_username: post.is_anonymous ? 'Anonymous' : (post.profiles?.username || 'Unknown'),
             category_name: post.topics.categories?.name || 'Unknown',
             category_color: post.topics.categories?.color || '#3b82f6',
+            category_slug: post.topics.categories?.slug,
+            slug: post.topics.slug,
             reply_count: post.topics.reply_count || 0,
             view_count: post.topics.view_count || 0,
             created_at: post.created_at,
@@ -158,6 +166,7 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             name,
             description,
             color,
+            slug,
             created_at
           `)
           .or(searchConditions)
@@ -188,6 +197,7 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             author_username: 'System',
             category_name: category.name,
             category_color: category.color || '#3b82f6',
+            category_slug: category.slug,
             reply_count: 0,
             view_count: 0,
             created_at: category.created_at,
