@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { MarkdownEditor } from '@/components/ui/markdown-editor';
-import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
+import { HTMLRenderer } from '@/components/ui/html-renderer';
 import { useForumSettings } from '@/hooks/useForumSettings';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Edit3, Save, X } from 'lucide-react';
@@ -107,10 +107,8 @@ export const InlineContentEditor: React.FC<InlineContentEditorProps> = ({
       ) : (
         <div className="prose prose-slate max-w-none">
           {content ? (
-            <MarkdownRenderer 
+            <HTMLRenderer 
               content={content} 
-              allowImages={true}
-              allowLinks={true}
             />
           ) : (
             <div className="text-center py-12">
