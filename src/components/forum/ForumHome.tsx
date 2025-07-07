@@ -15,6 +15,7 @@ import { ReportModal } from './ReportModal';
 import { QuickTopicModal } from './QuickTopicModal';
 
 export const ForumHome = () => {
+  console.log('ForumHome component rendering');
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [reportModal, setReportModal] = useState<{
