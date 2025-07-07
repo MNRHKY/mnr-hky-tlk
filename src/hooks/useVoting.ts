@@ -2,12 +2,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from './use-toast';
+import { getUserIPWithFallback } from '@/utils/ipUtils';
 
 export interface Vote {
   id: string;
   user_id: string | null;
   vote_type: number; // -1 for downvote, 1 for upvote
   created_at: string;
+  anonymous_ip?: string | null;
+  anonymous_session_id?: string | null;
 }
 
 // Anonymous session management
@@ -52,9 +55,17 @@ export const useTopicVote = (topicId: string) => {
         if (error) throw error;
         return data as Vote | null;
       } else if (anonymousSessionId) {
-        // For anonymous users, we'll check if there's a temporary user vote
-        // This is a simplified approach - you may want to enhance this
-        return null;
+        // Anonymous user vote lookup by session ID
+        const { data, error } = await supabase
+          .from('topic_votes')
+          .select('*')
+          .eq('topic_id', topicId)
+          .eq('anonymous_session_id', anonymousSessionId)
+          .is('user_id', null)
+          .maybeSingle();
+        
+        if (error) throw error;
+        return data as Vote | null;
       }
       return null;
     },
@@ -104,6 +115,69 @@ export const useTopicVote = (topicId: string) => {
           
           if (insertError) {
             console.error('Error inserting vote:', insertError);
+            throw insertError;
+          }
+        }
+      } else if (anonymousSessionId) {
+        // Anonymous user voting with security checks
+        const userIP = await getUserIPWithFallback();
+        
+        // Check rate limit before allowing vote
+        const { data: canVote, error: rateLimitError } = await supabase.rpc('check_anonymous_vote_limit', {
+          user_ip: userIP,
+          session_id: anonymousSessionId
+        });
+        
+        if (rateLimitError) {
+          console.error('Error checking vote rate limit:', rateLimitError);
+          throw new Error('Unable to process vote at this time');
+        }
+        
+        if (!canVote) {
+          throw new Error('Vote rate limit exceeded. Please wait before voting again.');
+        }
+        
+        if (userVote && userVote.vote_type === voteType) {
+          // Remove vote if clicking the same vote type
+          console.log('Removing existing anonymous vote');
+          const { error } = await supabase
+            .from('topic_votes')
+            .delete()
+            .eq('topic_id', topicId)
+            .eq('anonymous_session_id', anonymousSessionId)
+            .is('user_id', null);
+          
+          if (error) {
+            console.error('Error removing anonymous vote:', error);
+            throw error;
+          }
+        } else {
+          // First delete any existing vote, then insert the new one
+          console.log('Adding/updating anonymous vote');
+          const { error: deleteError } = await supabase
+            .from('topic_votes')
+            .delete()
+            .eq('topic_id', topicId)
+            .eq('anonymous_session_id', anonymousSessionId)
+            .is('user_id', null);
+          
+          if (deleteError) {
+            console.error('Error deleting existing anonymous vote:', deleteError);
+            throw deleteError;
+          }
+          
+          const { error: insertError } = await supabase
+            .from('topic_votes')
+            .insert({
+              topic_id: topicId,
+              user_id: null,
+              vote_type: voteType,
+              anonymous_ip: userIP,
+              anonymous_session_id: anonymousSessionId,
+            });
+          
+          if (insertError) {
+            console.error('Error inserting anonymous vote:', insertError);
             throw insertError;
           }
         }
@@ -164,9 +238,17 @@ export const usePostVote = (postId: string) => {
         if (error) throw error;
         return data as Vote | null;
       } else if (anonymousSessionId) {
-        // For anonymous users, we'll check if there's a temporary user vote
-        // This is a simplified approach - you may want to enhance this
-        return null;
+        // Anonymous user vote lookup by session ID
+        const { data, error } = await supabase
+          .from('post_votes')
+          .select('*')
+          .eq('post_id', postId)
+          .eq('anonymous_session_id', anonymousSessionId)
+          .is('user_id', null)
+          .maybeSingle();
+        
+        if (error) throw error;
+        return data as Vote | null;
       }
       return null;
     },
@@ -216,6 +298,69 @@ export const usePostVote = (postId: string) => {
           
           if (insertError) {
             console.error('Error inserting post vote:', insertError);
+            throw insertError;
+          }
+        }
+      } else if (anonymousSessionId) {
+        // Anonymous user voting with security checks
+        const userIP = await getUserIPWithFallback();
+        
+        // Check rate limit before allowing vote
+        const { data: canVote, error: rateLimitError } = await supabase.rpc('check_anonymous_vote_limit', {
+          user_ip: userIP,
+          session_id: anonymousSessionId
+        });
+        
+        if (rateLimitError) {
+          console.error('Error checking vote rate limit:', rateLimitError);
+          throw new Error('Unable to process vote at this time');
+        }
+        
+        if (!canVote) {
+          throw new Error('Vote rate limit exceeded. Please wait before voting again.');
+        }
+        
+        if (userVote && userVote.vote_type === voteType) {
+          // Remove vote if clicking the same vote type
+          console.log('Removing existing anonymous post vote');
+          const { error } = await supabase
+            .from('post_votes')
+            .delete()
+            .eq('post_id', postId)
+            .eq('anonymous_session_id', anonymousSessionId)
+            .is('user_id', null);
+          
+          if (error) {
+            console.error('Error removing anonymous post vote:', error);
+            throw error;
+          }
+        } else {
+          // First delete any existing vote, then insert the new one
+          console.log('Adding/updating anonymous post vote');
+          const { error: deleteError } = await supabase
+            .from('post_votes')
+            .delete()
+            .eq('post_id', postId)
+            .eq('anonymous_session_id', anonymousSessionId)
+            .is('user_id', null);
+          
+          if (deleteError) {
+            console.error('Error deleting existing anonymous post vote:', deleteError);
+            throw deleteError;
+          }
+          
+          const { error: insertError } = await supabase
+            .from('post_votes')
+            .insert({
+              post_id: postId,
+              user_id: null,
+              vote_type: voteType,
+              anonymous_ip: userIP,
+              anonymous_session_id: anonymousSessionId,
+            });
+          
+          if (insertError) {
+            console.error('Error inserting anonymous post vote:', insertError);
             throw insertError;
           }
         }

@@ -213,6 +213,8 @@ export type Database = {
       }
       post_votes: {
         Row: {
+          anonymous_ip: unknown | null
+          anonymous_session_id: string | null
           created_at: string
           id: string
           post_id: string
@@ -221,6 +223,8 @@ export type Database = {
           vote_type: number
         }
         Insert: {
+          anonymous_ip?: unknown | null
+          anonymous_session_id?: string | null
           created_at?: string
           id?: string
           post_id: string
@@ -229,6 +233,8 @@ export type Database = {
           vote_type: number
         }
         Update: {
+          anonymous_ip?: unknown | null
+          anonymous_session_id?: string | null
           created_at?: string
           id?: string
           post_id?: string
@@ -420,6 +426,8 @@ export type Database = {
       }
       topic_votes: {
         Row: {
+          anonymous_ip: unknown | null
+          anonymous_session_id: string | null
           created_at: string
           id: string
           topic_id: string
@@ -428,6 +436,8 @@ export type Database = {
           vote_type: number
         }
         Insert: {
+          anonymous_ip?: unknown | null
+          anonymous_session_id?: string | null
           created_at?: string
           id?: string
           topic_id: string
@@ -436,6 +446,8 @@ export type Database = {
           vote_type: number
         }
         Update: {
+          anonymous_ip?: unknown | null
+          anonymous_session_id?: string | null
           created_at?: string
           id?: string
           topic_id?: string

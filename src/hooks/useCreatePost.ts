@@ -17,9 +17,6 @@ export const useCreatePost = () => {
 
   return useMutation({
     mutationFn: async (data: CreatePostData) => {
-      console.log('Creating post with content:', data.content);
-      console.log('Full post data:', data);
-
       // Get the topic to validate its category and check moderation requirements
       const { data: topic, error: topicError } = await supabase
         .from('topics')
@@ -37,9 +34,7 @@ export const useCreatePost = () => {
       }
 
       // Get user's IP address for admin tracking
-      console.log('DEBUG: About to get IP address, user exists:', !!user);
       const userIP = await getUserIPWithFallback();
-      console.log('DEBUG: Got IP address:', userIP);
 
       const postData: any = {
         content: data.content,
@@ -51,23 +46,18 @@ export const useCreatePost = () => {
 
       if (user) {
         // Authenticated user
-        console.log('DEBUG: Creating post for authenticated user:', user.id);
         postData.author_id = user.id;
         postData.is_anonymous = false;
       } else {
         // Anonymous user - use temporary user ID
         const tempUserId = sessionManager.getTempUserId();
-        console.log('DEBUG: Got temp user ID:', tempUserId);
         if (!tempUserId) {
           throw new Error('No temporary user session available');
         }
         postData.author_id = tempUserId;
         postData.is_anonymous = true;
-        console.log('DEBUG: Creating post with temporary user ID, is_anonymous:', postData.is_anonymous);
       }
       
-      console.log('DEBUG: Final postData before insert:', postData);
-
       const { data: post, error } = await supabase
         .from('posts')
         .insert(postData)
@@ -75,22 +65,16 @@ export const useCreatePost = () => {
         .single();
 
       if (error) {
-        console.error('Error creating post:', error);
         throw error;
       }
 
-      console.log('Post created successfully with content:', post.content);
-
       // Update topic's last_reply_at using secure function
-      console.log('DEBUG: About to update topic last_reply_at for topic:', data.topic_id);
       const { error: updateError } = await supabase.rpc('update_topic_last_reply', { 
         topic_id: data.topic_id 
       });
 
       if (updateError) {
         console.error('Error updating topic last reply:', updateError);
-      } else {
-        console.log('DEBUG: Successfully updated topic last_reply_at');
       }
 
       // Increment reply count separately using raw SQL
@@ -103,8 +87,7 @@ export const useCreatePost = () => {
       }
 
       // No need for manual rate limiting - it's handled by the temp user system
-
-      console.log('Post created successfully:', post);
+      
       return post;
     },
     onSuccess: (post) => {
