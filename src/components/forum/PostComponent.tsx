@@ -132,19 +132,19 @@ export const PostComponent: React.FC<PostComponentProps> = ({
       <div className="bg-card p-3 md:p-4 rounded-md w-full">
         {/* Enhanced reply context with quoted content */}
         {depth > 0 && post.parent_post_id && post.parent_post && (
-          <div className="mb-3">
-            <div className="bg-muted/20 border-l-4 border-primary/50 rounded-r p-3 space-y-2">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="mb-2">
+            <div className="bg-slate-50 border-l-4 border-slate-300 rounded-r p-2 space-y-1">
+              <div className="flex items-center gap-2 text-xs text-slate-500">
                 <span>Replying to</span>
-                <span className="font-medium text-foreground">
+                <span className="font-medium text-slate-700">
                   {post.parent_post.is_anonymous ? 'Anonymous' : (post.parent_post.profiles?.username || 'Unknown')}
                 </span>
                 <span>•</span>
                 <span>{formatDistanceToNow(new Date(post.parent_post.created_at))} ago</span>
               </div>
-              <div className="text-sm text-muted-foreground italic bg-background/50 rounded p-2">
-                "{post.parent_post.content.length > 200 ? 
-                  `${post.parent_post.content.substring(0, 200)}...` : 
+              <div className="text-xs text-slate-500 italic bg-white/50 rounded p-1">
+                "{post.parent_post.content.length > 150 ? 
+                  `${post.parent_post.content.substring(0, 150)}...` : 
                   post.parent_post.content}"
               </div>
             </div>
@@ -205,7 +205,8 @@ export const PostComponent: React.FC<PostComponentProps> = ({
             </div>
           ) : (
             <>
-              <div className={`${replyTextColor} text-sm`}>
+              {/* MAIN REPLY CONTENT - This is the user's actual response */}
+              <div className="text-foreground text-base font-normal mb-3 bg-background p-3 rounded border-l-4 border-primary">
                 <MarkdownRenderer 
                   content={post.content} 
                   allowImages={!!user || !post.is_anonymous}

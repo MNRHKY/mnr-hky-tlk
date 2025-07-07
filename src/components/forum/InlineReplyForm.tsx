@@ -109,11 +109,11 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
     <div className={`w-full min-w-0 ${isTopicReply ? 'bg-primary/5 rounded-md p-4' : 'mt-3 bg-muted/30 rounded-md p-3'}`}>
       {/* Enhanced reply context with quote preview */}
       {parentPost && (
-        <div className="mb-3">
-          <div className="bg-muted/20 border-l-4 border-primary/50 rounded-r p-3 space-y-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="mb-2">
+          <div className="bg-slate-50 border-l-4 border-slate-300 rounded-r p-2 space-y-1">
+            <div className="flex items-center gap-2 text-xs text-slate-500">
               <span>Replying to</span>
-              <span className="font-medium text-foreground">
+              <span className="font-medium text-slate-700">
                 {isTopicReply ? 'Original Post' : 
                  `${parentPost.is_anonymous ? 'Anonymous' : (parentPost.profiles?.username || 'Unknown')}`}
               </span>
@@ -124,9 +124,9 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
                 </>
               )}
             </div>
-            <div className="text-sm text-muted-foreground italic bg-background/50 rounded p-2">
-              "{(isTopicReply ? parentPost.title : parentPost.content).length > 200 ? 
-                `${(isTopicReply ? parentPost.title : parentPost.content).substring(0, 200)}...` : 
+            <div className="text-xs text-slate-500 italic bg-white/50 rounded p-1">
+              "{(isTopicReply ? parentPost.title : parentPost.content).length > 150 ? 
+                `${(isTopicReply ? parentPost.title : parentPost.content).substring(0, 150)}...` : 
                 (isTopicReply ? parentPost.title : parentPost.content)}"
             </div>
           </div>
