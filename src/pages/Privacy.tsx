@@ -3,19 +3,15 @@ import { useForumSettings } from '@/hooks/useForumSettings';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 
 const Privacy = () => {
-  const { getSetting, isLoading, settings } = useForumSettings();
+  const { getSetting, isLoading } = useForumSettings();
   const privacyContent = getSetting('privacy_content', '');
-  
-  console.log('Privacy page - isLoading:', isLoading);
-  console.log('Privacy page - settings:', settings);
-  console.log('Privacy page - privacyContent:', privacyContent);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Privacy Policy</h1>
       
       <div className="prose prose-slate max-w-none">
-        {privacyContent ? (
+        {!isLoading && privacyContent ? (
           <MarkdownRenderer 
             content={privacyContent} 
             allowImages={true}
@@ -24,7 +20,7 @@ const Privacy = () => {
         ) : (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
-              Privacy Policy content is being loaded...
+              {isLoading ? 'Loading privacy policy...' : 'Privacy Policy content is not available.'}
             </p>
           </div>
         )}
