@@ -111,7 +111,9 @@ export const useCreatePost = () => {
       // Invalidate and refetch posts for the topic
       queryClient.invalidateQueries({ queryKey: ['posts', post.topic_id] });
       queryClient.invalidateQueries({ queryKey: ['topics', post.topic_id] });
+      // Invalidate all topics queries (including those with categoryId and without)
       queryClient.invalidateQueries({ queryKey: ['topics'] });
+      queryClient.invalidateQueries({ queryKey: ['hot-topics'] });
     },
   });
 };
