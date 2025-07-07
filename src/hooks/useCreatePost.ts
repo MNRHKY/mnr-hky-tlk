@@ -91,18 +91,6 @@ export const useCreatePost = () => {
         console.error('Error incrementing reply count:', incrementError);
       }
 
-      // Record anonymous post for rate limiting if this was an anonymous post
-      if (!user && data.is_anonymous) {
-        try {
-          await supabase.rpc('record_anonymous_post', {
-            user_ip: await getClientIP(),
-            session_id: generateSessionId()
-          });
-          console.log('Anonymous post recorded for rate limiting');
-        } catch (recordError) {
-          console.error('Error recording anonymous post for rate limiting:', recordError);
-        }
-      }
 
       console.log('Post created successfully:', post);
       return post;
