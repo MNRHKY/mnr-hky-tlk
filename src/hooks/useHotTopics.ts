@@ -20,6 +20,8 @@ export interface HotTopic {
   avatar_url: string | null;
   category_name: string;
   category_color: string;
+  category_slug: string;
+  slug: string;
   hot_score: number;
 }
 

@@ -78,7 +78,7 @@ export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
 
             {/* Title */}
             <Link 
-              to={`/topic/${topic.id}`}
+              to={topic.category_slug && topic.slug ? `/${topic.category_slug}/${topic.slug}` : `/topic/${topic.id}`}
               className="block group mb-2"
             >
               <h3 className="text-base md:text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
@@ -101,7 +101,7 @@ export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
                 </span>
                 <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
                 <Link 
-                  to={`/topic/${topic.id}`}
+                  to={topic.category_slug && topic.slug ? `/${topic.category_slug}/${topic.slug}` : `/topic/${topic.id}`}
                   className="flex items-center space-x-1 hover:text-primary transition-colors"
                 >
                   <MessageSquare className="h-3 w-3" />

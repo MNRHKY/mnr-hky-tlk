@@ -57,7 +57,7 @@ export const ForumSidebar = () => {
               {paginatedTopics.map((topic) => (
                 <div key={topic.id} className="border-b last:border-b-0 pb-3 last:pb-0">
                   <Link 
-                    to={`/topic/${topic.id}`}
+                    to={topic.slug && topic.categories?.slug ? `/${topic.categories.slug}/${topic.slug}` : `/topic/${topic.id}`}
                     className="block"
                   >
                     <h4 className="text-xs sm:text-sm font-medium text-gray-900 hover:text-blue-600 mb-2 line-clamp-2">
