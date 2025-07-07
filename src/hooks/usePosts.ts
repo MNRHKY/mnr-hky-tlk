@@ -13,6 +13,7 @@ export interface Post {
   is_anonymous: boolean | null;
   anonymous_ip: string | null;
   anonymous_session_id: string | null;
+  vote_score: number | null;
   profiles?: {
     username: string;
     avatar_url: string | null;

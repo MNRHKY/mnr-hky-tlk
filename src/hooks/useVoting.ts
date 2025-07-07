@@ -254,6 +254,7 @@ export const usePostVote = (postId: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['post-vote', postId] });
+      // Invalidate all posts queries since we don't have easy access to topic_id here
       queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
     onError: (error) => {
