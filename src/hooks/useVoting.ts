@@ -73,33 +73,46 @@ export const useTopicVote = (topicId: string) => {
 
   const voteMutation = useMutation({
     mutationFn: async ({ voteType }: { voteType: number }) => {
+      console.log('Voting mutation called:', { voteType, user, anonymousSessionId });
+      
       if (user) {
         // Authenticated user voting
         if (userVote && userVote.vote_type === voteType) {
           // Remove vote if clicking the same vote type
+          console.log('Removing existing vote for authenticated user');
           const { error } = await supabase
             .from('topic_votes')
             .delete()
             .eq('topic_id', topicId)
             .eq('user_id', user.id);
           
-          if (error) throw error;
+          if (error) {
+            console.error('Error removing vote:', error);
+            throw error;
+          }
         } else {
           // Insert or update vote
+          console.log('Adding/updating vote for authenticated user');
           const { error } = await supabase
             .from('topic_votes')
             .upsert({
               topic_id: topicId,
               user_id: user.id,
               vote_type: voteType,
+            }, {
+              onConflict: 'user_id, topic_id'
             });
           
-          if (error) throw error;
+          if (error) {
+            console.error('Error upserting vote:', error);
+            throw error;
+          }
         }
       } else if (anonymousSessionId) {
         // Anonymous user voting
         if (userVote && userVote.vote_type === voteType) {
           // Remove vote if clicking the same vote type
+          console.log('Removing existing vote for anonymous user');
           const { error } = await supabase
             .from('topic_votes')
             .delete()
@@ -107,22 +120,40 @@ export const useTopicVote = (topicId: string) => {
             .eq('anonymous_session_id', anonymousSessionId)
             .is('user_id', null);
           
-          if (error) throw error;
+          if (error) {
+            console.error('Error removing anonymous vote:', error);
+            throw error;
+          }
         } else {
-          // Insert or update vote for anonymous user
+          // For anonymous users, delete existing vote first, then insert new one
+          console.log('Updating vote for anonymous user');
+          
+          // First delete any existing vote for this session
+          await supabase
+            .from('topic_votes')
+            .delete()
+            .eq('topic_id', topicId)
+            .eq('anonymous_session_id', anonymousSessionId)
+            .is('user_id', null);
+          
+          // Then insert the new vote
           const { error } = await supabase
             .from('topic_votes')
-            .upsert({
+            .insert({
               topic_id: topicId,
               user_id: null,
               vote_type: voteType,
               anonymous_session_id: anonymousSessionId,
-              anonymous_ip: null, // We could add IP tracking later if needed
+              anonymous_ip: null,
             });
           
-          if (error) throw error;
+          if (error) {
+            console.error('Error inserting anonymous vote:', error);
+            throw error;
+          }
         }
       } else {
+        console.error('No user or session available for voting');
         toast({
           title: "Voting unavailable",
           description: "Unable to process vote at this time",
@@ -132,7 +163,10 @@ export const useTopicVote = (topicId: string) => {
       }
     },
     onSuccess: () => {
+      console.log('Vote successful, invalidating queries');
+      // Invalidate queries to refresh vote counts and user vote state
       queryClient.invalidateQueries({ queryKey: ['topic-vote', topicId] });
+      queryClient.invalidateQueries({ queryKey: ['topic', topicId] });
       queryClient.invalidateQueries({ queryKey: ['topics'] });
       queryClient.invalidateQueries({ queryKey: ['hot-topics'] });
     },
@@ -194,33 +228,46 @@ export const usePostVote = (postId: string) => {
 
   const voteMutation = useMutation({
     mutationFn: async ({ voteType }: { voteType: number }) => {
+      console.log('Post voting mutation called:', { voteType, user, anonymousSessionId });
+      
       if (user) {
         // Authenticated user voting
         if (userVote && userVote.vote_type === voteType) {
           // Remove vote if clicking the same vote type
+          console.log('Removing existing post vote for authenticated user');
           const { error } = await supabase
             .from('post_votes')
             .delete()
             .eq('post_id', postId)
             .eq('user_id', user.id);
           
-          if (error) throw error;
+          if (error) {
+            console.error('Error removing post vote:', error);
+            throw error;
+          }
         } else {
           // Insert or update vote
+          console.log('Adding/updating post vote for authenticated user');
           const { error } = await supabase
             .from('post_votes')
             .upsert({
               post_id: postId,
               user_id: user.id,
               vote_type: voteType,
+            }, {
+              onConflict: 'user_id, post_id'
             });
           
-          if (error) throw error;
+          if (error) {
+            console.error('Error upserting post vote:', error);
+            throw error;
+          }
         }
       } else if (anonymousSessionId) {
         // Anonymous user voting
         if (userVote && userVote.vote_type === voteType) {
           // Remove vote if clicking the same vote type
+          console.log('Removing existing post vote for anonymous user');
           const { error } = await supabase
             .from('post_votes')
             .delete()
@@ -228,22 +275,40 @@ export const usePostVote = (postId: string) => {
             .eq('anonymous_session_id', anonymousSessionId)
             .is('user_id', null);
           
-          if (error) throw error;
+          if (error) {
+            console.error('Error removing anonymous post vote:', error);
+            throw error;
+          }
         } else {
-          // Insert or update vote for anonymous user
+          // For anonymous users, delete existing vote first, then insert new one
+          console.log('Updating post vote for anonymous user');
+          
+          // First delete any existing vote for this session
+          await supabase
+            .from('post_votes')
+            .delete()
+            .eq('post_id', postId)
+            .eq('anonymous_session_id', anonymousSessionId)
+            .is('user_id', null);
+          
+          // Then insert the new vote
           const { error } = await supabase
             .from('post_votes')
-            .upsert({
+            .insert({
               post_id: postId,
               user_id: null,
               vote_type: voteType,
               anonymous_session_id: anonymousSessionId,
-              anonymous_ip: null, // We could add IP tracking later if needed
+              anonymous_ip: null,
             });
           
-          if (error) throw error;
+          if (error) {
+            console.error('Error inserting anonymous post vote:', error);
+            throw error;
+          }
         }
       } else {
+        console.error('No user or session available for post voting');
         toast({
           title: "Voting unavailable",
           description: "Unable to process vote at this time",
@@ -253,8 +318,8 @@ export const usePostVote = (postId: string) => {
       }
     },
     onSuccess: () => {
+      console.log('Post vote successful, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['post-vote', postId] });
-      // Invalidate all posts queries since we don't have easy access to topic_id here
       queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
     onError: (error) => {
