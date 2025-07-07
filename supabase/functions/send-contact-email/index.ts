@@ -49,7 +49,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email to admin
     const adminEmailResponse = await resend.emails.send({
-      from: "Minor Hockey Talks <noreply@resend.dev>",
+      from: "Minor Hockey Talks <noreply@minorhockeytalks.com>",
       to: ["minorhockeytalks@gmail.com"],
       subject: `Contact Form: ${subject}`,
       html: `
@@ -71,7 +71,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation email to user
     const userEmailResponse = await resend.emails.send({
-      from: "Minor Hockey Talks <noreply@resend.dev>",
+      from: "Minor Hockey Talks <noreply@minorhockeytalks.com>",
       to: [email],
       subject: "We received your message!",
       html: `
