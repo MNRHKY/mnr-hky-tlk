@@ -91,7 +91,6 @@ export const useTopicVote = (topicId: string) => {
         
         if (userVote && userVote.vote_type === voteType) {
           // Remove vote if clicking the same vote type
-          console.log('Removing anonymous vote:', { userVote, voteType });
           const { error } = await supabase
             .from('topic_votes')
             .delete()
@@ -99,12 +98,8 @@ export const useTopicVote = (topicId: string) => {
             .eq('anonymous_session_id', anonymousSessionId)
             .is('user_id', null);
           
-          if (error) {
-            console.error('Error removing anonymous vote:', error);
-            throw error;
-          }
+          if (error) throw error;
         } else {
-          console.log('Adding/updating anonymous vote:', { userVote, voteType });
           // First delete any existing vote, then insert the new one
           const { error: deleteError } = await supabase
             .from('topic_votes')
@@ -125,11 +120,7 @@ export const useTopicVote = (topicId: string) => {
               anonymous_session_id: anonymousSessionId,
             });
           
-          console.log('Anonymous vote insert result:', { error: insertError, voteType, anonymousSessionId });
-          if (insertError) {
-            console.error('Insert error details:', insertError);
-            throw insertError;
-          }
+          if (insertError) throw insertError;
         }
       } else {
         createVotingUnavailableHandler(toast)();
