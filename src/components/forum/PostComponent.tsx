@@ -160,7 +160,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center flex-wrap gap-2">
             <span className="font-medium text-foreground text-sm">
-              {post.is_anonymous ? 'Anonymous' : (post.profiles?.username || 'Unknown')}
+              {post.profiles?.username || 'Anonymous'}
             </span>
             <span className="text-xs text-muted-foreground">
               {formatDistanceToNow(new Date(post.created_at))} ago
