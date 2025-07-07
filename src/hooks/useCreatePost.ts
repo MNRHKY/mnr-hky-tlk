@@ -58,6 +58,7 @@ export const useCreatePost = () => {
           throw new Error('No temporary user session available');
         }
         postData.author_id = tempUserId;
+        postData.is_anonymous = true; // Explicitly set anonymous for temp users
         console.log('Creating post with temporary user ID:', tempUserId);
       }
 

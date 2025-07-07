@@ -1,59 +1,39 @@
-// Utility function to get user's IP address
+import { supabase } from '@/integrations/supabase/client';
+
+// Utility function to get user's IP address using Supabase Edge Function
 export const getUserIP = async (): Promise<string | null> => {
   try {
-    // Try to get IP from a public API service
-    const response = await fetch('https://api.ipify.org?format=json');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    // Try to get IP from our Supabase Edge Function first
+    const { data, error } = await supabase.functions.invoke('get-client-ip');
+    
+    if (!error && data?.ip && data.ip !== 'unknown') {
+      console.log('IP address fetched from edge function:', data.ip);
+      return data.ip;
     }
-    const data = await response.json();
-    console.log('IP address fetched successfully:', data.ip);
-    return data.ip || null;
+    
+    console.log('Edge function failed or returned unknown IP, trying external services');
+    throw new Error('Edge function failed');
   } catch (error) {
-    console.error('Failed to get IP address from ipify:', error);
-    return null;
+    console.error('Failed to get IP from edge function:', error);
+    
+    // Fallback to external service
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('IP address fetched from external service:', data.ip);
+      return data.ip || null;
+    } catch (fallbackError) {
+      console.error('Failed to get IP from external service:', fallbackError);
+      return null;
+    }
   }
 };
 
 // Alternative method using multiple services as fallback
 export const getUserIPWithFallback = async (): Promise<string | null> => {
-  const services = [
-    'https://api.ipify.org?format=json',
-    'https://httpbin.org/ip',
-    'https://jsonip.com'
-  ];
-
-  console.log('Attempting to fetch IP address...');
-
-  for (const service of services) {
-    try {
-      console.log(`Trying service: ${service}`);
-      const response = await fetch(service, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log(`Response from ${service}:`, data);
-      
-      // Different services return IP in different formats
-      const ip = data.ip || data.origin || data.IP;
-      if (ip) {
-        console.log(`Successfully got IP address: ${ip}`);
-        return ip;
-      }
-    } catch (error) {
-      console.error(`Failed to get IP from ${service}:`, error);
-      continue;
-    }
-  }
-
-  console.error('All IP services failed, returning null');
-  return null;
+  // Use the primary getUserIP function which now handles both edge function and fallback
+  return getUserIP();
 };
