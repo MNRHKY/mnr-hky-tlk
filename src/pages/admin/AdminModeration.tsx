@@ -14,7 +14,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, Ban, CheckCircle, Clock, UserX, Wifi, WifiOff, Eye } from 'lucide-react';
+import { AlertTriangle, Ban, CheckCircle, Clock, UserX, Wifi, WifiOff, Eye, X, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -82,6 +82,7 @@ const ReportsTab = () => {
           content, 
           author_id, 
           topic_id,
+          created_at,
           topics!inner (
             id,
             title,
@@ -103,18 +104,34 @@ const ReportsTab = () => {
           content, 
           author_id, 
           slug,
+          created_at,
           categories!inner (
             slug
           )
         `)
         .in('id', topicIds);
 
+      // Get author profiles for reported content
+      const allAuthorIds = [
+        ...(posts?.map(p => p.author_id) || []),
+        ...(topics?.map(t => t.author_id) || [])
+      ].filter(Boolean);
+
+      const { data: authorProfiles } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .in('id', allAuthorIds);
+
       // Combine the data
       const enrichedReports = reportsData.map(report => ({
         ...report,
         reporter: profiles?.find(p => p.id === report.reporter_id),
         post: posts?.find(p => p.id === report.reported_post_id),
-        topic: topics?.find(t => t.id === report.reported_topic_id)
+        topic: topics?.find(t => t.id === report.reported_topic_id),
+        contentAuthor: authorProfiles?.find(p => 
+          p.id === (posts?.find(po => po.id === report.reported_post_id)?.author_id || 
+                   topics?.find(to => to.id === report.reported_topic_id)?.author_id)
+        )
       }));
 
       return enrichedReports;
@@ -148,6 +165,59 @@ const ReportsTab = () => {
     }
   };
 
+  const handleCloseReport = async (reportId: string) => {
+    try {
+      const { error } = await supabase
+        .from('reports')
+        .update({
+          status: 'closed',
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq('id', reportId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Report closed',
+        description: 'Report has been closed',
+      });
+
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to close report',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+    if (!confirm('Are you sure you want to permanently delete this report?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('reports')
+        .delete()
+        .eq('id', reportId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Report deleted',
+        description: 'Report has been permanently deleted',
+      });
+
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete report',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <Card className="p-6">
@@ -167,6 +237,7 @@ const ReportsTab = () => {
               <TableHead>Content Type</TableHead>
               <TableHead>Reason</TableHead>
               <TableHead>Content Preview</TableHead>
+              <TableHead>Author</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Reported</TableHead>
               <TableHead>Actions</TableHead>
@@ -189,56 +260,83 @@ const ReportsTab = () => {
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="max-w-md">
-                  <Link 
-                    to={getReportedContentUrl(report)}
-                    className="text-primary hover:text-primary/80 hover:underline block"
-                  >
-                    <div className="truncate text-sm font-medium">
-                      {report.post?.content || report.topic?.content || report.topic?.title}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      by Anonymous User • Click to view content
-                    </div>
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <Badge 
-                    variant={
-                      report.status === 'pending' ? 'destructive' :
-                      report.status === 'resolved' ? 'default' : 'secondary'
-                    }
-                  >
-                    {report.status}
-                  </Badge>
-                </TableCell>
+                 <TableCell className="max-w-md">
+                   <Link 
+                     to={getReportedContentUrl(report)}
+                     className="text-primary hover:text-primary/80 hover:underline block"
+                   >
+                     <div className="truncate text-sm font-medium">
+                       {report.post?.content || report.topic?.content || report.topic?.title}
+                     </div>
+                     <div className="text-xs text-muted-foreground">
+                       Click to view content
+                     </div>
+                   </Link>
+                 </TableCell>
+                 <TableCell>
+                   <div className="text-sm">
+                     {report.contentAuthor?.username || 'Anonymous User'}
+                   </div>
+                   <div className="text-xs text-muted-foreground">
+                     {report.post ? 'Post author' : 'Topic author'}
+                   </div>
+                 </TableCell>
+                 <TableCell>
+                   <Badge 
+                     variant={
+                       report.status === 'pending' ? 'destructive' :
+                       report.status === 'resolved' ? 'default' : 'secondary'
+                     }
+                   >
+                     {report.status}
+                   </Badge>
+                 </TableCell>
                 <TableCell>
                   {formatDistanceToNow(new Date(report.created_at))} ago
                 </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleResolveReport(report.id, 'resolved')}
-                      className="text-green-600 hover:text-green-700"
-                      disabled={report.status !== 'pending'}
-                      title="Mark as resolved"
-                    >
-                      <CheckCircle className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleResolveReport(report.id, 'dismissed')}
-                      className="text-gray-600 hover:text-gray-700"
-                      disabled={report.status !== 'pending'}
-                      title="Dismiss report"
-                    >
-                      <Eye className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </TableCell>
+                 <TableCell>
+                   <div className="flex gap-1">
+                     <Button
+                       size="sm"
+                       variant="outline"
+                       onClick={() => handleResolveReport(report.id, 'resolved')}
+                       className="text-green-600 hover:text-green-700"
+                       disabled={report.status !== 'pending'}
+                       title="Mark as resolved"
+                     >
+                       <CheckCircle className="h-3 w-3" />
+                     </Button>
+                     <Button
+                       size="sm"
+                       variant="outline"
+                       onClick={() => handleResolveReport(report.id, 'dismissed')}
+                       className="text-gray-600 hover:text-gray-700"
+                       disabled={report.status !== 'pending'}
+                       title="Dismiss report"
+                     >
+                       <Eye className="h-3 w-3" />
+                     </Button>
+                     <Button
+                       size="sm"
+                       variant="outline"
+                       onClick={() => handleCloseReport(report.id)}
+                       className="text-blue-600 hover:text-blue-700"
+                       disabled={report.status === 'closed'}
+                       title="Close report"
+                     >
+                       <X className="h-3 w-3" />
+                     </Button>
+                     <Button
+                       size="sm"
+                       variant="outline"
+                       onClick={() => handleDeleteReport(report.id)}
+                       className="text-red-600 hover:text-red-700"
+                       title="Delete report permanently"
+                     >
+                       <Trash2 className="h-3 w-3" />
+                     </Button>
+                   </div>
+                 </TableCell>
               </TableRow>
             ))}
             {(!reports || reports.length === 0) && (
@@ -257,6 +355,20 @@ const ReportsTab = () => {
 
 const AdminModeration = () => {
   const { toast } = useToast();
+
+  // Query for reports count
+  const { data: reportsCount } = useQuery({
+    queryKey: ['reports-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('reports')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+
+      if (error) throw error;
+      return count || 0;
+    },
+  });
 
   // Helper function to generate the correct URL for content items
   const getContentUrl = (item: ModerationItem) => {
@@ -549,8 +661,8 @@ const AdminModeration = () => {
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-red-500" />
             <div>
-              <div className="text-2xl font-bold">0</div>
-              <div className="text-sm text-muted-foreground">Reports</div>
+              <div className="text-2xl font-bold">{reportsCount || 0}</div>
+              <div className="text-sm text-muted-foreground">Pending Reports</div>
             </div>
           </div>
         </Card>
