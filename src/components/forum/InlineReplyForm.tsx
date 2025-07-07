@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { MarkdownEditor } from '@/components/ui/markdown-editor';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreatePost } from '@/hooks/useCreatePost';
 import { useAnonymousPosting } from '@/hooks/useAnonymousPosting';
@@ -127,13 +127,13 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
       )}
 
       <div className="space-y-3">
-        <Textarea
-          ref={textareaRef}
-          placeholder={user ? "Write your reply..." : "Write your reply as an anonymous user (no images or links allowed)..."}
+        <MarkdownEditor
           value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={3}
-          className="w-full text-sm resize-none"
+          onChange={setContent}
+          placeholder={user ? "Write your reply..." : "Write your reply as an anonymous user (no images or links allowed)..."}
+          height={120}
+          allowImages={!!user}
+          hideToolbar={!user}
         />
         
         {contentErrors.length > 0 && (

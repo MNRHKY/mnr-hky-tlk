@@ -3,8 +3,9 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { MarkdownEditor } from '@/components/ui/markdown-editor';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import { MessageSquare, User, Clock, ArrowLeft, ThumbsUp, Flag, Reply, ArrowUp, ArrowDown, MessageCircle, Share, Edit } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTopic } from '@/hooks/useTopic';
@@ -213,16 +214,24 @@ export const TopicView = () => {
             {/* Content */}
             {isEditingTopic ? (
               <div className="bg-muted/30 rounded-md p-3 md:p-4 border border-border/50 mb-4">
-                <Textarea
+                <MarkdownEditor
                   value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="min-h-[100px] text-sm md:text-base"
+                  onChange={setEditContent}
                   placeholder="Topic content (optional)"
+                  height={200}
+                  allowImages={!!user}
+                  hideToolbar={!user}
                 />
               </div>
             ) : topic.content ? (
               <div className="bg-muted/30 rounded-md p-3 md:p-4 border border-border/50 mb-4">
-                <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm md:text-base">{topic.content}</p>
+                <div className="text-foreground text-sm md:text-base">
+                  <MarkdownRenderer 
+                    content={topic.content} 
+                    allowImages={!!user || !topic.is_anonymous}
+                    allowLinks={!!user || !topic.is_anonymous}
+                  />
+                </div>
               </div>
             ) : null}
 

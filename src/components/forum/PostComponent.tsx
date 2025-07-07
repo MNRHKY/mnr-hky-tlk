@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+import { MarkdownEditor } from '@/components/ui/markdown-editor';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import { Reply, ArrowUp, ArrowDown, Flag, ChevronDown, ChevronUp, MessageSquare, MessageCircle, Share, Edit } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatDistanceToNow } from 'date-fns';
@@ -161,11 +162,13 @@ export const PostComponent: React.FC<PostComponentProps> = ({
         <div className="mb-4">
           {isEditing ? (
             <div className="space-y-3">
-              <Textarea
+              <MarkdownEditor
                 value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                className="min-h-[100px] text-sm"
+                onChange={setEditContent}
                 placeholder="Edit your post..."
+                height={150}
+                allowImages={!!user}
+                hideToolbar={!user}
               />
               <div className="flex items-center gap-2">
                 <Button
@@ -187,7 +190,13 @@ export const PostComponent: React.FC<PostComponentProps> = ({
             </div>
           ) : (
             <>
-              <p className={`${replyTextColor} leading-relaxed whitespace-pre-wrap text-sm`}>{post.content}</p>
+              <div className={`${replyTextColor} text-sm`}>
+                <MarkdownRenderer 
+                  content={post.content} 
+                  allowImages={!!user || !post.is_anonymous}
+                  allowLinks={!!user || !post.is_anonymous}
+                />
+              </div>
               {post.updated_at !== post.created_at && (
                 <p className="text-xs text-muted-foreground mt-1">
                   (edited {formatDistanceToNow(new Date(post.updated_at))} ago)
