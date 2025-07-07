@@ -247,9 +247,14 @@ export const PostComponent: React.FC<PostComponentProps> = ({
                   </Button>
                 </>
               ) : (
-                <span className={`text-xs font-medium min-w-[16px] text-center ${(post.vote_score || 0) > 0 ? 'text-orange-500' : (post.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
-                  {post.vote_score || 0}
-                </span>
+                <div className="flex flex-col items-center space-y-1">
+                  <span className={`text-xs font-medium min-w-[16px] text-center ${(post.vote_score || 0) > 0 ? 'text-orange-500' : (post.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
+                    {post.vote_score || 0}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Login to vote
+                  </span>
+                </div>
               )}
             </div>
             
