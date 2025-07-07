@@ -81,21 +81,30 @@ export const useTopicVote = (topicId: string) => {
             throw error;
           }
         } else {
-          // Insert or update vote
+          // First delete any existing vote, then insert the new one
           console.log('Adding/updating vote for authenticated user');
-          const { error } = await supabase
+          const { error: deleteError } = await supabase
             .from('topic_votes')
-            .upsert({
+            .delete()
+            .eq('topic_id', topicId)
+            .eq('user_id', user.id);
+          
+          if (deleteError) {
+            console.error('Error deleting existing vote:', deleteError);
+            throw deleteError;
+          }
+          
+          const { error: insertError } = await supabase
+            .from('topic_votes')
+            .insert({
               topic_id: topicId,
               user_id: user.id,
               vote_type: voteType,
-            }, {
-              onConflict: 'user_id, topic_id'
             });
           
-          if (error) {
-            console.error('Error upserting vote:', error);
-            throw error;
+          if (insertError) {
+            console.error('Error inserting vote:', insertError);
+            throw insertError;
           }
         }
       } else {
@@ -184,21 +193,30 @@ export const usePostVote = (postId: string) => {
             throw error;
           }
         } else {
-          // Insert or update vote
+          // First delete any existing vote, then insert the new one
           console.log('Adding/updating post vote for authenticated user');
-          const { error } = await supabase
+          const { error: deleteError } = await supabase
             .from('post_votes')
-            .upsert({
+            .delete()
+            .eq('post_id', postId)
+            .eq('user_id', user.id);
+          
+          if (deleteError) {
+            console.error('Error deleting existing post vote:', deleteError);
+            throw deleteError;
+          }
+          
+          const { error: insertError } = await supabase
+            .from('post_votes')
+            .insert({
               post_id: postId,
               user_id: user.id,
               vote_type: voteType,
-            }, {
-              onConflict: 'user_id, post_id'
             });
           
-          if (error) {
-            console.error('Error upserting post vote:', error);
-            throw error;
+          if (insertError) {
+            console.error('Error inserting post vote:', insertError);
+            throw insertError;
           }
         }
       } else {
