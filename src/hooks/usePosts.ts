@@ -23,11 +23,12 @@ export const usePosts = (topicId: string) => {
     queryFn: async () => {
       console.log('Fetching posts for topic:', topicId);
       
-      // First, get all posts for the topic
+      // First, get all approved posts for the topic
       const { data: posts, error } = await supabase
         .from('posts')
         .select('*')
         .eq('topic_id', topicId)
+        .eq('moderation_status', 'approved')
         .order('created_at', { ascending: true });
       
       if (error) {

@@ -42,6 +42,7 @@ export const useTopics = (categoryId?: string) => {
           profiles (username, avatar_url),
           categories (name, color, slug, parent_category_id)
         `)
+        .eq('moderation_status', 'approved')
         .order('is_pinned', { ascending: false })
         .order('last_reply_at', { ascending: false });
       

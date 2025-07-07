@@ -275,11 +275,11 @@ const AdminModeration = () => {
     }
   };
 
-  // Enhanced query to get proper data with navigation information
+  // Enhanced query to get only pending moderation content
   const { data: moderationQueue, isLoading, refetch } = useQuery({
     queryKey: ['moderation-queue'],
     queryFn: async () => {
-      // Get posts with topic and category info and real author data
+      // Get posts that require moderation (pending status from moderated categories)
       const { data: posts, error: postsError } = await supabase
         .from('posts')
         .select(`
@@ -290,21 +290,23 @@ const AdminModeration = () => {
           topic_id,
           ip_address,
           is_anonymous,
+          moderation_status,
           topics!inner (
             id,
             title,
             slug,
             categories!inner (
-              slug
+              slug,
+              requires_moderation
             )
           )
         `)
-        .order('created_at', { ascending: false })
-        .limit(20);
+        .eq('moderation_status', 'pending')
+        .order('created_at', { ascending: false });
 
       if (postsError) throw postsError;
 
-      // Get topics with category info and real author data
+      // Get topics that require moderation (pending status from moderated categories)
       const { data: topics, error: topicsError } = await supabase
         .from('topics')
         .select(`
@@ -314,12 +316,14 @@ const AdminModeration = () => {
           slug,
           created_at,
           author_id,
+          moderation_status,
           categories!inner (
-            slug
+            slug,
+            requires_moderation
           )
         `)
-        .order('created_at', { ascending: false })
-        .limit(20);
+        .eq('moderation_status', 'pending')
+        .order('created_at', { ascending: false });
 
       if (topicsError) throw topicsError;
 
@@ -384,10 +388,27 @@ const AdminModeration = () => {
   });
 
   const handleApprove = async (id: string, type: 'topic' | 'post') => {
-    toast({
-      title: 'Content Approved',
-      description: `${type} has been approved and will remain visible`,
-    });
+    try {
+      const { error } = await supabase
+        .from(type === 'topic' ? 'topics' : 'posts')
+        .update({ moderation_status: 'approved' })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Content Approved',
+        description: `${type} has been approved and is now visible`,
+      });
+
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || `Failed to approve ${type}`,
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleBanUser = async (author: string, itemId: string, type: 'topic' | 'post') => {
@@ -474,26 +495,26 @@ const AdminModeration = () => {
   };
 
   const handleReject = async (id: string, type: 'topic' | 'post') => {
-    if (!confirm(`Are you sure you want to remove this ${type}?`)) return;
+    if (!confirm(`Are you sure you want to reject this ${type}?`)) return;
 
     try {
       const { error } = await supabase
         .from(type === 'topic' ? 'topics' : 'posts')
-        .delete()
+        .update({ moderation_status: 'rejected' })
         .eq('id', id);
 
       if (error) throw error;
 
       toast({
-        title: 'Content Removed',
-        description: `${type} has been removed from the forum`,
+        title: 'Content Rejected',
+        description: `${type} has been rejected and will not be visible`,
       });
 
       refetch();
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message || `Failed to remove ${type}`,
+        description: error.message || `Failed to reject ${type}`,
         variant: 'destructive',
       });
     }
@@ -554,7 +575,7 @@ const AdminModeration = () => {
         <TabsContent value="queue">
           <Card>
             <div className="p-6">
-              <h2 className="text-xl font-semibold mb-4">All Forum Content</h2>
+              <h2 className="text-xl font-semibold mb-4">Pending Moderation (Level 1 & 2 Categories)</h2>
               <Table>
                 <TableHeader>
                   <TableRow>

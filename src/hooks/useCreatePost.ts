@@ -19,10 +19,10 @@ export const useCreatePost = () => {
       console.log('Creating post with content:', data.content);
       console.log('Full post data:', data);
 
-      // Get the topic to validate its category
+      // Get the topic to validate its category and check moderation requirements
       const { data: topic, error: topicError } = await supabase
         .from('topics')
-        .select('category_id, categories(level, name)')
+        .select('category_id, categories(level, name, requires_moderation)')
         .eq('id', data.topic_id)
         .single();
 
@@ -38,7 +38,8 @@ export const useCreatePost = () => {
       const postData: any = {
         content: data.content,
         topic_id: data.topic_id,
-        parent_post_id: data.parent_post_id || null
+        parent_post_id: data.parent_post_id || null,
+        moderation_status: topic.categories?.requires_moderation ? 'pending' : 'approved'
       };
 
       if (user) {

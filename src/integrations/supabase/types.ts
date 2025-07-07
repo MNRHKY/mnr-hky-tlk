@@ -84,6 +84,7 @@ export type Database = {
           parent_category_id: string | null
           play_level: string | null
           region: string | null
+          requires_moderation: boolean | null
           slug: string
           sort_order: number | null
         }
@@ -99,6 +100,7 @@ export type Database = {
           parent_category_id?: string | null
           play_level?: string | null
           region?: string | null
+          requires_moderation?: boolean | null
           slug: string
           sort_order?: number | null
         }
@@ -114,6 +116,7 @@ export type Database = {
           parent_category_id?: string | null
           play_level?: string | null
           region?: string | null
+          requires_moderation?: boolean | null
           slug?: string
           sort_order?: number | null
         }
@@ -213,6 +216,7 @@ export type Database = {
           id: string
           ip_address: unknown | null
           is_anonymous: boolean | null
+          moderation_status: string | null
           parent_post_id: string | null
           topic_id: string
           updated_at: string | null
@@ -225,6 +229,7 @@ export type Database = {
           id?: string
           ip_address?: unknown | null
           is_anonymous?: boolean | null
+          moderation_status?: string | null
           parent_post_id?: string | null
           topic_id: string
           updated_at?: string | null
@@ -237,6 +242,7 @@ export type Database = {
           id?: string
           ip_address?: unknown | null
           is_anonymous?: boolean | null
+          moderation_status?: string | null
           parent_post_id?: string | null
           topic_id?: string
           updated_at?: string | null
@@ -419,6 +425,7 @@ export type Database = {
           is_locked: boolean | null
           is_pinned: boolean | null
           last_reply_at: string | null
+          moderation_status: string | null
           reply_count: number | null
           slug: string
           title: string
@@ -435,6 +442,7 @@ export type Database = {
           is_locked?: boolean | null
           is_pinned?: boolean | null
           last_reply_at?: string | null
+          moderation_status?: string | null
           reply_count?: number | null
           slug: string
           title: string
@@ -451,6 +459,7 @@ export type Database = {
           is_locked?: boolean | null
           is_pinned?: boolean | null
           last_reply_at?: string | null
+          moderation_status?: string | null
           reply_count?: number | null
           slug?: string
           title?: string

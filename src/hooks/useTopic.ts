@@ -17,7 +17,8 @@ export const useTopic = (identifier: string) => {
           *,
           profiles (username, avatar_url),
           categories (name, color, slug, parent_category_id)
-        `);
+        `)
+        .eq('moderation_status', 'approved');
       
       if (isUUID) {
         query = query.eq('id', identifier);
