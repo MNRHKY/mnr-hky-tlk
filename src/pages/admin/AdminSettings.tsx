@@ -24,11 +24,17 @@ const AdminSettings = () => {
   // Update local state when settings load
   React.useEffect(() => {
     if (settings) {
-      setHeaderCode(getSetting('header_code', ''));
-      setGoogleAnalyticsId(getSetting('google_analytics_id', ''));
-      setCustomCss(getSetting('custom_css', ''));
+      const headerCodeValue = getSetting('header_code', '');
+      const gaIdValue = getSetting('google_analytics_id', '');
+      const customCssValue = getSetting('custom_css', '');
+      
+      console.log('Loading settings:', { headerCodeValue, gaIdValue, customCssValue });
+      
+      setHeaderCode(headerCodeValue);
+      setGoogleAnalyticsId(gaIdValue);
+      setCustomCss(customCssValue);
     }
-  }, [settings, getSetting]);
+  }, [settings]); // Removed getSetting from dependencies as it changes on every render
 
   const handleSaveGeneral = async () => {
     updateSetting({
@@ -324,7 +330,10 @@ const AdminSettings = () => {
                   <Input
                     id="google-analytics"
                     value={googleAnalyticsId}
-                    onChange={(e) => setGoogleAnalyticsId(e.target.value)}
+                    onChange={(e) => {
+                      console.log('GA input changed:', e.target.value);
+                      setGoogleAnalyticsId(e.target.value);
+                    }}
                     placeholder="G-XXXXXXXXXX"
                   />
                   <p className="text-xs text-muted-foreground">
