@@ -127,6 +127,42 @@ export type Database = {
           },
         ]
       }
+      forum_settings: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean | null
+          setting_key: string
+          setting_type: string
+          setting_value: Json | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          setting_key: string
+          setting_type?: string
+          setting_value?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          setting_key?: string
+          setting_type?: string
+          setting_value?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       post_votes: {
         Row: {
           created_at: string
@@ -523,6 +559,26 @@ export type Database = {
           post_count: number
         }[]
       }
+      get_enhanced_forum_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_topics: number
+          total_posts: number
+          total_members: number
+          topics_today: number
+          posts_today: number
+          members_today: number
+          topics_this_week: number
+          posts_this_week: number
+          members_this_week: number
+          most_active_category: string
+          top_poster: string
+        }[]
+      }
+      get_forum_setting: {
+        Args: { key_name: string }
+        Returns: Json
+      }
       get_forum_stats: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -594,6 +650,17 @@ export type Database = {
       }
       record_anonymous_post: {
         Args: { user_ip: unknown; session_id: string }
+        Returns: undefined
+      }
+      set_forum_setting: {
+        Args: {
+          key_name: string
+          value: Json
+          setting_type?: string
+          category?: string
+          description?: string
+          is_public?: boolean
+        }
         Returns: undefined
       }
       validate_anonymous_content: {

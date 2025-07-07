@@ -7,74 +7,91 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Settings, Users, Shield, Database } from 'lucide-react';
+import { useForumSettings } from '@/hooks/useForumSettings';
+import { useEnhancedForumStats } from '@/hooks/useEnhancedForumStats';
+import { Save, Settings, Users, Shield, Database, BarChart3, Eye, TrendingUp, Calendar } from 'lucide-react';
 
 const AdminSettings = () => {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const { settings, isLoading, updateSetting, getSetting } = useForumSettings();
+  const { data: stats, isLoading: statsLoading } = useEnhancedForumStats();
 
-  // Forum settings state
-  const [forumName, setForumName] = useState('Minor Hockey Talks');
-  const [forumDescription, setForumDescription] = useState('A community forum for minor hockey discussions');
-  const [allowRegistration, setAllowRegistration] = useState(true);
-  const [allowAnonymousPosts, setAllowAnonymousPosts] = useState(true);
-  const [requireEmailVerification, setRequireEmailVerification] = useState(false);
+  // Local state for form inputs
+  const [headerCode, setHeaderCode] = useState('');
+  const [googleAnalyticsId, setGoogleAnalyticsId] = useState('');
+  const [customCss, setCustomCss] = useState('');
 
-  // User settings
-  const [maxPostsPerDay, setMaxPostsPerDay] = useState('10');
-  const [minAccountAge, setMinAccountAge] = useState('0');
-  const [autoModeration, setAutoModeration] = useState(false);
-
-  // Security settings
-  const [enableCaptcha, setEnableCaptcha] = useState(false);
-  const [enableRateLimit, setEnableRateLimit] = useState(true);
-  const [sessionTimeout, setSessionTimeout] = useState('24');
+  // Update local state when settings load
+  React.useEffect(() => {
+    if (settings) {
+      setHeaderCode(getSetting('header_code', ''));
+      setGoogleAnalyticsId(getSetting('google_analytics_id', ''));
+      setCustomCss(getSetting('custom_css', ''));
+    }
+  }, [settings, getSetting]);
 
   const handleSaveGeneral = async () => {
-    setIsLoading(true);
-    // In a real app, these would be saved to a settings table
-    toast({
-      title: 'Settings Saved',
-      description: 'General forum settings have been updated',
+    updateSetting({
+      key: 'forum_name',
+      value: getSetting('forum_name', 'Minor Hockey Talks'),
+      type: 'string',
+      category: 'general'
     });
-    setIsLoading(false);
   };
 
-  const handleSaveUsers = async () => {
-    setIsLoading(true);
-    toast({
-      title: 'Settings Saved',
-      description: 'User settings have been updated',
+  const handleSaveTechnical = async () => {
+    updateSetting({
+      key: 'header_code',
+      value: headerCode,
+      type: 'code',
+      category: 'technical',
+      description: 'Custom HTML code to inject in header'
     });
-    setIsLoading(false);
+    
+    updateSetting({
+      key: 'google_analytics_id',
+      value: googleAnalyticsId,
+      type: 'string',
+      category: 'technical',
+      description: 'Google Analytics tracking ID'
+    });
   };
 
-  const handleSaveSecurity = async () => {
-    setIsLoading(true);
-    toast({
-      title: 'Settings Saved',
-      description: 'Security settings have been updated',
+  const handleSaveAppearance = async () => {
+    updateSetting({
+      key: 'custom_css',
+      value: customCss,
+      type: 'code',
+      category: 'appearance',
+      description: 'Custom CSS styles'
     });
-    setIsLoading(false);
   };
 
   const handleBackupDatabase = async () => {
-    setIsLoading(true);
     toast({
       title: 'Backup Started',
       description: 'Database backup has been initiated',
     });
-    setIsLoading(false);
   };
 
-  const handleClearCache = async () => {
-    setIsLoading(true);
-    toast({
-      title: 'Cache Cleared',
-      description: 'Application cache has been cleared',
-    });
-    setIsLoading(false);
-  };
+  const StatCard = ({ title, value, change, icon: Icon, color = "text-primary" }: {
+    title: string;
+    value: number | string;
+    change?: string;
+    icon: any;
+    color?: string;
+  }) => (
+    <Card className="p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-muted-foreground">{title}</p>
+          <p className="text-2xl font-bold">{value}</p>
+          {change && <p className="text-xs text-muted-foreground">{change}</p>}
+        </div>
+        <Icon className={`h-8 w-8 ${color}`} />
+      </div>
+    </Card>
+  );
 
   return (
     <div className="space-y-6">
@@ -84,25 +101,30 @@ const AdminSettings = () => {
       </div>
 
       <Tabs defaultValue="general" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             General
           </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Users
+          <TabsTrigger value="technical" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Technical
           </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Security
+          <TabsTrigger value="appearance" className="flex items-center gap-2">
+            <Eye className="h-4 w-4" />
+            Appearance
+          </TabsTrigger>
+          <TabsTrigger value="stats" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Traffic Stats
           </TabsTrigger>
           <TabsTrigger value="system" className="flex items-center gap-2">
-            <Database className="h-4 w-4" />
+            <Shield className="h-4 w-4" />
             System
           </TabsTrigger>
         </TabsList>
 
+        {/* General Settings */}
         <TabsContent value="general">
           <Card className="p-6">
             <div className="space-y-6">
@@ -115,8 +137,13 @@ const AdminSettings = () => {
                   <Label htmlFor="forum-name">Forum Name</Label>
                   <Input
                     id="forum-name"
-                    value={forumName}
-                    onChange={(e) => setForumName(e.target.value)}
+                    value={getSetting('forum_name', 'Minor Hockey Talks')}
+                    onChange={(e) => updateSetting({
+                      key: 'forum_name',
+                      value: e.target.value,
+                      type: 'string',
+                      category: 'general'
+                    })}
                     placeholder="Enter forum name"
                   />
                 </div>
@@ -125,8 +152,13 @@ const AdminSettings = () => {
                   <Label htmlFor="forum-description">Forum Description</Label>
                   <Textarea
                     id="forum-description"
-                    value={forumDescription}
-                    onChange={(e) => setForumDescription(e.target.value)}
+                    value={getSetting('forum_description', 'A community forum for minor hockey discussions')}
+                    onChange={(e) => updateSetting({
+                      key: 'forum_description',
+                      value: e.target.value,
+                      type: 'string',
+                      category: 'general'
+                    })}
                     placeholder="Enter forum description"
                     rows={3}
                   />
@@ -140,8 +172,13 @@ const AdminSettings = () => {
                     </div>
                   </div>
                   <Switch
-                    checked={allowRegistration}
-                    onCheckedChange={setAllowRegistration}
+                    checked={getSetting('allow_registration', true)}
+                    onCheckedChange={(checked) => updateSetting({
+                      key: 'allow_registration',
+                      value: checked,
+                      type: 'boolean',
+                      category: 'general'
+                    })}
                   />
                 </div>
 
@@ -153,21 +190,13 @@ const AdminSettings = () => {
                     </div>
                   </div>
                   <Switch
-                    checked={allowAnonymousPosts}
-                    onCheckedChange={setAllowAnonymousPosts}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Require Email Verification</Label>
-                    <div className="text-sm text-muted-foreground">
-                      Require users to verify their email
-                    </div>
-                  </div>
-                  <Switch
-                    checked={requireEmailVerification}
-                    onCheckedChange={setRequireEmailVerification}
+                    checked={getSetting('allow_anonymous_posts', true)}
+                    onCheckedChange={(checked) => updateSetting({
+                      key: 'allow_anonymous_posts',
+                      value: checked,
+                      type: 'boolean',
+                      category: 'general'
+                    })}
                   />
                 </div>
               </div>
@@ -180,117 +209,189 @@ const AdminSettings = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="users">
+        {/* Technical Settings */}
+        <TabsContent value="technical">
           <Card className="p-6">
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold mb-4">User Settings</h2>
+                <h2 className="text-xl font-semibold mb-4">Technical Settings</h2>
               </div>
 
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="max-posts">Maximum Posts Per Day</Label>
-                  <Input
-                    id="max-posts"
-                    type="number"
-                    value={maxPostsPerDay}
-                    onChange={(e) => setMaxPostsPerDay(e.target.value)}
-                    placeholder="10"
+                  <Label htmlFor="header-code">Header Code</Label>
+                  <Textarea
+                    id="header-code"
+                    value={headerCode}
+                    onChange={(e) => setHeaderCode(e.target.value)}
+                    placeholder="Enter custom HTML code to inject in the header (Google Analytics, etc.)"
+                    rows={6}
+                    className="font-mono text-sm"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    HTML code entered here will be injected into the site header. Useful for analytics codes, custom scripts, etc.
+                  </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="min-age">Minimum Account Age (hours)</Label>
+                  <Label htmlFor="google-analytics">Google Analytics Tracking ID</Label>
                   <Input
-                    id="min-age"
-                    type="number"
-                    value={minAccountAge}
-                    onChange={(e) => setMinAccountAge(e.target.value)}
-                    placeholder="0"
+                    id="google-analytics"
+                    value={googleAnalyticsId}
+                    onChange={(e) => setGoogleAnalyticsId(e.target.value)}
+                    placeholder="G-XXXXXXXXXX"
                   />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Auto-Moderation</Label>
-                    <div className="text-sm text-muted-foreground">
-                      Automatically moderate suspicious content
-                    </div>
-                  </div>
-                  <Switch
-                    checked={autoModeration}
-                    onCheckedChange={setAutoModeration}
-                  />
+                  <p className="text-xs text-muted-foreground">
+                    Enter your Google Analytics 4 tracking ID to enable visitor tracking
+                  </p>
                 </div>
               </div>
 
-              <Button onClick={handleSaveUsers} disabled={isLoading}>
+              <Button onClick={handleSaveTechnical} disabled={isLoading}>
                 <Save className="h-4 w-4 mr-2" />
-                Save User Settings
+                Save Technical Settings
               </Button>
             </div>
           </Card>
         </TabsContent>
 
-        <TabsContent value="security">
+        {/* Appearance Settings */}
+        <TabsContent value="appearance">
           <Card className="p-6">
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold mb-4">Security Settings</h2>
+                <h2 className="text-xl font-semibold mb-4">Appearance Settings</h2>
               </div>
 
               <div className="grid gap-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Enable CAPTCHA</Label>
-                    <div className="text-sm text-muted-foreground">
-                      Require CAPTCHA for registration and posts
-                    </div>
-                  </div>
-                  <Switch
-                    checked={enableCaptcha}
-                    onCheckedChange={setEnableCaptcha}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Enable Rate Limiting</Label>
-                    <div className="text-sm text-muted-foreground">
-                      Limit request frequency per user
-                    </div>
-                  </div>
-                  <Switch
-                    checked={enableRateLimit}
-                    onCheckedChange={setEnableRateLimit}
-                  />
-                </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="session-timeout">Session Timeout (hours)</Label>
-                  <Input
-                    id="session-timeout"
-                    type="number"
-                    value={sessionTimeout}
-                    onChange={(e) => setSessionTimeout(e.target.value)}
-                    placeholder="24"
+                  <Label htmlFor="custom-css">Custom CSS</Label>
+                  <Textarea
+                    id="custom-css"
+                    value={customCss}
+                    onChange={(e) => setCustomCss(e.target.value)}
+                    placeholder="Enter custom CSS styles"
+                    rows={8}
+                    className="font-mono text-sm"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Custom CSS styles will be applied to the entire forum
+                  </p>
                 </div>
               </div>
 
-              <Button onClick={handleSaveSecurity} disabled={isLoading}>
+              <Button onClick={handleSaveAppearance} disabled={isLoading}>
                 <Save className="h-4 w-4 mr-2" />
-                Save Security Settings
+                Save Appearance Settings
               </Button>
             </div>
           </Card>
         </TabsContent>
 
+        {/* Traffic Stats */}
+        <TabsContent value="stats">
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Traffic Statistics</h2>
+              <p className="text-muted-foreground">Monitor your forum's activity and growth</p>
+            </div>
+
+            {statsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[...Array(8)].map((_, i) => (
+                  <Card key={i} className="p-4 animate-pulse">
+                    <div className="h-16 bg-muted rounded"></div>
+                  </Card>
+                ))}
+              </div>
+            ) : stats ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <StatCard
+                    title="Total Topics"
+                    value={stats.total_topics || 0}
+                    icon={TrendingUp}
+                    color="text-blue-500"
+                  />
+                  <StatCard
+                    title="Total Posts"
+                    value={stats.total_posts || 0}
+                    icon={TrendingUp}
+                    color="text-green-500"
+                  />
+                  <StatCard
+                    title="Total Members"
+                    value={stats.total_members || 0}
+                    icon={Users}
+                    color="text-purple-500"
+                  />
+                  <StatCard
+                    title="Today's Topics"
+                    value={stats.topics_today || 0}
+                    icon={Calendar}
+                    color="text-orange-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <StatCard
+                    title="Today's Posts"
+                    value={stats.posts_today || 0}
+                    icon={Calendar}
+                    color="text-red-500"
+                  />
+                  <StatCard
+                    title="New Members Today"
+                    value={stats.members_today || 0}
+                    icon={Users}
+                    color="text-teal-500"
+                  />
+                  <StatCard
+                    title="This Week's Topics"
+                    value={stats.topics_this_week || 0}
+                    icon={TrendingUp}
+                    color="text-indigo-500"
+                  />
+                  <StatCard
+                    title="This Week's Posts"
+                    value={stats.posts_this_week || 0}
+                    icon={TrendingUp}
+                    color="text-pink-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card className="p-6">
+                    <h3 className="font-semibold mb-2">Most Active Category</h3>
+                    <p className="text-2xl font-bold text-primary">
+                      {stats.most_active_category || 'No activity yet'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">This week</p>
+                  </Card>
+                  
+                  <Card className="p-6">
+                    <h3 className="font-semibold mb-2">Top Poster</h3>
+                    <p className="text-2xl font-bold text-primary">
+                      {stats.top_poster || 'No posts yet'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">This week</p>
+                  </Card>
+                </div>
+              </>
+            ) : (
+              <Card className="p-6">
+                <p className="text-muted-foreground">Unable to load statistics</p>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* System Settings */}
         <TabsContent value="system">
           <Card className="p-6">
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold mb-4">System Settings</h2>
+                <h2 className="text-xl font-semibold mb-4">System Management</h2>
               </div>
 
               <div className="grid gap-4">
@@ -307,13 +408,26 @@ const AdminSettings = () => {
                   </div>
 
                   <div>
-                    <h3 className="font-medium">Cache Management</h3>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Clear application cache to improve performance
-                    </p>
-                    <Button onClick={handleClearCache} disabled={isLoading} variant="outline">
-                      Clear Application Cache
-                    </Button>
+                    <h3 className="font-medium">Security Settings</h3>
+                    <div className="space-y-2 mt-2">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label>Enable Rate Limiting</Label>
+                          <div className="text-sm text-muted-foreground">
+                            Limit request frequency per user
+                          </div>
+                        </div>
+                        <Switch
+                          checked={getSetting('enable_rate_limiting', true)}
+                          onCheckedChange={(checked) => updateSetting({
+                            key: 'enable_rate_limiting',
+                            value: checked,
+                            type: 'boolean',
+                            category: 'security'
+                          })}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
