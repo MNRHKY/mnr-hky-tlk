@@ -34,7 +34,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   const [editContent, setEditContent] = useState(post.content);
   const { toast } = useToast();
   
-  const hasReplies = post.children && post.children.length > 0;
+  // Removed hasReplies since we're not nesting replies anymore
   
   const handleReplySuccess = () => {
     setShowReplyForm(false);
@@ -131,7 +131,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
     <div className="relative border-b border-border/50 pb-2 mb-2 w-full">
       <div className="bg-card p-3 md:p-4 rounded-md w-full">
         {/* Enhanced reply context with quoted content */}
-        {depth > 0 && post.parent_post_id && post.parent_post && (
+        {post.parent_post_id && post.parent_post && (
           <div className="mb-2">
             <div className="bg-slate-50 border-l-4 border-slate-300 rounded-r p-2 space-y-1">
               <div className="flex items-center gap-2 text-xs text-slate-500">
@@ -160,16 +160,6 @@ export const PostComponent: React.FC<PostComponentProps> = ({
             <span className="text-xs text-muted-foreground">
               {formatDistanceToNow(new Date(post.created_at))} ago
             </span>
-            {hasReplies && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
-                onClick={() => setIsCollapsed(!isCollapsed)}
-              >
-                {isCollapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
-              </Button>
-            )}
           </div>
         </div>
         
@@ -270,13 +260,6 @@ export const PostComponent: React.FC<PostComponentProps> = ({
               </TooltipContent>
             </Tooltip>
             
-            {/* Reply count */}
-            {hasReplies && (
-              <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                <MessageSquare className="h-3 w-3" />
-                <span>{post.children.length}</span>
-              </div>
-            )}
             
             {/* Edit button - icon only (show only for post author or moderators) */}
             {canEdit && !isEditing && (
@@ -344,20 +327,6 @@ export const PostComponent: React.FC<PostComponentProps> = ({
           />
         )}
 
-        {/* Nested replies - no indentation, just flat structure */}
-        {hasReplies && !isCollapsed && (
-          <div className="mt-2 space-y-2">
-            {post.children.map((child: any) => (
-              <PostComponent
-                key={child.id}
-                post={child}
-                topicId={topicId}
-                depth={depth + 1}
-                onReport={onReport}
-              />
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

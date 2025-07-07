@@ -95,17 +95,9 @@ export const TopicView = () => {
   const canEditTopic = user && (user.id === topic?.author_id || user.role === 'admin' || user.role === 'moderator');
 
   const organizeReplies = (posts: any[]) => {
-    const topLevelReplies = posts.filter(post => !post.parent_post_id);
-    const nestedReplies = posts.filter(post => post.parent_post_id);
-    
-    const addChildren = (post: any): any => {
-      const children = nestedReplies
-        .filter(reply => reply.parent_post_id === post.id)
-        .map(addChildren);
-      return { ...post, children };
-    };
-    
-    return topLevelReplies.map(addChildren);
+    // Create a flat list sorted by creation time to maintain chronological order
+    // All posts will be rendered at the same visual level, but parent relationships are preserved for quoting
+    return posts.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   };
 
 
@@ -435,6 +427,7 @@ export const TopicView = () => {
                 key={reply.id}
                 post={reply}
                 topicId={topic.id || ''}
+                depth={0}
                 onReport={handleReport}
               />
             ))}
