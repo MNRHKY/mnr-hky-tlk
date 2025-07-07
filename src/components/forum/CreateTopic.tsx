@@ -117,6 +117,11 @@ export const CreateTopic = () => {
                 : 'Rate limit reached (5 posts per 12 hours)'
               }
             </div>
+            <div className="text-xs mt-2 text-blue-600">
+              <a href="/register" className="underline hover:no-underline">
+                Create account for unlimited posting + images/links
+              </a>
+            </div>
           </div>
         </div>
       )}

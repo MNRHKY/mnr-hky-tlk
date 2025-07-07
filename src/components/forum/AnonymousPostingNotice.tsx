@@ -51,7 +51,13 @@ export const AnonymousPostingNotice: React.FC<AnonymousPostingNoticeProps> = ({
 
         {showRegistrationPrompt && (
           <div className="pt-2 border-t border-blue-200">
-            <p className="text-sm text-blue-800 mb-2">Want unlimited posting?</p>
+            <p className="text-sm text-blue-800 mb-2">Create a free account to unlock:</p>
+            <ul className="text-xs text-blue-700 mb-3 space-y-1">
+              <li>• Unlimited posting (no rate limits)</li>
+              <li>• Add images and links to posts</li>
+              <li>• Build reputation and track your posts</li>
+              <li>• Get notifications on replies</li>
+            </ul>
             <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
               <Link to="/register">
                 <UserPlus className="h-4 w-4 mr-2" />

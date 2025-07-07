@@ -6,6 +6,7 @@ import { useCreatePost } from '@/hooks/useCreatePost';
 import { useTempUser } from '@/hooks/useTempUser';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 interface InlineReplyFormProps {
   topicId: string;
@@ -141,6 +142,11 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
                 ? `${tempUser.remainingPosts} posts remaining in the next 12 hours`
                 : 'Rate limit reached (5 posts per 12 hours)'
               }
+            </div>
+            <div className="text-xs mt-2 text-blue-600">
+              <Link to="/register" className="underline hover:no-underline">
+                Create account for unlimited posting + images/links
+              </Link>
             </div>
           </div>
         </div>
