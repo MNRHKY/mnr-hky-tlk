@@ -56,7 +56,6 @@ export const useCreateTopic = () => {
         // Authenticated user
         console.log('DEBUG TOPIC: Creating topic for authenticated user:', user.id);
         topicData.author_id = user.id;
-        topicData.is_anonymous = false;
       } else {
         // Anonymous user - use temporary user ID
         const tempUserId = sessionManager.getTempUserId();
@@ -65,8 +64,7 @@ export const useCreateTopic = () => {
           throw new Error('No temporary user session available');
         }
         topicData.author_id = tempUserId;
-        topicData.is_anonymous = true;
-        console.log('DEBUG TOPIC: Creating topic with temporary user ID, is_anonymous:', topicData.is_anonymous);
+        console.log('DEBUG TOPIC: Creating topic with temporary user ID:', tempUserId);
       }
       
       console.log('DEBUG TOPIC: Final topicData before insert:', topicData);
