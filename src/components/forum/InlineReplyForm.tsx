@@ -6,6 +6,7 @@ import { useCreatePost } from '@/hooks/useCreatePost';
 import { useAnonymousPosting } from '@/hooks/useAnonymousPosting';
 import { AnonymousPostingNotice } from './AnonymousPostingNotice';
 import { toast } from '@/hooks/use-toast';
+import { formatDistanceToNow } from 'date-fns';
 
 interface InlineReplyFormProps {
   topicId: string;
@@ -103,15 +104,28 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
 
   return (
     <div className={`w-full min-w-0 ${isTopicReply ? 'bg-primary/5 rounded-md p-4' : 'mt-3 bg-muted/30 rounded-md p-3'}`}>
-      {/* Reply context */}
+      {/* Enhanced reply context with quote preview */}
       {parentPost && (
-        <div className="mb-3 text-sm text-muted-foreground">
-          <span>Replying to </span>
-          <span className="font-medium text-foreground">
-            {isTopicReply ? 'Original Post' : `@${parentPost.is_anonymous ? 'Anonymous' : (parentPost.profiles?.username || 'Unknown')}`}
-          </span>
-          <div className="text-xs mt-1 bg-accent/20 border-l-4 border-accent rounded-r p-2 italic text-accent">
-            "{(isTopicReply ? parentPost.title : parentPost.content).substring(0, 100)}{(isTopicReply ? parentPost.title : parentPost.content).length > 100 ? '...' : ''}"
+        <div className="mb-3">
+          <div className="bg-muted/20 border-l-4 border-primary/50 rounded-r p-3 space-y-2">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Replying to</span>
+              <span className="font-medium text-foreground">
+                {isTopicReply ? 'Original Post' : 
+                 `${parentPost.is_anonymous ? 'Anonymous' : (parentPost.profiles?.username || 'Unknown')}`}
+              </span>
+              {!isTopicReply && parentPost.created_at && (
+                <>
+                  <span>•</span>
+                  <span>{formatDistanceToNow(new Date(parentPost.created_at))} ago</span>
+                </>
+              )}
+            </div>
+            <div className="text-sm text-muted-foreground italic bg-background/50 rounded p-2">
+              "{(isTopicReply ? parentPost.title : parentPost.content).length > 200 ? 
+                `${(isTopicReply ? parentPost.title : parentPost.content).substring(0, 200)}...` : 
+                (isTopicReply ? parentPost.title : parentPost.content)}"
+            </div>
           </div>
         </div>
       )}

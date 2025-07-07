@@ -30,7 +30,14 @@ export const usePosts = (topicId: string) => {
         .from('posts')
         .select(`
           *,
-          profiles (username, avatar_url)
+          profiles (username, avatar_url),
+          parent_post:parent_post_id (
+            id,
+            content,
+            created_at,
+            is_anonymous,
+            profiles (username, avatar_url)
+          )
         `)
         .eq('topic_id', topicId)
         .order('created_at', { ascending: true });

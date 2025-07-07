@@ -124,14 +124,23 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   return (
     <div className="relative border-b border-border/50 pb-2 mb-2 w-full">
       <div className="bg-card p-3 md:p-4 rounded-md w-full">
-        {/* Reply context for nested replies */}
-        {depth > 0 && post.parent_post_id && (
-          <div className="mb-3 text-xs">
-            <div className="bg-accent/20 border-l-4 border-accent rounded-r p-2">
-              <span className="text-muted-foreground">Replying to </span>
-              <span className="font-medium text-accent">
-                @{post.profiles?.username || 'Anonymous'}
-              </span>
+        {/* Enhanced reply context with quoted content */}
+        {depth > 0 && post.parent_post_id && post.parent_post && (
+          <div className="mb-3">
+            <div className="bg-muted/20 border-l-4 border-primary/50 rounded-r p-3 space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>Replying to</span>
+                <span className="font-medium text-foreground">
+                  {post.parent_post.is_anonymous ? 'Anonymous' : (post.parent_post.profiles?.username || 'Unknown')}
+                </span>
+                <span>•</span>
+                <span>{formatDistanceToNow(new Date(post.parent_post.created_at))} ago</span>
+              </div>
+              <div className="text-sm text-muted-foreground italic bg-background/50 rounded p-2">
+                "{post.parent_post.content.length > 200 ? 
+                  `${post.parent_post.content.substring(0, 200)}...` : 
+                  post.parent_post.content}"
+              </div>
             </div>
           </div>
         )}
