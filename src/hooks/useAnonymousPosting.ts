@@ -12,7 +12,7 @@ interface AnonymousPostingState {
 
 export const useAnonymousPosting = () => {
   const [state, setState] = useState<AnonymousPostingState>({
-    remainingPosts: 3,
+    remainingPosts: 5,
     canPost: true,
     isLoading: false,
     sessionId: ''
@@ -56,7 +56,7 @@ export const useAnonymousPosting = () => {
       }
 
       const currentCount = trackingData?.post_count || 0;
-      const remaining = Math.max(0, 3 - currentCount);
+      const remaining = Math.max(0, 5 - currentCount);
       
       console.log('Rate limit check results:', {
         canPost,

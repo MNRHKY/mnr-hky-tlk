@@ -150,7 +150,7 @@ class SessionManager {
       }
 
       const totalPosts = (postData?.length || 0) + (replyData?.length || 0);
-      const remainingPosts = Math.max(0, 3 - totalPosts);
+      const remainingPosts = Math.max(0, 5 - totalPosts);
 
       return { canPost, remainingPosts };
     } catch (error) {
