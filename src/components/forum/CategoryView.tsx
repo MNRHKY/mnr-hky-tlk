@@ -166,28 +166,50 @@ export const CategoryView = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-            {/* Enhanced topic creation buttons */}
-            <QuickTopicModal 
-              preselectedCategoryId={category.id}
-              trigger={
-                <Button size="sm" className="w-full sm:w-auto">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Start Discussion
-                </Button>
-              }
-            />
-            
-            {/* Category request button */}
-            <CategoryRequestModal 
-              currentCategoryId={category.id}
-              trigger={
-                <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                  <HelpCircle className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Request Category</span>
-                  <span className="sm:hidden">Request</span>
-                </Button>
-              }
-            />
+            {/* Show different content based on category level */}
+            {category.level === 3 ? (
+              // Only level 3 categories allow topic creation
+              <>
+                <QuickTopicModal 
+                  preselectedCategoryId={category.id}
+                  trigger={
+                    <Button size="sm" className="w-full sm:w-auto">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Start Discussion
+                    </Button>
+                  }
+                />
+                
+                {/* Category request button */}
+                <CategoryRequestModal 
+                  currentCategoryId={category.id}
+                  trigger={
+                    <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                      <HelpCircle className="h-4 w-4 mr-2" />
+                      <span className="hidden sm:inline">Request Category</span>
+                      <span className="sm:hidden">Request</span>
+                    </Button>
+                  }
+                />
+              </>
+            ) : (
+              // Level 1 & 2 categories are for browsing only
+              <div className="flex flex-col items-center gap-2">
+                <Badge variant="secondary" className="text-xs">
+                  Browse Only - Select an Age Group to Post
+                </Badge>
+                <CategoryRequestModal 
+                  currentCategoryId={category.id}
+                  trigger={
+                    <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                      <HelpCircle className="h-4 w-4 mr-2" />
+                      <span className="hidden sm:inline">Request Category</span>
+                      <span className="sm:hidden">Request</span>
+                    </Button>
+                  }
+                />
+              </div>
+            )}
           </div>
         </div>
       </Card>

@@ -19,6 +19,21 @@ export const useCreateTopic = () => {
     mutationFn: async (data: CreateTopicData) => {
       console.log('Creating topic:', data);
 
+      // Validate that the category is level 3 (only level 3 categories allow posts)
+      const { data: category, error: categoryError } = await supabase
+        .from('categories')
+        .select('level, name')
+        .eq('id', data.category_id)
+        .single();
+
+      if (categoryError) {
+        throw new Error('Invalid category selected');
+      }
+
+      if (category.level !== 3) {
+        throw new Error(`Posts can only be created in age group & skill level categories. "${category.name}" is for browsing only.`);
+      }
+
       const topicData: any = {
         title: data.title,
         content: data.content,
