@@ -122,7 +122,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   const replyTextColor = depth > 0 ? replyTextColors[colorIndex] : 'text-foreground';
   
   return (
-    <div className="relative border-b border-border/50 pb-4 mb-4 w-full">
+    <div className="relative border-b border-border/50 pb-2 mb-2 w-full">
       <div className="bg-card p-3 md:p-4 rounded-md w-full">
         {/* Reply context for nested replies */}
         {depth > 0 && post.parent_post_id && (
@@ -327,7 +327,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
 
         {/* Nested replies - no indentation, just flat structure */}
         {hasReplies && !isCollapsed && (
-          <div className="mt-3 space-y-3">
+          <div className="mt-2 space-y-2">
             {post.children.map((child: any) => (
               <PostComponent
                 key={child.id}
