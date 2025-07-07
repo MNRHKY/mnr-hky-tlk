@@ -28,20 +28,12 @@ export const CategoryRequestModal = ({ currentCategoryId, trigger }: CategoryReq
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to request a new category",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // For now, just show a success message
-    // In a real implementation, this would submit to a requests table
+    // Allow both authenticated and anonymous users to request categories
     toast({
       title: "Category request submitted",
-      description: "Your request has been sent to the administrators for review.",
+      description: user 
+        ? "Your request has been sent to the administrators for review."
+        : "Your anonymous request has been sent to the administrators for review.",
     });
     
     setOpen(false);
