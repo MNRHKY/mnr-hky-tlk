@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useForumSettings } from '@/hooks/useForumSettings';
 import { useEnhancedForumStats } from '@/hooks/useEnhancedForumStats';
-import { Save, Settings, Users, Shield, Database, BarChart3, Eye, TrendingUp, Calendar, Facebook, Instagram, Linkedin, Twitter, Youtube } from 'lucide-react';
+import { Save, Settings, Users, Shield, Database, BarChart3, Eye, TrendingUp, Calendar, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 
 const AdminSettings = () => {
   const { toast } = useToast();
@@ -282,23 +282,6 @@ const AdminSettings = () => {
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedin-url" className="flex items-center gap-2">
-                        <Linkedin className="h-4 w-4" />
-                        LinkedIn URL
-                      </Label>
-                      <Input
-                        id="linkedin-url"
-                        value={getSetting('social_linkedin', '')}
-                        onChange={(e) => updateSetting({
-                          key: 'social_linkedin',
-                          value: e.target.value,
-                          type: 'string',
-                          category: 'social'
-                        })}
-                        placeholder="https://linkedin.com/company/yourcompany"
-                      />
-                    </div>
                   </div>
                 </div>
               </div>

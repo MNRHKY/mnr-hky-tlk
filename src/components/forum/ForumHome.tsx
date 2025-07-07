@@ -4,7 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, Clock, Star, MessageSquare, User as UserIcon } from 'lucide-react';
+import { TrendingUp, Clock, Star, MessageSquare, User as UserIcon, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { useHotTopics } from '@/hooks/useHotTopics';
 import { useTopics } from '@/hooks/useTopics';
 import { useAuth } from '@/hooks/useAuth';
@@ -61,6 +61,53 @@ export const ForumHome = () => {
         <p className="text-muted-foreground">
           {getSetting('forum_description', 'A community forum for minor hockey discussions')}
         </p>
+        
+        {/* Social Media Links */}
+        {(getSetting('social_facebook', '') || getSetting('social_twitter', '') || getSetting('social_instagram', '') || getSetting('social_youtube', '')) && (
+          <div className="flex items-center gap-3 mt-3">
+            <span className="text-sm text-muted-foreground">Follow us:</span>
+            {getSetting('social_facebook', '') && (
+              <a
+                href={getSetting('social_facebook', '')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Facebook className="h-5 w-5" />
+              </a>
+            )}
+            {getSetting('social_twitter', '') && (
+              <a
+                href={getSetting('social_twitter', '')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Twitter className="h-5 w-5" />
+              </a>
+            )}
+            {getSetting('social_instagram', '') && (
+              <a
+                href={getSetting('social_instagram', '')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
+            )}
+            {getSetting('social_youtube', '') && (
+              <a
+                href={getSetting('social_youtube', '')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Youtube className="h-5 w-5" />
+              </a>
+            )}
+          </div>
+        )}
       </div>
 
 
