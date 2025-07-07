@@ -220,29 +220,37 @@ export const PostComponent: React.FC<PostComponentProps> = ({
         {/* Compact action bar */}
         <TooltipProvider>
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-            {/* Compact voting section */}
+            {/* Voting section - only show for authenticated users */}
             <div className="flex items-center space-x-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-6 w-6 p-0 ${postVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
-                onClick={() => voteOnPost({ voteType: 1 })}
-                disabled={isVotingPost}
-              >
-                <ArrowUp className="h-3 w-3" />
-              </Button>
-              <span className={`text-xs font-medium min-w-[16px] text-center ${(post.vote_score || 0) > 0 ? 'text-orange-500' : (post.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
-                {post.vote_score || 0}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-6 w-6 p-0 ${postVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
-                onClick={() => voteOnPost({ voteType: -1 })}
-                disabled={isVotingPost}
-              >
-                <ArrowDown className="h-3 w-3" />
-              </Button>
+              {user ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-6 w-6 p-0 ${postVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
+                    onClick={() => voteOnPost({ voteType: 1 })}
+                    disabled={isVotingPost}
+                  >
+                    <ArrowUp className="h-3 w-3" />
+                  </Button>
+                  <span className={`text-xs font-medium min-w-[16px] text-center ${(post.vote_score || 0) > 0 ? 'text-orange-500' : (post.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
+                    {post.vote_score || 0}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-6 w-6 p-0 ${postVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
+                    onClick={() => voteOnPost({ voteType: -1 })}
+                    disabled={isVotingPost}
+                  >
+                    <ArrowDown className="h-3 w-3" />
+                  </Button>
+                </>
+              ) : (
+                <span className={`text-xs font-medium min-w-[16px] text-center ${(post.vote_score || 0) > 0 ? 'text-orange-500' : (post.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
+                  {post.vote_score || 0}
+                </span>
+              )}
             </div>
             
             {/* Reply button - icon only */}

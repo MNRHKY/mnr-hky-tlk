@@ -2,8 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { Vote } from '@/types/voting';
-import { getOrCreateAnonymousSessionId } from '@/utils/anonymousSession';
-import { checkAnonymousVoteRateLimit, createVotingErrorHandler, createVotingUnavailableHandler } from '@/utils/votingHelpers';
 import { useToast } from '@/hooks/use-toast';
 
 export const useTopicVote = (topicId: string) => {
@@ -11,130 +9,74 @@ export const useTopicVote = (topicId: string) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // For anonymous users, use session ID to check for existing votes
-  const anonymousSessionId = user ? null : getOrCreateAnonymousSessionId();
-
   const { data: userVote } = useQuery({
-    queryKey: ['topic-vote', topicId, user?.id, anonymousSessionId],
+    queryKey: ['topic-vote', topicId, user?.id],
     queryFn: async () => {
-      console.log('Topic vote query running', { user: !!user, anonymousSessionId, topicId });
-      if (user) {
-        // Authenticated user vote lookup
-        const { data, error } = await supabase
-          .from('topic_votes')
-          .select('*')
-          .eq('topic_id', topicId)
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        if (error) throw error;
-        return data as Vote | null;
-      } else if (anonymousSessionId) {
-        console.log('Looking for anonymous vote', { topicId, anonymousSessionId });
-        // Anonymous user vote lookup by session ID
-        const { data, error } = await supabase
-          .from('topic_votes')
-          .select('*')
-          .eq('topic_id', topicId)
-          .eq('anonymous_session_id', anonymousSessionId)
-          .is('user_id', null)
-          .maybeSingle();
-        
-        if (error) throw error;
-        console.log('Anonymous vote query result:', data);
-        return data as Vote | null;
-      }
-      console.log('No user or session found for voting');
-      return null;
+      if (!user) return null;
+      
+      const { data, error } = await supabase
+        .from('topic_votes')
+        .select('*')
+        .eq('topic_id', topicId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data as Vote | null;
     },
-    enabled: !!topicId && !!(user || anonymousSessionId),
+    enabled: !!topicId && !!user,
   });
 
   const voteMutation = useMutation({
     mutationFn: async ({ voteType }: { voteType: number }) => {
-      console.log('Anonymous voting attempt:', { user: !!user, anonymousSessionId, voteType });
-      if (user) {
-        // Authenticated user voting
-        if (userVote && userVote.vote_type === voteType) {
-          // Remove vote if clicking the same vote type
-          const { error } = await supabase
-            .from('topic_votes')
-            .delete()
-            .eq('topic_id', topicId)
-            .eq('user_id', user.id);
-          
-          if (error) throw error;
-        } else {
-          // First delete any existing vote, then insert the new one
-          const { error: deleteError } = await supabase
-            .from('topic_votes')
-            .delete()
-            .eq('topic_id', topicId)
-            .eq('user_id', user.id);
-          
-          if (deleteError) throw deleteError;
-          
-          const { error: insertError } = await supabase
-            .from('topic_votes')
-            .insert({
-              topic_id: topicId,
-              user_id: user.id,
-              vote_type: voteType,
-            });
-          
-          if (insertError) throw insertError;
-        }
-      } else if (anonymousSessionId) {
-        console.log('Processing anonymous vote for session:', anonymousSessionId);
-        // Anonymous user voting with security checks
-        const userIP = await checkAnonymousVoteRateLimit(anonymousSessionId);
+      if (!user) {
+        throw new Error('Must be logged in to vote');
+      }
+
+      if (userVote && userVote.vote_type === voteType) {
+        // Remove vote if clicking the same vote type
+        const { error } = await supabase
+          .from('topic_votes')
+          .delete()
+          .eq('topic_id', topicId)
+          .eq('user_id', user.id);
         
-        if (userVote && userVote.vote_type === voteType) {
-          // Remove vote if clicking the same vote type
-          const { error } = await supabase
-            .from('topic_votes')
-            .delete()
-            .eq('topic_id', topicId)
-            .eq('anonymous_session_id', anonymousSessionId)
-            .is('user_id', null);
-          
-          if (error) throw error;
-        } else {
-          // First delete any existing vote, then insert the new one
-          const { error: deleteError } = await supabase
-            .from('topic_votes')
-            .delete()
-            .eq('topic_id', topicId)
-            .eq('anonymous_session_id', anonymousSessionId)
-            .is('user_id', null);
-          
-          if (deleteError) throw deleteError;
-          
-          const { error: insertError } = await supabase
-            .from('topic_votes')
-            .insert({
-              topic_id: topicId,
-              user_id: null,
-              vote_type: voteType,
-              anonymous_ip: userIP,
-              anonymous_session_id: anonymousSessionId,
-            });
-          
-          if (insertError) throw insertError;
-        }
+        if (error) throw error;
       } else {
-        createVotingUnavailableHandler(toast)();
-        throw new Error('No user or session available for voting');
+        // First delete any existing vote, then insert the new one
+        const { error: deleteError } = await supabase
+          .from('topic_votes')
+          .delete()
+          .eq('topic_id', topicId)
+          .eq('user_id', user.id);
+        
+        if (deleteError) throw deleteError;
+        
+        const { error: insertError } = await supabase
+          .from('topic_votes')
+          .insert({
+            topic_id: topicId,
+            user_id: user.id,
+            vote_type: voteType,
+          });
+        
+        if (insertError) throw insertError;
       }
     },
     onSuccess: () => {
-      // Invalidate queries to refresh vote counts and user vote state
       queryClient.invalidateQueries({ queryKey: ['topic-vote', topicId] });
       queryClient.invalidateQueries({ queryKey: ['topic', topicId] });
       queryClient.invalidateQueries({ queryKey: ['topics'] });
       queryClient.invalidateQueries({ queryKey: ['hot-topics'] });
     },
-    onError: createVotingErrorHandler(toast),
+    onError: (error: any) => {
+      console.error('Error voting:', error);
+      toast({
+        title: "Error",
+        description: error.message === 'Must be logged in to vote' ? 'Please log in to vote' : 'Failed to register vote',
+        variant: "destructive",
+      });
+    },
   });
 
   return {

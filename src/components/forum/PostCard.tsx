@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { MessageSquare, ArrowUp, ArrowDown, Pin, Lock, Flag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useTopicVote } from '@/hooks/useVoting';
+import { useAuth } from '@/hooks/useAuth';
 import { HotTopic } from '@/hooks/useHotTopics';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AdminControls } from './AdminControls';
@@ -15,6 +16,7 @@ interface PostCardProps {
 }
 
 export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
+  const { user } = useAuth();
   const { userVote, vote, isVoting } = useTopicVote(topic.id);
   const isMobile = useIsMobile();
 
@@ -23,29 +25,37 @@ export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
       <div className="p-3 md:p-4">
         {/* Mobile-first layout */}
         <div className="flex space-x-3">
-          {/* Vote buttons - compact on mobile */}
+          {/* Vote buttons - only show for authenticated users */}
           <div className="flex flex-col items-center space-y-1 min-w-[40px]">
-            <Button
-              variant="ghost"
-              size="sm"
-            className={`h-6 w-6 p-0 ${userVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
-            onClick={() => vote({ voteType: 1 })}
-            disabled={isVoting}
-          >
-            <ArrowUp className="h-4 w-4" />
-          </Button>
-          <span className={`text-xs font-medium ${topic.vote_score > 0 ? 'text-orange-500' : topic.vote_score < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
-            {topic.vote_score || 0}
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`h-6 w-6 p-0 ${userVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
-            onClick={() => vote({ voteType: -1 })}
-              disabled={isVoting}
-            >
-              <ArrowDown className="h-4 w-4" />
-            </Button>
+            {user ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`h-6 w-6 p-0 ${userVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
+                  onClick={() => vote({ voteType: 1 })}
+                  disabled={isVoting}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </Button>
+                <span className={`text-xs font-medium ${topic.vote_score > 0 ? 'text-orange-500' : topic.vote_score < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
+                  {topic.vote_score || 0}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`h-6 w-6 p-0 ${userVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
+                  onClick={() => vote({ voteType: -1 })}
+                  disabled={isVoting}
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <span className={`text-xs font-medium ${topic.vote_score > 0 ? 'text-orange-500' : topic.vote_score < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
+                {topic.vote_score || 0}
+              </span>
+            )}
           </div>
 
           {/* Content */}
