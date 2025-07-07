@@ -97,7 +97,7 @@ export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center space-x-3">
                 <span className="font-medium">
-                  {topic.is_anonymous ? 'Anonymous' : (topic.username || 'Unknown')}
+                  {topic.username || 'Anonymous User'}
                 </span>
                 <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
                 <Link 

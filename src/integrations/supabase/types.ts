@@ -99,8 +99,6 @@ export type Database = {
       }
       post_votes: {
         Row: {
-          anonymous_ip: unknown | null
-          anonymous_session_id: string | null
           created_at: string
           id: string
           post_id: string
@@ -109,8 +107,6 @@ export type Database = {
           vote_type: number
         }
         Insert: {
-          anonymous_ip?: unknown | null
-          anonymous_session_id?: string | null
           created_at?: string
           id?: string
           post_id: string
@@ -119,8 +115,6 @@ export type Database = {
           vote_type: number
         }
         Update: {
-          anonymous_ip?: unknown | null
-          anonymous_session_id?: string | null
           created_at?: string
           id?: string
           post_id?: string
@@ -147,39 +141,30 @@ export type Database = {
       }
       posts: {
         Row: {
-          anonymous_ip: unknown | null
-          anonymous_session_id: string | null
           author_id: string | null
           content: string
           created_at: string | null
           id: string
-          is_anonymous: boolean | null
           parent_post_id: string | null
           topic_id: string
           updated_at: string | null
           vote_score: number | null
         }
         Insert: {
-          anonymous_ip?: unknown | null
-          anonymous_session_id?: string | null
           author_id?: string | null
           content: string
           created_at?: string | null
           id?: string
-          is_anonymous?: boolean | null
           parent_post_id?: string | null
           topic_id: string
           updated_at?: string | null
           vote_score?: number | null
         }
         Update: {
-          anonymous_ip?: unknown | null
-          anonymous_session_id?: string | null
           author_id?: string | null
           content?: string
           created_at?: string | null
           id?: string
-          is_anonymous?: boolean | null
           parent_post_id?: string | null
           topic_id?: string
           updated_at?: string | null
@@ -319,8 +304,6 @@ export type Database = {
       }
       topic_votes: {
         Row: {
-          anonymous_ip: unknown | null
-          anonymous_session_id: string | null
           created_at: string
           id: string
           topic_id: string
@@ -329,8 +312,6 @@ export type Database = {
           vote_type: number
         }
         Insert: {
-          anonymous_ip?: unknown | null
-          anonymous_session_id?: string | null
           created_at?: string
           id?: string
           topic_id: string
@@ -339,8 +320,6 @@ export type Database = {
           vote_type: number
         }
         Update: {
-          anonymous_ip?: unknown | null
-          anonymous_session_id?: string | null
           created_at?: string
           id?: string
           topic_id?: string
@@ -367,14 +346,11 @@ export type Database = {
       }
       topics: {
         Row: {
-          anonymous_ip: unknown | null
-          anonymous_session_id: string | null
           author_id: string | null
           category_id: string
           content: string | null
           created_at: string | null
           id: string
-          is_anonymous: boolean | null
           is_locked: boolean | null
           is_pinned: boolean | null
           last_reply_at: string | null
@@ -386,14 +362,11 @@ export type Database = {
           vote_score: number | null
         }
         Insert: {
-          anonymous_ip?: unknown | null
-          anonymous_session_id?: string | null
           author_id?: string | null
           category_id: string
           content?: string | null
           created_at?: string | null
           id?: string
-          is_anonymous?: boolean | null
           is_locked?: boolean | null
           is_pinned?: boolean | null
           last_reply_at?: string | null
@@ -405,14 +378,11 @@ export type Database = {
           vote_score?: number | null
         }
         Update: {
-          anonymous_ip?: unknown | null
-          anonymous_session_id?: string | null
           author_id?: string | null
           category_id?: string
           content?: string | null
           created_at?: string | null
           id?: string
-          is_anonymous?: boolean | null
           is_locked?: boolean | null
           is_pinned?: boolean | null
           last_reply_at?: string | null
