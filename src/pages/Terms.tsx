@@ -3,7 +3,7 @@ import { useForumSettings } from '@/hooks/useForumSettings';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 
 const Terms = () => {
-  const { getSetting } = useForumSettings();
+  const { getSetting, isLoading } = useForumSettings();
   const termsContent = getSetting('terms_content', '');
 
   return (
@@ -11,7 +11,7 @@ const Terms = () => {
       <h1 className="text-3xl font-bold mb-8">Terms & Conditions</h1>
       
       <div className="prose prose-slate max-w-none">
-        {termsContent ? (
+        {!isLoading && termsContent ? (
           <MarkdownRenderer 
             content={termsContent} 
             allowImages={true}
@@ -20,7 +20,7 @@ const Terms = () => {
         ) : (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
-              Terms & Conditions content is being loaded...
+              {isLoading ? 'Loading terms & conditions...' : 'Terms & Conditions content is not available.'}
             </p>
           </div>
         )}
