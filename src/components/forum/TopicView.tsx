@@ -292,18 +292,7 @@ export const TopicView = () => {
                 variant="ghost" 
                 size="sm" 
                 className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                onClick={() => {
-                  setShowTopicReply(!showTopicReply);
-                  // Auto-scroll to reply form after state update
-                  if (!showTopicReply) {
-                    setTimeout(() => {
-                      document.getElementById('topic-reply-form')?.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center' 
-                      });
-                    }, 100);
-                  }
-                }}
+                onClick={() => setShowTopicReply(!showTopicReply)}
               >
                 <MessageCircle className="h-3 w-3" />
               </Button>
@@ -393,18 +382,7 @@ export const TopicView = () => {
               Comments ({posts?.length || 0})
             </h2>
             <Button 
-              onClick={() => {
-                setShowTopicReply(!showTopicReply);
-                // Auto-scroll to reply form after state update
-                if (!showTopicReply) {
-                  setTimeout(() => {
-                    document.getElementById('topic-reply-form')?.scrollIntoView({ 
-                      behavior: 'smooth', 
-                      block: 'center' 
-                    });
-                  }, 100);
-                }
-              }}
+              onClick={() => setShowTopicReply(!showTopicReply)}
               size="sm"
               variant="outline"
               className="text-xs"
