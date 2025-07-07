@@ -53,8 +53,12 @@ export const useCreatePost = () => {
         }
         postData.author_id = null;
         postData.is_anonymous = true;
-        postData.anonymous_session_id = generateSessionId();
+        // Use the same session ID that useAnonymousPosting uses
+        const sessionId = generateSessionId();
+        postData.anonymous_session_id = sessionId;
         postData.anonymous_ip = await getClientIP();
+        
+        console.log('Creating anonymous post with session ID:', sessionId);
       }
 
       const { data: post, error } = await supabase
@@ -91,6 +95,20 @@ export const useCreatePost = () => {
         console.error('Error incrementing reply count:', incrementError);
       }
 
+      // Record anonymous post for rate limiting
+      if (!user && post.anonymous_session_id && post.anonymous_ip) {
+        console.log('Recording anonymous post for rate limiting with session ID:', post.anonymous_session_id);
+        const { error: recordError } = await supabase.rpc('record_anonymous_post', {
+          user_ip: post.anonymous_ip,
+          session_id: post.anonymous_session_id
+        });
+        
+        if (recordError) {
+          console.error('Error recording anonymous post:', recordError);
+        } else {
+          console.log('Anonymous post recorded successfully');
+        }
+      }
 
       console.log('Post created successfully:', post);
       return post;

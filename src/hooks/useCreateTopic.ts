@@ -62,8 +62,12 @@ export const useCreateTopic = () => {
         }
         topicData.author_id = null;
         topicData.is_anonymous = true;
-        topicData.anonymous_session_id = generateSessionId();
+        // Use the same session ID that useAnonymousPosting uses
+        const sessionId = generateSessionId();
+        topicData.anonymous_session_id = sessionId;
         topicData.anonymous_ip = await getClientIP();
+        
+        console.log('Creating anonymous topic with session ID:', sessionId);
       }
 
       const { data: topic, error } = await supabase
@@ -78,6 +82,21 @@ export const useCreateTopic = () => {
       if (error) {
         console.error('Error creating topic:', error);
         throw error;
+      }
+
+      // Record anonymous topic for rate limiting
+      if (!user && topic.anonymous_session_id && topic.anonymous_ip) {
+        console.log('Recording anonymous topic for rate limiting with session ID:', topic.anonymous_session_id);
+        const { error: recordError } = await supabase.rpc('record_anonymous_post', {
+          user_ip: topic.anonymous_ip,
+          session_id: topic.anonymous_session_id
+        });
+        
+        if (recordError) {
+          console.error('Error recording anonymous topic:', recordError);
+        } else {
+          console.log('Anonymous topic recorded successfully');
+        }
       }
 
       console.log('Topic created successfully:', topic);

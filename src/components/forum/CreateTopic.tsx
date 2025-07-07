@@ -76,10 +76,7 @@ export const CreateTopic = () => {
         is_anonymous: !user
       });
 
-      // Record the post for anonymous users
-      if (!user) {
-        await anonymousPosting.recordPost();
-      }
+      // Rate limiting is now handled automatically in useCreateTopic
 
       toast({
         title: "Success",

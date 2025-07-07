@@ -84,10 +84,7 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
         is_anonymous: !user
       });
 
-      // Record the post for anonymous users
-      if (!user) {
-        await anonymousPosting.recordPost();
-      }
+      // Rate limiting is now handled automatically in useCreatePost
 
       toast({
         title: "Success",
