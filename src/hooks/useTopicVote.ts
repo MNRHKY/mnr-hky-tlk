@@ -3,11 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { Vote } from '@/types/voting';
 import { getOrCreateAnonymousSessionId } from '@/utils/anonymousSession';
-import { checkAnonymousVoteRateLimit, handleVotingError, handleVotingUnavailable } from '@/utils/votingHelpers';
+import { checkAnonymousVoteRateLimit, createVotingErrorHandler, createVotingUnavailableHandler } from '@/utils/votingHelpers';
+import { useToast } from '@/hooks/use-toast';
 
 export const useTopicVote = (topicId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // For anonymous users, use session ID to check for existing votes
   const anonymousSessionId = user ? null : getOrCreateAnonymousSessionId();
@@ -46,6 +48,7 @@ export const useTopicVote = (topicId: string) => {
 
   const voteMutation = useMutation({
     mutationFn: async ({ voteType }: { voteType: number }) => {
+      console.log('Anonymous voting attempt:', { user: !!user, anonymousSessionId, voteType });
       if (user) {
         // Authenticated user voting
         if (userVote && userVote.vote_type === voteType) {
@@ -78,6 +81,7 @@ export const useTopicVote = (topicId: string) => {
           if (insertError) throw insertError;
         }
       } else if (anonymousSessionId) {
+        console.log('Processing anonymous vote for session:', anonymousSessionId);
         // Anonymous user voting with security checks
         const userIP = await checkAnonymousVoteRateLimit(anonymousSessionId);
         
@@ -112,10 +116,11 @@ export const useTopicVote = (topicId: string) => {
               anonymous_session_id: anonymousSessionId,
             });
           
+          console.log('Anonymous vote insert result:', { error: insertError });
           if (insertError) throw insertError;
         }
       } else {
-        handleVotingUnavailable();
+        createVotingUnavailableHandler(toast)();
         throw new Error('No user or session available for voting');
       }
     },
@@ -126,7 +131,7 @@ export const useTopicVote = (topicId: string) => {
       queryClient.invalidateQueries({ queryKey: ['topics'] });
       queryClient.invalidateQueries({ queryKey: ['hot-topics'] });
     },
-    onError: handleVotingError,
+    onError: createVotingErrorHandler(toast),
   });
 
   return {

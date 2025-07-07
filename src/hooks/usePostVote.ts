@@ -3,11 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { Vote } from '@/types/voting';
 import { getOrCreateAnonymousSessionId } from '@/utils/anonymousSession';
-import { checkAnonymousVoteRateLimit, handleVotingError, handleVotingUnavailable } from '@/utils/votingHelpers';
+import { checkAnonymousVoteRateLimit, createVotingErrorHandler, createVotingUnavailableHandler } from '@/utils/votingHelpers';
+import { useToast } from '@/hooks/use-toast';
 
 export const usePostVote = (postId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // For anonymous users, use session ID to check for existing votes
   const anonymousSessionId = user ? null : getOrCreateAnonymousSessionId();
@@ -46,6 +48,7 @@ export const usePostVote = (postId: string) => {
 
   const voteMutation = useMutation({
     mutationFn: async ({ voteType }: { voteType: number }) => {
+      console.log('Anonymous post voting attempt:', { user: !!user, anonymousSessionId, voteType });
       if (user) {
         // Authenticated user voting
         if (userVote && userVote.vote_type === voteType) {
@@ -78,6 +81,7 @@ export const usePostVote = (postId: string) => {
           if (insertError) throw insertError;
         }
       } else if (anonymousSessionId) {
+        console.log('Processing anonymous post vote for session:', anonymousSessionId);
         // Anonymous user voting with security checks
         const userIP = await checkAnonymousVoteRateLimit(anonymousSessionId);
         
@@ -115,7 +119,7 @@ export const usePostVote = (postId: string) => {
           if (insertError) throw insertError;
         }
       } else {
-        handleVotingUnavailable();
+        createVotingUnavailableHandler(toast)();
         throw new Error('No user or session available for voting');
       }
     },
@@ -123,7 +127,7 @@ export const usePostVote = (postId: string) => {
       queryClient.invalidateQueries({ queryKey: ['post-vote', postId] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
-    onError: handleVotingError,
+    onError: createVotingErrorHandler(toast),
   });
 
   return {

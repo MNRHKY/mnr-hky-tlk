@@ -1,6 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
 import { getUserIPWithFallback } from '@/utils/ipUtils';
-import { toast } from '@/hooks/use-toast';
 
 export const checkAnonymousVoteRateLimit = async (anonymousSessionId: string) => {
   const userIP = await getUserIPWithFallback();
@@ -22,7 +21,7 @@ export const checkAnonymousVoteRateLimit = async (anonymousSessionId: string) =>
   return userIP;
 };
 
-export const handleVotingError = (error: any) => {
+export const createVotingErrorHandler = (toast: any) => (error: any) => {
   console.error('Error voting:', error);
   toast({
     title: "Error",
@@ -31,7 +30,7 @@ export const handleVotingError = (error: any) => {
   });
 };
 
-export const handleVotingUnavailable = () => {
+export const createVotingUnavailableHandler = (toast: any) => () => {
   toast({
     title: "Voting unavailable",
     description: "Unable to process vote at this time",
