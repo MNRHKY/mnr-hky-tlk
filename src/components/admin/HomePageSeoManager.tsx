@@ -9,31 +9,33 @@ import { useToast } from '@/hooks/use-toast';
 import { Save, Home } from 'lucide-react';
 
 export const HomePageSeoManager: React.FC = () => {
-  const { getSetting, updateSetting, isUpdating } = useForumSettings();
+  const { getSetting, updateSetting, isUpdating, settings, isLoading } = useForumSettings();
   const { toast } = useToast();
   const [isDirty, setIsDirty] = useState(false);
 
-  const [seoData, setSeoData] = useState({
-    title: getSetting('seo_home_title', ''),
-    description: getSetting('seo_home_description', ''),
-    keywords: getSetting('seo_home_keywords', ''),
-    canonical_url: getSetting('seo_home_canonical_url', ''),
-    og_title: getSetting('seo_home_og_title', ''),
-    og_description: getSetting('seo_home_og_description', ''),
-    og_image: getSetting('seo_home_og_image', '')
-  });
+  const [seoData, setSeoData] = useState(() => ({
+    title: '',
+    description: '',
+    keywords: '',
+    canonical_url: '',
+    og_title: '',
+    og_description: '',
+    og_image: ''
+  }));
 
   React.useEffect(() => {
-    setSeoData({
-      title: getSetting('seo_home_title', ''),
-      description: getSetting('seo_home_description', ''),
-      keywords: getSetting('seo_home_keywords', ''),
-      canonical_url: getSetting('seo_home_canonical_url', ''),
-      og_title: getSetting('seo_home_og_title', ''),
-      og_description: getSetting('seo_home_og_description', ''),
-      og_image: getSetting('seo_home_og_image', '')
-    });
-  }, [getSetting]);
+    if (!isLoading && settings) {
+      setSeoData({
+        title: getSetting('seo_home_title', ''),
+        description: getSetting('seo_home_description', ''),
+        keywords: getSetting('seo_home_keywords', ''),
+        canonical_url: getSetting('seo_home_canonical_url', ''),
+        og_title: getSetting('seo_home_og_title', ''),
+        og_description: getSetting('seo_home_og_description', ''),
+        og_image: getSetting('seo_home_og_image', '')
+      });
+    }
+  }, [isLoading, settings]);
 
   const handleChange = (field: string, value: string) => {
     setSeoData(prev => ({ ...prev, [field]: value }));
