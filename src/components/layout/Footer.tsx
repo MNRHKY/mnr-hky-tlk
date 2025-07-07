@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useEnhancedForumStats } from '@/hooks/useEnhancedForumStats';
 import { useForumSettings } from '@/hooks/useForumSettings';
@@ -26,9 +27,14 @@ const ContactFormModal = () => {
     setIsSubmitting(true);
 
     try {
-      // TODO: Implement email sending via edge function
-      console.log('Contact form submission:', formData);
-      
+      const { data, error } = await supabase.functions.invoke('send-contact-email', {
+        body: formData
+      });
+
+      if (error) {
+        throw error;
+      }
+
       toast({
         title: "Message sent!",
         description: "Thank you for your message. We'll get back to you soon.",
@@ -36,7 +42,8 @@ const ContactFormModal = () => {
       
       setFormData({ name: '', email: '', subject: '', message: '' });
       setOpen(false);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Contact form error:', error);
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",
