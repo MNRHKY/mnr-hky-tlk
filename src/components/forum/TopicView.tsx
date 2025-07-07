@@ -371,25 +371,28 @@ export const TopicView = () => {
             </div>
           </div>
         </div>
-      </div>
 
+        {/* Reply to topic form - inline */}
+        {showTopicReply && (
+          <div className="border-t border-border p-3 md:p-6 bg-primary/5">
+            <InlineReplyForm
+              topicId={topic.id || ''}
+              parentPostId={null}
+              parentPost={topic}
+              onCancel={() => setShowTopicReply(false)}
+              onSuccess={() => setShowTopicReply(false)}
+              isTopicReply={true}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Comments */}
       <div className="bg-card">
         <div className="p-3 md:p-6 border-b border-border">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base md:text-lg font-semibold text-foreground">
-              Comments ({posts?.length || 0})
-            </h2>
-            <Button 
-              onClick={() => setShowTopicReply(!showTopicReply)}
-              size="sm"
-              variant="outline"
-              className="text-xs"
-            >
-              Reply to Post
-            </Button>
-          </div>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">
+            Comments ({posts?.length || 0})
+          </h2>
         </div>
         
         {postsLoading ? (
@@ -412,20 +415,6 @@ export const TopicView = () => {
           </div>
         ) : (
           <p className="text-muted-foreground text-center py-8 px-3">No replies yet. Be the first to reply!</p>
-        )}
-
-        {/* Reply to topic form */}
-        {showTopicReply && (
-          <div id="topic-reply-form" className="border-t border-border p-3 md:p-6 bg-primary/5">
-              <InlineReplyForm
-                topicId={topic.id || ''}
-                parentPostId={null}
-                parentPost={topic}
-                onCancel={() => setShowTopicReply(false)}
-                onSuccess={() => setShowTopicReply(false)}
-                isTopicReply={true}
-              />
-          </div>
         )}
       </div>
 
