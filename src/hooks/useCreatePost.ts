@@ -82,12 +82,15 @@ export const useCreatePost = () => {
       console.log('Post created successfully with content:', post.content);
 
       // Update topic's last_reply_at using secure function
+      console.log('DEBUG: About to update topic last_reply_at for topic:', data.topic_id);
       const { error: updateError } = await supabase.rpc('update_topic_last_reply', { 
         topic_id: data.topic_id 
       });
 
       if (updateError) {
         console.error('Error updating topic last reply:', updateError);
+      } else {
+        console.log('DEBUG: Successfully updated topic last_reply_at');
       }
 
       // Increment reply count separately using raw SQL
