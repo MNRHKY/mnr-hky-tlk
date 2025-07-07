@@ -46,7 +46,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   }
 
   return (
-    <div className={cn("w-full", className)} data-color-mode="light">
+    <div className={cn("w-full", className)} data-color-mode="auto">
       <MDEditor {...editorProps} />
     </div>
   );
