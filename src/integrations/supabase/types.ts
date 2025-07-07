@@ -145,6 +145,8 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          ip_address: unknown | null
+          is_anonymous: boolean | null
           parent_post_id: string | null
           topic_id: string
           updated_at: string | null
@@ -155,6 +157,8 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          ip_address?: unknown | null
+          is_anonymous?: boolean | null
           parent_post_id?: string | null
           topic_id: string
           updated_at?: string | null
@@ -165,6 +169,8 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          ip_address?: unknown | null
+          is_anonymous?: boolean | null
           parent_post_id?: string | null
           topic_id?: string
           updated_at?: string | null

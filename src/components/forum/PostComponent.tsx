@@ -3,14 +3,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MarkdownEditor } from '@/components/ui/markdown-editor';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
-import { Reply, ArrowUp, ArrowDown, Flag, ChevronDown, ChevronUp, MessageSquare, MessageCircle, Share, Edit } from 'lucide-react';
+import { Reply, ArrowUp, ArrowDown, Flag, ChevronDown, ChevronUp, MessageSquare, MessageCircle, Share, Edit, Trash2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { formatDistanceToNow } from 'date-fns';
 import { usePostVote } from '@/hooks/useVoting';
 import { InlineReplyForm } from './InlineReplyForm';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useEditPost } from '@/hooks/useEditPost';
+import { useDeletePost } from '@/hooks/useDeletePost';
+import { AdminPostInfo } from './AdminPostInfo';
 
 interface PostComponentProps {
   post: any;
@@ -28,6 +31,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   const { user } = useAuth();
   const { userVote: postVote, vote: voteOnPost, isVoting: isVotingPost } = usePostVote(post.id);
   const { mutate: editPost, isPending: isEditingPost } = useEditPost();
+  const { mutate: deletePost, isPending: isDeletingPost } = useDeletePost();
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -297,6 +301,58 @@ export const PostComponent: React.FC<PostComponentProps> = ({
               </TooltipContent>
             </Tooltip>
             
+            {/* Admin Info button - only for admins */}
+            {user?.role === 'admin' && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AdminPostInfo post={post} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Post Info</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Admin Delete button - only for admins */}
+            {user?.role === 'admin' && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        disabled={isDeletingPost}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Delete Post</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Post</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this post? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => deletePost(post.id)}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+
             {/* Report button - icon only with red color */}
             <Tooltip>
               <TooltipTrigger asChild>
