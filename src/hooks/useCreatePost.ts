@@ -37,6 +37,7 @@ export const useCreatePost = () => {
       }
 
       // Get user's IP address for admin tracking
+      alert('CREATING POST - CODE UPDATED!');
       console.log('DEBUG: About to get IP address, user exists:', !!user);
       const userIP = await getUserIPWithFallback();
       console.log('DEBUG: Got IP address:', userIP);

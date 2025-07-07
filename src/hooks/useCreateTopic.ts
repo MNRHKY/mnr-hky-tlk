@@ -40,6 +40,7 @@ export const useCreateTopic = () => {
       const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
 
       // Get user's IP address for admin tracking
+      alert('CREATING TOPIC - CODE UPDATED!');
       console.log('DEBUG TOPIC: About to get IP address, user exists:', !!user);
       const userIP = await getUserIPWithFallback();
       console.log('DEBUG TOPIC: Got IP address:', userIP);
