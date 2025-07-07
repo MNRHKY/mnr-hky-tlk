@@ -72,21 +72,15 @@ export const AdminControls: React.FC<AdminControlsProps> = ({
         {/* Delete Button */}
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  disabled={isDeleting}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Delete {contentType}</p>
-              </TooltipContent>
-            </Tooltip>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              disabled={isDeleting}
+              title={`Delete ${contentType}`}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -102,6 +96,7 @@ export const AdminControls: React.FC<AdminControlsProps> = ({
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  console.log('Executing delete for', contentType, content.id);
                   handleDelete();
                 }}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
