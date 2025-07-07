@@ -57,7 +57,7 @@ const ContactFormModal = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className="text-sm hover:text-primary transition-colors">
+        <button className="text-sm hover:text-primary transition-colors text-left">
           Contact Us
         </button>
       </DialogTrigger>
