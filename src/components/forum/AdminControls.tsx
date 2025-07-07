@@ -40,28 +40,33 @@ export const AdminControls: React.FC<AdminControlsProps> = ({
   const isDeleting = isDeletingPost || isDeletingTopic;
 
   return (
-    <TooltipProvider>
-      <div className="flex items-center gap-1 ml-auto">
+    <div className="flex items-center gap-1 ml-auto">
+      <TooltipProvider>
         {/* Info Button - for posts and topics */}
         {(contentType === 'post' || contentType === 'topic') && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              {contentType === 'post' ? (
-                <AdminPostInfo post={content} />
-              ) : (
+          contentType === 'post' ? (
+            <AdminPostInfo post={content} />
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   className="h-6 w-6 p-0 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Topic info clicked');
+                  }}
                 >
                   <Info className="h-3 w-3" />
                 </Button>
-              )}
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{contentType === 'post' ? 'Post Info' : 'Topic Info'}</p>
-            </TooltipContent>
-          </Tooltip>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Topic Info</p>
+              </TooltipContent>
+            </Tooltip>
+          )
         )}
 
         {/* Delete Button */}
@@ -74,6 +79,11 @@ export const AdminControls: React.FC<AdminControlsProps> = ({
                   size="sm"
                   className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                   disabled={isDeleting}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Delete button clicked for', contentType, content.id);
+                  }}
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>
@@ -94,7 +104,11 @@ export const AdminControls: React.FC<AdminControlsProps> = ({
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={handleDelete}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDelete();
+                }}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 Delete
@@ -102,7 +116,7 @@ export const AdminControls: React.FC<AdminControlsProps> = ({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
-    </TooltipProvider>
+      </TooltipProvider>
+    </div>
   );
 };
