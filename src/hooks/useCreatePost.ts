@@ -44,7 +44,8 @@ export const useCreatePost = () => {
         topic_id: data.topic_id,
         parent_post_id: data.parent_post_id || null,
         moderation_status: topic.categories?.requires_moderation ? 'pending' : 'approved',
-        ip_address: userIP
+        ip_address: userIP,
+        is_anonymous: !user // Set anonymous flag when no authenticated user
       };
 
       if (user) {
