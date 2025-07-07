@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { ForumHeader } from './ForumHeader';
 import { ForumSidebarNav } from './ForumSidebarNav';
 import { ForumStats } from './ForumStats';
+import { Footer } from '@/components/layout/Footer';
 import { MobileBottomNav } from './MobileBottomNav';
 
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -33,6 +34,8 @@ export const ForumLayout = () => {
         </div>
       </div>
 
+      {/* Footer */}
+      <Footer />
       
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
