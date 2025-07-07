@@ -7,6 +7,7 @@ import { TrendingUp, Clock, Star, Plus, Home, Users } from 'lucide-react';
 import { useCategories } from '@/hooks/useCategories';
 import { useCategoriesByActivity } from '@/hooks/useCategoriesByActivity';
 import { useCategoryStats } from '@/hooks/useCategoryStats';
+import { useEnhancedForumStats } from '@/hooks/useEnhancedForumStats';
 import { QuickTopicModal } from './QuickTopicModal';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +39,7 @@ const CategoryItem = ({ category }: { category: any }) => {
 export const ForumSidebarNav = () => {
   const location = useLocation();
   const { data: categories } = useCategoriesByActivity(null, 3); // Level 3 categories by activity
+  const { data: forumStats } = useEnhancedForumStats();
   
   const isActive = (path: string) => location.pathname === path;
 
@@ -105,18 +107,21 @@ export const ForumSidebarNav = () => {
         <div className="space-y-3 text-sm">
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Members</span>
-            <span className="font-medium text-foreground">2.1k</span>
+            <span className="font-medium text-foreground">
+              {forumStats?.total_members || 0}
+            </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Online</span>
-            <div className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="font-medium text-foreground">42</span>
-            </div>
+            <span className="text-muted-foreground">Topics</span>
+            <span className="font-medium text-foreground">
+              {forumStats?.total_topics || 0}
+            </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Created</span>
-            <span className="font-medium text-foreground">Jan 2024</span>
+            <span className="text-muted-foreground">Posts</span>
+            <span className="font-medium text-foreground">
+              {forumStats?.total_posts || 0}
+            </span>
           </div>
         </div>
       </Card>
