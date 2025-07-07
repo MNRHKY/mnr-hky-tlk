@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertTriangle, Ban, CheckCircle, Clock, UserX, Wifi, WifiOff, Eye, X, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +37,7 @@ interface ModerationItem {
 
 const ReportsTab = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Helper function to generate the correct URL for reported content
   const getReportedContentUrl = (report: any) => {
@@ -155,7 +156,7 @@ const ReportsTab = () => {
         description: `Report has been ${action}`,
       });
 
-      refetch();
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -182,7 +183,7 @@ const ReportsTab = () => {
         description: 'Report has been closed',
       });
 
-      refetch();
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -208,7 +209,7 @@ const ReportsTab = () => {
         description: 'Report has been permanently deleted',
       });
 
-      refetch();
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
     } catch (error: any) {
       toast({
         title: 'Error',
