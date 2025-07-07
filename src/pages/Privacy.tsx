@@ -3,8 +3,12 @@ import { useForumSettings } from '@/hooks/useForumSettings';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 
 const Privacy = () => {
-  const { getSetting } = useForumSettings();
+  const { getSetting, isLoading, settings } = useForumSettings();
   const privacyContent = getSetting('privacy_content', '');
+  
+  console.log('Privacy page - isLoading:', isLoading);
+  console.log('Privacy page - settings:', settings);
+  console.log('Privacy page - privacyContent:', privacyContent);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
