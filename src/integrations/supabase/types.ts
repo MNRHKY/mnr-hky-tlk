@@ -151,6 +151,76 @@ export type Database = {
           },
         ]
       }
+      category_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          description: string
+          id: string
+          justification: string
+          name: string
+          parent_category_id: string | null
+          requested_by_user_id: string | null
+          requester_display_name: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          justification: string
+          name: string
+          parent_category_id?: string | null
+          requested_by_user_id?: string | null
+          requester_display_name?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          justification?: string
+          name?: string
+          parent_category_id?: string | null
+          requested_by_user_id?: string | null
+          requester_display_name?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_requests_parent_category_id_fkey"
+            columns: ["parent_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_requests_requested_by_user_id_fkey"
+            columns: ["requested_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forum_settings: {
         Row: {
           category: string

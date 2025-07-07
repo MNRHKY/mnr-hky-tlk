@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/hooks/use-toast';
+import { useCreateCategoryRequest } from '@/hooks/useCategoryRequests';
 
 interface CategoryRequestModalProps {
   currentCategoryId?: string;
@@ -16,8 +16,8 @@ interface CategoryRequestModalProps {
 }
 
 export const CategoryRequestModal = ({ currentCategoryId, trigger }: CategoryRequestModalProps) => {
-  const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const createRequest = useCreateCategoryRequest();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -28,12 +28,11 @@ export const CategoryRequestModal = ({ currentCategoryId, trigger }: CategoryReq
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Allow both authenticated and anonymous users to request categories
-    toast({
-      title: "Category request submitted",
-      description: user 
-        ? "Your request has been sent to the administrators for review."
-        : "Your anonymous request has been sent to the administrators for review.",
+    await createRequest.mutateAsync({
+      name: formData.name,
+      description: formData.description,
+      justification: formData.justification,
+      parentCategoryId: formData.parentCategoryId || undefined,
     });
     
     setOpen(false);
@@ -101,8 +100,8 @@ export const CategoryRequestModal = ({ currentCategoryId, trigger }: CategoryReq
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit">
-              Submit Request
+            <Button type="submit" disabled={createRequest.isPending}>
+              {createRequest.isPending ? 'Submitting...' : 'Submit Request'}
             </Button>
           </div>
         </form>

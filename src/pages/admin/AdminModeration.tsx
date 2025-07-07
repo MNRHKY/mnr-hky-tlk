@@ -14,9 +14,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, Ban, CheckCircle, Clock, UserX, Wifi, WifiOff, Eye, X, Trash2 } from 'lucide-react';
+import { AlertTriangle, Ban, CheckCircle, Clock, UserX, Wifi, WifiOff, Eye, X, Trash2, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { CategoryRequestsManager } from '@/components/admin/CategoryRequestsManager';
 
 interface ModerationItem {
   id: string;
@@ -682,6 +683,10 @@ const AdminModeration = () => {
         <TabsList>
           <TabsTrigger value="queue">Moderation Queue</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsTrigger value="category-requests" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Category Requests
+          </TabsTrigger>
           <TabsTrigger value="banned">Banned Content</TabsTrigger>
         </TabsList>
 
@@ -795,6 +800,18 @@ const AdminModeration = () => {
 
         <TabsContent value="reports">
           <ReportsTab />
+        </TabsContent>
+
+        <TabsContent value="category-requests">
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Category Requests</h2>
+              <p className="text-muted-foreground">
+                Review and manage requests for new forum categories
+              </p>
+            </div>
+            <CategoryRequestsManager />
+          </div>
         </TabsContent>
 
         <TabsContent value="banned">
