@@ -17,7 +17,6 @@ export const AdminPostInfo: React.FC<AdminPostInfoProps> = ({ post }) => {
           size="sm" 
           className="h-6 w-6 p-0 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10"
           onClick={(e) => {
-            e.preventDefault();
             e.stopPropagation();
             console.log('Post info clicked for post:', post.id);
           }}

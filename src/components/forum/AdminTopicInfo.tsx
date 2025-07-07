@@ -17,7 +17,6 @@ export const AdminTopicInfo: React.FC<AdminTopicInfoProps> = ({ topic }) => {
           size="sm" 
           className="h-6 w-6 p-0 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10"
           onClick={(e) => {
-            e.preventDefault();
             e.stopPropagation();
             console.log('Topic info clicked for topic:', topic.id);
           }}
