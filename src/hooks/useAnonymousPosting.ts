@@ -29,6 +29,8 @@ export const useAnonymousPosting = () => {
       setState(prev => ({ ...prev, isLoading: true }));
       const clientIP = await getClientIP();
       
+      console.log('Checking rate limit for IP:', clientIP, 'Session:', sessionId);
+      
       const { data, error } = await supabase.rpc('check_anonymous_rate_limit', {
         user_ip: clientIP,
         session_id: sessionId
@@ -40,16 +42,28 @@ export const useAnonymousPosting = () => {
       }
 
       const canPost = data as boolean;
-      // Get current post count from tracking table
-      const { data: trackingData } = await supabase
+      
+      // Get current post count from tracking table - use maybeSingle to handle no records
+      const { data: trackingData, error: trackingError } = await supabase
         .from('anonymous_post_tracking')
         .select('post_count')
         .or(`ip_address.eq.${clientIP},session_id.eq.${sessionId}`)
         .gte('created_at', new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString())
-        .single();
+        .maybeSingle();
+
+      if (trackingError) {
+        console.error('Error fetching tracking data:', trackingError);
+      }
 
       const currentCount = trackingData?.post_count || 0;
       const remaining = Math.max(0, 3 - currentCount);
+      
+      console.log('Rate limit check results:', {
+        canPost,
+        currentCount,
+        remaining,
+        trackingData
+      });
 
       setState(prev => ({
         ...prev,
@@ -72,6 +86,11 @@ export const useAnonymousPosting = () => {
         user_ip: clientIP,
         session_id: state.sessionId
       });
+      
+      console.log('Post recorded successfully, waiting 500ms before re-checking rate limit');
+      
+      // Add a small delay to ensure database consistency before re-checking
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Re-check rate limit after recording
       await checkRateLimit(state.sessionId);
