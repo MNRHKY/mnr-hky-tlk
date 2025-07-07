@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +29,10 @@ interface ModerationItem {
   status: 'pending' | 'approved' | 'rejected';
   is_anonymous?: boolean;
   ip_address?: string | null;
+  slug?: string;
+  category_slug?: string;
+  topic_id?: string;
+  topic_slug?: string;
 }
 
 const ReportsTab = () => {
@@ -208,11 +213,28 @@ const ReportsTab = () => {
 const AdminModeration = () => {
   const { toast } = useToast();
 
-  // For now, we'll show recent content that might need moderation
+  // Helper function to generate the correct URL for content items
+  const getContentUrl = (item: ModerationItem) => {
+    if (item.type === 'topic') {
+      // For topics, use category/topic slug pattern if available, otherwise fallback to /topic/id
+      if (item.category_slug && item.slug) {
+        return `/${item.category_slug}/${item.slug}`;
+      }
+      return `/topic/${item.id}`;
+    } else {
+      // For posts, navigate to the parent topic (posts don't have individual pages)
+      if (item.category_slug && item.topic_slug) {
+        return `/${item.category_slug}/${item.topic_slug}`;
+      }
+      return `/topic/${item.topic_id}`;
+    }
+  };
+
+  // Enhanced query to get proper data with navigation information
   const { data: moderationQueue, isLoading, refetch } = useQuery({
     queryKey: ['moderation-queue'],
     queryFn: async () => {
-      // Get ALL recent posts (both anonymous and regular)
+      // Get posts with topic and category info and real author data
       const { data: posts, error: postsError } = await supabase
         .from('posts')
         .select(`
@@ -220,52 +242,95 @@ const AdminModeration = () => {
           content,
           created_at,
           author_id,
-          topic_id
+          topic_id,
+          ip_address,
+          is_anonymous,
+          topics!inner (
+            id,
+            title,
+            slug,
+            categories!inner (
+              slug
+            )
+          )
         `)
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (postsError) throw postsError;
 
-      // Get ALL recent topics (both anonymous and regular)
+      // Get topics with category info and real author data
       const { data: topics, error: topicsError } = await supabase
         .from('topics')
         .select(`
           id,
           title,
           content,
+          slug,
           created_at,
-          author_id
+          author_id,
+          categories!inner (
+            slug
+          )
         `)
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (topicsError) throw topicsError;
 
+      // Get author profiles for both posts and topics
+      const allAuthorIds = [
+        ...(posts?.map(p => p.author_id) || []),
+        ...(topics?.map(t => t.author_id) || [])
+      ].filter(Boolean);
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .in('id', allAuthorIds);
+
+      // Get temporary users
+      const { data: tempUsers } = await supabase
+        .from('temporary_users')
+        .select('id, display_name')
+        .in('id', allAuthorIds);
+
+      const getAuthorName = (authorId: string | null) => {
+        if (!authorId) return 'Anonymous User';
+        const profile = profiles?.find(p => p.id === authorId);
+        const tempUser = tempUsers?.find(tu => tu.id === authorId);
+        return profile?.username || tempUser?.display_name || 'Anonymous User';
+      };
+
       const items: ModerationItem[] = [
         ...(posts?.map(post => ({
           id: post.id,
           type: 'post' as const,
-          title: 'Post Reply',
+          title: `Reply in: ${post.topics?.title || 'Unknown Topic'}`,
           content: post.content,
-          author: 'Anonymous User', // Simplified for moderation
+          author: getAuthorName(post.author_id),
           created_at: post.created_at || '',
-          reported_count: 0, // Placeholder - we'd need a reports table
+          reported_count: 0,
           status: 'pending' as const,
-          is_anonymous: true,
-          ip_address: null,
+          is_anonymous: post.is_anonymous || false,
+          ip_address: post.ip_address as string | null,
+          topic_id: post.topic_id,
+          topic_slug: post.topics?.slug,
+          category_slug: post.topics?.categories?.slug,
         })) || []),
         ...(topics?.map(topic => ({
           id: topic.id,
           type: 'topic' as const,
           title: topic.title,
           content: topic.content || '',
-          author: 'Anonymous User', // Simplified for moderation
+          author: getAuthorName(topic.author_id),
           created_at: topic.created_at || '',
-          reported_count: 0, // Placeholder
+          reported_count: 0,
           status: 'pending' as const,
-          is_anonymous: true,
+          is_anonymous: false,
           ip_address: null,
+          slug: topic.slug,
+          category_slug: topic.categories?.slug,
         })) || []),
       ];
 
@@ -472,9 +537,14 @@ const AdminModeration = () => {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {item.title}
-                      </TableCell>
+                       <TableCell className="max-w-xs">
+                         <Link 
+                           to={getContentUrl(item)}
+                           className="text-primary hover:text-primary/80 hover:underline font-medium truncate block"
+                         >
+                           {item.title}
+                         </Link>
+                       </TableCell>
                       <TableCell>{item.author}</TableCell>
                       <TableCell className="max-w-md">
                         <div className="truncate text-sm text-muted-foreground">
