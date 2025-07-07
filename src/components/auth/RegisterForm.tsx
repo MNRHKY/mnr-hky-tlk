@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useRateLimit } from '@/hooks/useRateLimit';
 import { HCaptchaComponent, HCaptchaRef } from '@/components/ui/hcaptcha';
 import { PasswordStrengthIndicator } from '@/components/ui/password-strength-indicator';
 import { PasswordValidationResult } from '@/utils/passwordValidation';
@@ -29,9 +30,28 @@ export const RegisterForm = () => {
     errors: [], 
     suggestions: [] 
   });
+  const { checkRateLimit, recordAttempt } = useRateLimit('register', {
+    maxAttempts: 3,
+    windowMs: 60 * 60 * 1000, // 1 hour
+    blockDurationMs: 30 * 60 * 1000 // Block for 30 minutes
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check rate limit
+    const rateLimitCheck = checkRateLimit();
+    if (!rateLimitCheck.allowed) {
+      const blockedUntil = rateLimitCheck.blockedUntil;
+      const blockTimeRemaining = blockedUntil ? Math.ceil((blockedUntil - Date.now()) / 1000) : 0;
+      
+      toast({
+        title: "Too many registration attempts",
+        description: `Please wait ${Math.ceil(blockTimeRemaining / 60)} minutes before trying again.`,
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Validate CAPTCHA token
     if (!captchaToken) {
@@ -70,6 +90,9 @@ export const RegisterForm = () => {
       });
       navigate('/');
     } catch (error) {
+      // Record failed attempt
+      recordAttempt();
+      
       // Reset CAPTCHA on failed attempt
       captchaRef.current?.resetCaptcha();
       setCaptchaToken('');

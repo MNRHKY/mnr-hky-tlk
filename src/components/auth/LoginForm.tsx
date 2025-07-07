@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useRateLimit } from '@/hooks/useRateLimit';
 import { HCaptchaComponent, HCaptchaRef } from '@/components/ui/hcaptcha';
 
 export const LoginForm = () => {
@@ -19,9 +20,28 @@ export const LoginForm = () => {
     password: ''
   });
   const [captchaToken, setCaptchaToken] = useState<string>('');
+  const { checkRateLimit, recordAttempt } = useRateLimit('login', {
+    maxAttempts: 5,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    blockDurationMs: 5 * 60 * 1000 // Block for 5 minutes
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check rate limit
+    const rateLimitCheck = checkRateLimit();
+    if (!rateLimitCheck.allowed) {
+      const blockedUntil = rateLimitCheck.blockedUntil;
+      const blockTimeRemaining = blockedUntil ? Math.ceil((blockedUntil - Date.now()) / 1000) : 0;
+      
+      toast({
+        title: "Too many attempts",
+        description: `Please wait ${blockTimeRemaining} seconds before trying again.`,
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Validate CAPTCHA token
     if (!captchaToken) {
@@ -41,6 +61,9 @@ export const LoginForm = () => {
       });
       navigate('/');
     } catch (error) {
+      // Record failed attempt
+      recordAttempt();
+      
       // Reset CAPTCHA on failed attempt
       captchaRef.current?.resetCaptcha();
       setCaptchaToken('');
