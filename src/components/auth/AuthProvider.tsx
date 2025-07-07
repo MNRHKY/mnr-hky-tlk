@@ -74,14 +74,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string, captchaToken?: string) => {
+  const signIn = async (email: string, password: string) => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      options: {
-        captchaToken
-      }
     });
     
     if (error) {
@@ -90,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (email: string, password: string, username: string, captchaToken?: string) => {
+  const signUp = async (email: string, password: string, username: string) => {
     setLoading(true);
     const redirectUrl = `${window.location.origin}/`;
     
@@ -101,8 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         emailRedirectTo: redirectUrl,
         data: {
           username: username
-        },
-        captchaToken
+        }
       }
     });
     

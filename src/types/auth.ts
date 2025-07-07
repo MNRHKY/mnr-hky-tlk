@@ -13,8 +13,8 @@ export interface User {
 
 export interface AuthContextType {
   user: User | null;
-  signIn: (email: string, password: string, captchaToken?: string) => Promise<void>;
-  signUp: (email: string, password: string, username: string, captchaToken?: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, username: string) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
   isAdmin: boolean;

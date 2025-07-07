@@ -25,15 +25,6 @@ export const RegisterForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!captchaToken) {
-      toast({
-        title: "Verification required",
-        description: "Please complete the captcha verification.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Passwords don't match",
@@ -53,34 +44,19 @@ export const RegisterForm = () => {
     }
 
     try {
-      await signUp(formData.email, formData.password, formData.username, captchaToken);
+      await signUp(formData.email, formData.password, formData.username);
       toast({
         title: "Account created!",
         description: "Welcome to Minor Hockey Talks!",
       });
       navigate('/');
     } catch (error) {
-      captchaRef.current?.resetCaptcha();
-      setCaptchaToken('');
       toast({
         title: "Registration failed",
         description: "Please try again with different details.",
         variant: "destructive",
       });
     }
-  };
-
-  const handleCaptchaVerify = (token: string) => {
-    setCaptchaToken(token);
-  };
-
-  const handleCaptchaError = () => {
-    setCaptchaToken('');
-    toast({
-      title: "Captcha error",
-      description: "Please try the captcha again.",
-      variant: "destructive",
-    });
   };
 
   return (
@@ -159,18 +135,10 @@ export const RegisterForm = () => {
             </div>
 
             <div>
-              <HCaptchaComponent
-                ref={captchaRef}
-                onVerify={handleCaptchaVerify}
-                onError={handleCaptchaError}
-              />
-            </div>
-
-            <div>
               <Button
                 type="submit"
                 className="w-full"
-                disabled={loading || !captchaToken}
+                disabled={loading}
               >
                 {loading ? 'Creating account...' : 'Create account'}
               </Button>
