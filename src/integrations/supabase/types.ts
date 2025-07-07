@@ -753,6 +753,10 @@ export type Database = {
         Args: { current_count: number }
         Returns: undefined
       }
+      update_topic_last_reply: {
+        Args: { topic_id: string }
+        Returns: undefined
+      }
       validate_anonymous_content: {
         Args: { content: string }
         Returns: boolean
