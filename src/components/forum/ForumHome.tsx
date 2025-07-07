@@ -122,6 +122,7 @@ export const ForumHome = () => {
                     avatar_url: topic.profiles?.avatar_url || null,
                     category_name: topic.categories?.name || 'General',
                     category_color: topic.categories?.color || '#3b82f6',
+                    category_slug: topic.categories?.slug || '',
                     hot_score: 0
                   }} 
                   onReport={handleReport}
