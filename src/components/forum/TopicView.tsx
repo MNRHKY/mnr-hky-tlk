@@ -11,16 +11,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTopic } from '@/hooks/useTopic';
 import { useTopicByPath } from '@/hooks/useTopicByPath';
 import { usePosts } from '@/hooks/usePosts';
-
-
 import { useTopicVote } from '@/hooks/useVoting';
 import { useEditTopic } from '@/hooks/useEditTopic';
 import { VoteButtons } from './VoteButtons';
-
-
 import { ReportModal } from './ReportModal';
 import { PostComponent } from './PostComponent';
 import { InlineReplyForm } from './InlineReplyForm';
+import { AdminControls } from './AdminControls';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 
@@ -185,7 +182,14 @@ export const TopicView = () => {
                 placeholder="Topic title"
               />
             ) : (
-              <h1 className="text-lg md:text-2xl font-bold text-foreground leading-tight">{topic.title}</h1>
+              <div className="flex items-center justify-between">
+                <h1 className="text-lg md:text-2xl font-bold text-foreground leading-tight">{topic.title}</h1>
+                <AdminControls 
+                  content={topic} 
+                  contentType="topic" 
+                  onDelete={() => navigate('/')}
+                />
+              </div>
             )}
             
             {/* Meta info */}

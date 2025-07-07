@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useTopicVote } from '@/hooks/useVoting';
 import { HotTopic } from '@/hooks/useHotTopics';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { AdminControls } from './AdminControls';
 
 interface PostCardProps {
   topic: HotTopic;
@@ -77,14 +78,20 @@ export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
             </div>
 
             {/* Title */}
-            <Link 
-              to={topic.category_slug && topic.slug ? `/${topic.category_slug}/${topic.slug}` : `/topic/${topic.id}`}
-              className="block group mb-2"
-            >
-              <h3 className="text-base md:text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
-                {topic.title}
-              </h3>
-            </Link>
+            <div className="flex items-start justify-between mb-2">
+              <Link 
+                to={topic.category_slug && topic.slug ? `/${topic.category_slug}/${topic.slug}` : `/topic/${topic.id}`}
+                className="block group flex-1"
+              >
+                <h3 className="text-base md:text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                  {topic.title}
+                </h3>
+              </Link>
+              <AdminControls 
+                content={topic} 
+                contentType="topic"
+              />
+            </div>
 
             {/* Content preview - only on desktop */}
             {!isMobile && topic.content && (

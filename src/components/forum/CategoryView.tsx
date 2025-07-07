@@ -13,6 +13,7 @@ import { useCategoryStats } from '@/hooks/useCategoryStats';
 import { formatDistanceToNow } from 'date-fns';
 import { QuickTopicModal } from './QuickTopicModal';
 import { CategoryRequestModal } from './CategoryRequestModal';
+import { AdminControls } from './AdminControls';
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -150,14 +151,21 @@ export const CategoryView = () => {
 
       {/* Category Header */}
       <Card className="p-4 sm:p-6 w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center space-x-3 mb-2">
-              <div 
-                className="w-4 h-4 rounded-full flex-shrink-0" 
-                style={{ backgroundColor: category.color }}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-3">
+                <div 
+                  className="w-4 h-4 rounded-full flex-shrink-0" 
+                  style={{ backgroundColor: category.color }}
+                />
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 min-w-0 truncate">{category.name}</h1>
+              </div>
+              <AdminControls 
+                content={category} 
+                contentType="category" 
+                onDelete={() => window.location.href = '/'}
               />
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 min-w-0 truncate">{category.name}</h1>
             </div>
             <p className="text-gray-600 mb-4 text-sm sm:text-base">{category.description}</p>
             <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
@@ -255,50 +263,56 @@ export const CategoryView = () => {
             ) : topics && topics.length > 0 ? (
               <div className="space-y-4">
                 {topics.map((topic) => (
-                  <div key={topic.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors gap-3 sm:gap-4">
-                    <div className="flex items-start space-x-3 sm:space-x-4 flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 flex-shrink-0">
-                        {topic.is_pinned && <Pin className="h-4 w-4 text-red-500" />}
-                        <MessageSquare className="h-4 sm:h-5 w-4 sm:w-5 text-gray-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <Link 
-                          to={topic.slug ? `/${category.slug}/${topic.slug}` : `/topic/${topic.id}`}
-                          className="font-medium text-gray-900 hover:text-blue-600 text-sm sm:text-base line-clamp-2"
-                        >
-                          {topic.title}
-                        </Link>
-                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1 text-xs sm:text-sm text-gray-500">
-                          <span>by {topic.profiles?.username || 'Anonymous User'}</span>
-                          <span className="hidden sm:inline">•</span>
-                          <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between sm:justify-end space-x-4 sm:space-x-6 text-xs sm:text-sm text-gray-500 flex-shrink-0">
-                      <div className="text-center">
-                        <div className="flex items-center space-x-1">
-                          <MessageSquare className="h-3 sm:h-4 w-3 sm:w-4" />
-                          <span>{topic.reply_count || 0}</span>
-                        </div>
-                        <span className="text-xs hidden sm:block">replies</span>
-                      </div>
-                      <div className="text-center">
-                        <div className="flex items-center space-x-1">
-                          <User className="h-3 sm:h-4 w-3 sm:w-4" />
-                          <span>{topic.view_count || 0}</span>
-                        </div>
-                        <span className="text-xs hidden sm:block">views</span>
-                      </div>
-                      <div className="text-center hidden sm:block">
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-4 w-4" />
-                          <span className="whitespace-nowrap">{formatDistanceToNow(new Date(topic.last_reply_at || topic.created_at))} ago</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                   <div key={topic.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors gap-3 sm:gap-4">
+                     <div className="flex items-start space-x-3 sm:space-x-4 flex-1 min-w-0">
+                       <div className="flex items-center space-x-2 flex-shrink-0">
+                         {topic.is_pinned && <Pin className="h-4 w-4 text-red-500" />}
+                         <MessageSquare className="h-4 sm:h-5 w-4 sm:w-5 text-gray-400" />
+                       </div>
+                       <div className="flex-1 min-w-0">
+                         <div className="flex items-center justify-between mb-1">
+                           <Link 
+                             to={topic.slug ? `/${category.slug}/${topic.slug}` : `/topic/${topic.id}`}
+                             className="font-medium text-gray-900 hover:text-blue-600 text-sm sm:text-base line-clamp-2 flex-1"
+                           >
+                             {topic.title}
+                           </Link>
+                           <AdminControls 
+                             content={topic} 
+                             contentType="topic"
+                           />
+                         </div>
+                         <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1 text-xs sm:text-sm text-gray-500">
+                           <span>by {topic.profiles?.username || 'Anonymous User'}</span>
+                           <span className="hidden sm:inline">•</span>
+                           <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
+                         </div>
+                       </div>
+                     </div>
+                     
+                     <div className="flex items-center justify-between sm:justify-end space-x-4 sm:space-x-6 text-xs sm:text-sm text-gray-500 flex-shrink-0">
+                       <div className="text-center">
+                         <div className="flex items-center space-x-1">
+                           <MessageSquare className="h-3 sm:h-4 w-3 sm:w-4" />
+                           <span>{topic.reply_count || 0}</span>
+                         </div>
+                         <span className="text-xs hidden sm:block">replies</span>
+                       </div>
+                       <div className="text-center">
+                         <div className="flex items-center space-x-1">
+                           <User className="h-3 sm:h-4 w-3 sm:w-4" />
+                           <span>{topic.view_count || 0}</span>
+                         </div>
+                         <span className="text-xs hidden sm:block">views</span>
+                       </div>
+                       <div className="text-center hidden sm:block">
+                         <div className="flex items-center space-x-1">
+                           <Clock className="h-4 w-4" />
+                           <span className="whitespace-nowrap">{formatDistanceToNow(new Date(topic.last_reply_at || topic.created_at))} ago</span>
+                         </div>
+                       </div>
+                     </div>
+                   </div>
                 ))}
               </div>
             ) : (
