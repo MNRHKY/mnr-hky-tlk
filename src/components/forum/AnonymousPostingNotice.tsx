@@ -34,7 +34,7 @@ export const AnonymousPostingNotice: React.FC<AnonymousPostingNoticeProps> = ({
             <Alert className="border-orange-200 bg-orange-50">
               <Ban className="h-4 w-4 text-orange-600" />
               <AlertDescription className="text-orange-800">
-                You've reached the limit of 3 posts per 12 hours for anonymous users
+                You've reached the limit of 5 posts per 12 hours for anonymous users
               </AlertDescription>
             </Alert>
           )}
@@ -42,7 +42,7 @@ export const AnonymousPostingNotice: React.FC<AnonymousPostingNoticeProps> = ({
           <div className="text-xs text-blue-700">
             <p>Anonymous posting restrictions:</p>
             <ul className="list-disc list-inside mt-1 space-y-1">
-              <li>Maximum 3 posts per 12 hours</li>
+              <li>Maximum 5 posts per 12 hours</li>
               <li>No images or links allowed</li>
               <li>Posts appear as "Anonymous User"</li>
             </ul>

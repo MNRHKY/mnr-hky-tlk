@@ -50,7 +50,7 @@ export const CreateTopic = () => {
       if (!tempUser.canPost) {
         toast({
           title: "Rate limit exceeded",
-          description: "You've reached the limit of 3 posts per 12 hours for anonymous users",
+          description: "You've reached the limit of 5 posts per 12 hours for anonymous users",
           variant: "destructive",
         });
         return;
@@ -114,7 +114,7 @@ export const CreateTopic = () => {
             <div className="text-xs mt-1">
               {tempUser.canPost 
                 ? `${tempUser.remainingPosts} posts remaining in the next 12 hours`
-                : 'Rate limit reached (3 posts per 12 hours)'
+                : 'Rate limit reached (5 posts per 12 hours)'
               }
             </div>
           </div>
