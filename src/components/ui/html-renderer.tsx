@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import DOMPurify from 'dompurify';
 
 interface HTMLRendererProps {
   content: string;
@@ -10,10 +11,18 @@ export const HTMLRenderer: React.FC<HTMLRendererProps> = ({
   content,
   className,
 }) => {
+  // Sanitize HTML content to prevent XSS attacks
+  const sanitizedContent = DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'a', 'code', 'pre'],
+    ALLOWED_ATTR: ['href', 'target', 'rel'],
+    ALLOW_DATA_ATTR: false,
+    ALLOW_UNKNOWN_PROTOCOLS: false
+  });
+
   return (
     <div 
       className={cn("prose prose-sm max-w-none", className)}
-      dangerouslySetInnerHTML={{ __html: content }}
+      dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
   );
 };
