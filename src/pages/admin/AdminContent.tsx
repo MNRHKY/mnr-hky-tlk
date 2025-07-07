@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,33 +26,58 @@ interface ContentItem {
   reply_count?: number;
   is_pinned?: boolean;
   is_locked?: boolean;
+  slug?: string;
+  category_slug?: string;
+  topic_id?: string;
+  topic_slug?: string;
 }
 
 const AdminContent = () => {
   const { toast } = useToast();
 
+  // Helper function to generate the correct URL for content items
+  const getContentUrl = (item: ContentItem) => {
+    if (item.type === 'topic') {
+      // For topics, use category/topic slug pattern if available, otherwise fallback to /topic/id
+      if (item.category_slug && item.slug) {
+        return `/${item.category_slug}/${item.slug}`;
+      }
+      return `/topic/${item.id}`;
+    } else {
+      // For posts, navigate to the parent topic (posts don't have individual pages)
+      if (item.category_slug && item.topic_slug) {
+        return `/${item.category_slug}/${item.topic_slug}`;
+      }
+      return `/topic/${item.topic_id}`;
+    }
+  };
+
   const { data: content, isLoading, refetch } = useQuery({
     queryKey: ['admin-content'],
     queryFn: async () => {
-      // Get topics
+      // Get topics with category info
       const { data: topics, error: topicsError } = await supabase
         .from('topics')
         .select(`
           id,
           title,
+          slug,
           created_at,
           view_count,
           reply_count,
           is_pinned,
           is_locked,
-          author_id
+          author_id,
+          categories!inner (
+            slug
+          )
         `)
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (topicsError) throw topicsError;
 
-      // Get posts
+      // Get posts with topic and category info
       const { data: posts, error: postsError } = await supabase
         .from('posts')
         .select(`
@@ -59,7 +85,15 @@ const AdminContent = () => {
           content,
           created_at,
           author_id,
-          topic_id
+          topic_id,
+          topics!inner (
+            id,
+            title,
+            slug,
+            categories!inner (
+              slug
+            )
+          )
         `)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -77,13 +111,18 @@ const AdminContent = () => {
           reply_count: topic.reply_count || 0,
           is_pinned: topic.is_pinned,
           is_locked: topic.is_locked,
+          slug: topic.slug,
+          category_slug: topic.categories?.slug,
         })) || []),
         ...(posts?.map(post => ({
           id: post.id,
-          title: 'Post Reply', // Simplified for admin content
+          title: `Reply in: ${post.topics?.title || 'Unknown Topic'}`,
           author: 'Anonymous User', // Simplified for admin content
           type: 'post' as const,
           created_at: post.created_at || '',
+          topic_id: post.topic_id,
+          topic_slug: post.topics?.slug,
+          category_slug: post.topics?.categories?.slug,
         })) || []),
       ];
 
@@ -203,8 +242,13 @@ const AdminContent = () => {
                       {item.type}
                     </Badge>
                   </TableCell>
-                  <TableCell className="max-w-md truncate">
-                    {item.title}
+                  <TableCell className="max-w-md">
+                    <Link 
+                      to={getContentUrl(item)}
+                      className="text-primary hover:text-primary/80 hover:underline font-medium truncate block"
+                    >
+                      {item.title}
+                    </Link>
                   </TableCell>
                   <TableCell>{item.author}</TableCell>
                   <TableCell>
