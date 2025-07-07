@@ -39,11 +39,6 @@ export const useCreateTopic = () => {
       const baseSlug = generateSlugFromTitle(data.title);
       const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
 
-      // Get user's IP address for admin tracking
-      console.log('DEBUG TOPIC: About to get IP address, user exists:', !!user);
-      const userIP = await getUserIPWithFallback();
-      console.log('DEBUG TOPIC: Got IP address:', userIP);
-
       const topicData: any = {
         title: data.title,
         content: data.content,
@@ -54,8 +49,7 @@ export const useCreateTopic = () => {
         view_count: 0,
         reply_count: 0,
         last_reply_at: new Date().toISOString(),
-        moderation_status: category.requires_moderation ? 'pending' : 'approved',
-        ip_address: userIP
+        moderation_status: category.requires_moderation ? 'pending' : 'approved'
       };
 
       if (user) {
