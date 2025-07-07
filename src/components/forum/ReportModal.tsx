@@ -47,20 +47,11 @@ export const ReportModal = ({ isOpen, onClose, postId, topicId, contentType }: R
       return;
     }
 
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to report content",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
       const reportData = {
-        reporter_id: user.id,
+        reporter_id: user?.id || null, // Allow null for anonymous users
         reason,
         description: description.trim() || null,
         ...(contentType === 'post' 
