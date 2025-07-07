@@ -53,13 +53,13 @@ export const useCreateTopic = () => {
         reply_count: 0,
         last_reply_at: new Date().toISOString(),
         moderation_status: category.requires_moderation ? 'pending' : 'approved',
-        ip_address: userIP,
-        is_anonymous: !user // Set anonymous flag when no authenticated user
+        ip_address: userIP
       };
 
       if (user) {
         // Authenticated user
         topicData.author_id = user.id;
+        topicData.is_anonymous = false;
       } else {
         // Anonymous user - use temporary user ID
         const tempUserId = sessionManager.getTempUserId();
@@ -67,7 +67,7 @@ export const useCreateTopic = () => {
           throw new Error('No temporary user session available');
         }
         topicData.author_id = tempUserId;
-        topicData.is_anonymous = true; // Explicitly set anonymous for temp users
+        topicData.is_anonymous = true;
         console.log('Creating topic with temporary user ID:', tempUserId);
       }
 
