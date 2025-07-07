@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useForumSettings } from '@/hooks/useForumSettings';
 import { useEnhancedForumStats } from '@/hooks/useEnhancedForumStats';
+import { MarkdownEditor } from '@/components/ui/markdown-editor';
 import { Save, Settings, Users, Shield, Database, BarChart3, Eye, TrendingUp, Calendar, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 
 const AdminSettings = () => {
@@ -18,6 +19,8 @@ const AdminSettings = () => {
 
   // Local state for form inputs
   const [headerCode, setHeaderCode] = useState('');
+  const [termsContent, setTermsContent] = useState('');
+  const [privacyContent, setPrivacyContent] = useState('');
   const [googleAnalyticsId, setGoogleAnalyticsId] = useState('');
   const [customCss, setCustomCss] = useState('');
 
@@ -27,12 +30,16 @@ const AdminSettings = () => {
       const headerCodeValue = getSetting('header_code', '');
       const gaIdValue = getSetting('google_analytics_id', '');
       const customCssValue = getSetting('custom_css', '');
+      const termsValue = getSetting('terms_content', '');
+      const privacyValue = getSetting('privacy_content', '');
       
       console.log('Loading settings:', { headerCodeValue, gaIdValue, customCssValue });
       
       setHeaderCode(headerCodeValue);
       setGoogleAnalyticsId(gaIdValue);
       setCustomCss(customCssValue);
+      setTermsContent(termsValue);
+      setPrivacyContent(privacyValue);
     }
   }, [settings]); // Removed getSetting from dependencies as it changes on every render
 
@@ -108,10 +115,14 @@ const AdminSettings = () => {
       </div>
 
       <Tabs defaultValue="general" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             General
+          </TabsTrigger>
+          <TabsTrigger value="legal" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Legal
           </TabsTrigger>
           <TabsTrigger value="technical" className="flex items-center gap-2">
             <Database className="h-4 w-4" />
@@ -126,7 +137,7 @@ const AdminSettings = () => {
             Traffic Stats
           </TabsTrigger>
           <TabsTrigger value="system" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
+            <Users className="h-4 w-4" />
             System
           </TabsTrigger>
         </TabsList>
@@ -297,6 +308,84 @@ const AdminSettings = () => {
                 <Save className="h-4 w-4 mr-2" />
                 Save General Settings
               </Button>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* Legal Content Settings */}
+        <TabsContent value="legal">
+          <Card className="p-6">
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Legal Content Management</h2>
+                <p className="text-muted-foreground">
+                  Manage your Terms & Conditions and Privacy Policy content
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="terms-content">Terms & Conditions</Label>
+                  <MarkdownEditor
+                    value={termsContent}
+                    onChange={setTermsContent}
+                    placeholder="Enter terms and conditions content..."
+                    height={300}
+                    allowImages={true}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      updateSetting({
+                        key: 'terms_content',
+                        value: termsContent,
+                        type: 'text',
+                        category: 'legal'
+                      });
+                      toast({
+                        title: "Terms Updated",
+                        description: "Terms & Conditions have been updated successfully.",
+                      });
+                    }}
+                    className="w-full"
+                    disabled={isLoading}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Update Terms & Conditions
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="privacy-content">Privacy Policy</Label>
+                  <MarkdownEditor
+                    value={privacyContent}
+                    onChange={setPrivacyContent}
+                    placeholder="Enter privacy policy content..."
+                    height={300}
+                    allowImages={true}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      updateSetting({
+                        key: 'privacy_content',
+                        value: privacyContent,
+                        type: 'text',
+                        category: 'legal'
+                      });
+                      toast({
+                        title: "Privacy Policy Updated",
+                        description: "Privacy Policy has been updated successfully.",
+                      });
+                    }}
+                    className="w-full"
+                    disabled={isLoading}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Update Privacy Policy
+                  </Button>
+                </div>
+              </div>
             </div>
           </Card>
         </TabsContent>
