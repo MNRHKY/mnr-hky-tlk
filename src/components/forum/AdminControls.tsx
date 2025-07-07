@@ -85,9 +85,25 @@ export const AdminControls: React.FC<AdminControlsProps> = ({
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete {contentType}</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete this {contentType}? This action cannot be undone.
-                {contentType === 'topic' && ' All posts in this topic will also be deleted.'}
+              <AlertDialogDescription className="space-y-2">
+                <p>Are you sure you want to delete this {contentType}? This action cannot be undone.</p>
+                
+                {contentType === 'post' && (
+                  <div className="bg-muted p-3 rounded text-sm">
+                    <p><strong>Post content:</strong> {content.content?.substring(0, 100)}...</p>
+                    <p><strong>Author:</strong> {content.is_anonymous ? 'Anonymous' : (content.profiles?.username || 'Unknown')}</p>
+                  </div>
+                )}
+                
+                {contentType === 'topic' && (
+                  <div className="bg-muted p-3 rounded text-sm space-y-1">
+                    <p><strong>Topic:</strong> {content.title}</p>
+                    <p><strong>Posts:</strong> {content.reply_count || 0} posts in this topic</p>
+                    <p className="text-destructive font-medium">
+                      ⚠️ Topics with posts cannot be deleted to prevent mass deletion. Delete posts individually first.
+                    </p>
+                  </div>
+                )}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -99,9 +115,10 @@ export const AdminControls: React.FC<AdminControlsProps> = ({
                   console.log('Executing delete for', contentType, content.id);
                   handleDelete();
                 }}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                disabled={isDeleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
               >
-                Delete
+                {isDeleting ? 'Deleting...' : 'Delete'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action_type: string
+          admin_user_id: string | null
+          created_at: string
+          id: string
+          target_details: Json | null
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          action_type: string
+          admin_user_id?: string | null
+          created_at?: string
+          id?: string
+          target_details?: Json | null
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          action_type?: string
+          admin_user_id?: string | null
+          created_at?: string
+          id?: string
+          target_details?: Json | null
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
       anonymous_post_tracking: {
         Row: {
           created_at: string | null
@@ -551,6 +581,16 @@ export type Database = {
       is_temporary_user: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      log_admin_action: {
+        Args: {
+          p_admin_user_id: string
+          p_action_type: string
+          p_target_type: string
+          p_target_id: string
+          p_target_details?: Json
+        }
+        Returns: undefined
       }
       record_anonymous_post: {
         Args: { user_ip: unknown; session_id: string }
