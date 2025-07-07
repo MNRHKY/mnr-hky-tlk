@@ -101,15 +101,7 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             id,
             content,
             created_at,
-            profiles:author_id (username),
-            topics!inner (
-              id,
-              title,
-              slug,
-              reply_count,
-              view_count,
-              categories (name, color, slug)
-            )
+            author_id
           `)
           .or(searchConditions)
           .order('created_at', { ascending: false })
@@ -128,20 +120,18 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
           );
         }) || [];
 
-        // Add post results
+        // Add post results (simplified for now)
         filteredPosts.forEach((post) => {
           results.push({
             id: post.id,
-            title: post.topics.title,
+            title: 'Post',
             content: post.content,
             type: 'post',
-            author_username: post.profiles?.username || 'Anonymous User',
-            category_name: post.topics.categories?.name || 'Unknown',
-            category_color: post.topics.categories?.color || '#3b82f6',
-            category_slug: post.topics.categories?.slug,
-            slug: post.topics.slug,
-            reply_count: post.topics.reply_count || 0,
-            view_count: post.topics.view_count || 0,
+            author_username: 'Anonymous User',
+            category_name: 'Unknown',
+            category_color: '#3b82f6',
+            reply_count: 0,
+            view_count: 0,
             created_at: post.created_at,
           });
         });

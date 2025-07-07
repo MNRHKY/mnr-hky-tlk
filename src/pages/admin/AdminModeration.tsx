@@ -54,14 +54,14 @@ const ReportsTab = () => {
       const postIds = reportsData.map(r => r.reported_post_id).filter(Boolean);
       const { data: posts } = await supabase
         .from('posts')
-        .select('id, content, author_id, profiles!posts_author_id_fkey(username)')
+        .select('id, content, author_id')
         .in('id', postIds);
 
       // Fetch topics with author profiles
       const topicIds = reportsData.map(r => r.reported_topic_id).filter(Boolean);
       const { data: topics } = await supabase
         .from('topics')
-        .select('id, title, content, author_id, profiles!topics_author_id_fkey(username)')
+        .select('id, title, content, author_id')
         .in('id', topicIds);
 
       // Combine the data
@@ -149,7 +149,7 @@ const ReportsTab = () => {
                     {report.post?.content || report.topic?.content || report.topic?.title}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    by {report.post?.profiles?.username || report.topic?.profiles?.username || 'Unknown'}
+                    by Anonymous User
                   </div>
                 </TableCell>
                 <TableCell>
@@ -219,8 +219,8 @@ const AdminModeration = () => {
           id,
           content,
           created_at,
-          profiles!posts_author_id_fkey (username),
-          topics!posts_topic_id_fkey (title)
+          author_id,
+          topic_id
         `)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -235,7 +235,7 @@ const AdminModeration = () => {
           title,
           content,
           created_at,
-          profiles!topics_author_id_fkey (username)
+          author_id
         `)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -246,13 +246,13 @@ const AdminModeration = () => {
         ...(posts?.map(post => ({
           id: post.id,
           type: 'post' as const,
-          title: post.topics?.title || 'Unknown Topic',
+          title: 'Post Reply',
           content: post.content,
-          author: post.profiles?.username || 'Anonymous User',
+          author: 'Anonymous User', // Simplified for moderation
           created_at: post.created_at || '',
           reported_count: 0, // Placeholder - we'd need a reports table
           status: 'pending' as const,
-          is_anonymous: !post.profiles?.username,
+          is_anonymous: true,
           ip_address: null,
         })) || []),
         ...(topics?.map(topic => ({
@@ -260,11 +260,11 @@ const AdminModeration = () => {
           type: 'topic' as const,
           title: topic.title,
           content: topic.content || '',
-          author: topic.profiles?.username || 'Anonymous User',
+          author: 'Anonymous User', // Simplified for moderation
           created_at: topic.created_at || '',
           reported_count: 0, // Placeholder
           status: 'pending' as const,
-          is_anonymous: !topic.profiles?.username,
+          is_anonymous: true,
           ip_address: null,
         })) || []),
       ];
