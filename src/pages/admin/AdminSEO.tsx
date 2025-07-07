@@ -1,8 +1,9 @@
 import React from 'react';
 import { CategorySeoManager } from '@/components/admin/CategorySeoManager';
 import { TopicSeoManager } from '@/components/admin/TopicSeoManager';
+import { HomePageSeoManager } from '@/components/admin/HomePageSeoManager';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Tag } from 'lucide-react';
+import { Search, Tag, Home } from 'lucide-react';
 
 export default function AdminSEO() {
   return (
@@ -14,8 +15,12 @@ export default function AdminSEO() {
         </p>
       </div>
 
-      <Tabs defaultValue="categories" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+      <Tabs defaultValue="home" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 max-w-[600px]">
+          <TabsTrigger value="home" className="gap-2">
+            <Home className="h-4 w-4" />
+            Home Page
+          </TabsTrigger>
           <TabsTrigger value="categories" className="gap-2">
             <Tag className="h-4 w-4" />
             Categories
@@ -25,6 +30,10 @@ export default function AdminSEO() {
             Topics
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="home" className="space-y-6">
+          <HomePageSeoManager />
+        </TabsContent>
 
         <TabsContent value="categories" className="space-y-6">
           <CategorySeoManager />

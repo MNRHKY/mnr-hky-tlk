@@ -4,7 +4,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "./components/auth/AuthProvider";
+import { MetadataProvider } from "./components/seo/MetadataProvider";
 import { ForumLayout } from "./components/forum/ForumLayout";
 import { AdminLayout } from "./components/admin/AdminLayout";
 import { ForumHome } from "./components/forum/ForumHome";
@@ -34,12 +36,14 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <GoogleAnalytics />
-        <HeaderCodeInjector />
-        <Toaster />
-        <Sonner />
+    <HelmetProvider>
+      <TooltipProvider>
+        <AuthProvider>
+          <MetadataProvider>
+            <GoogleAnalytics />
+            <HeaderCodeInjector />
+            <Toaster />
+            <Sonner />
         <BrowserRouter>
           <Routes>
             {/* Authentication routes - standalone pages */}
@@ -79,10 +83,12 @@ const App = () => (
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+            </Routes>
+          </BrowserRouter>
+        </MetadataProvider>
       </AuthProvider>
     </TooltipProvider>
+    </HelmetProvider>
   </QueryClientProvider>
 );
 
