@@ -166,6 +166,30 @@ export type Database = {
         }
         Relationships: []
       }
+      peak_users_tracking: {
+        Row: {
+          created_at: string
+          id: string
+          peak_count: number
+          peak_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          peak_count?: number
+          peak_date?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          peak_count?: number
+          peak_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       post_votes: {
         Row: {
           created_at: string
@@ -624,6 +648,13 @@ export type Database = {
         Args: { p_session_id: string }
         Returns: string
       }
+      get_peak_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          peak_count: number
+          peak_date: string
+        }[]
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -670,6 +701,10 @@ export type Database = {
           description?: string
           is_public?: boolean
         }
+        Returns: undefined
+      }
+      update_peak_users: {
+        Args: { current_count: number }
         Returns: undefined
       }
       validate_anonymous_content: {

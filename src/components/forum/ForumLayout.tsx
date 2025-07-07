@@ -6,11 +6,15 @@ import { ForumSidebarNav } from './ForumSidebarNav';
 import { ForumStats } from './ForumStats';
 import { Footer } from '@/components/layout/Footer';
 import { MobileBottomNav } from './MobileBottomNav';
+import { useOnlineUsers } from '@/hooks/useOnlineUsers';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export const ForumLayout = () => {
   const isMobile = useIsMobile();
+  
+  // Initialize online users tracking
+  useOnlineUsers();
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden pb-16">

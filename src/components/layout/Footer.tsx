@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useEnhancedForumStats } from '@/hooks/useEnhancedForumStats';
 import { useForumSettings } from '@/hooks/useForumSettings';
+import { useOnlineUsers } from '@/hooks/useOnlineUsers';
+import { usePeakUsers } from '@/hooks/usePeakUsers';
 import { Facebook, Twitter, Instagram, Youtube, Users, Calendar } from 'lucide-react';
 
 const ContactFormModal = () => {
@@ -121,6 +123,8 @@ const ContactFormModal = () => {
 export const Footer = () => {
   const { data: stats } = useEnhancedForumStats();
   const { getSetting } = useForumSettings();
+  const onlineCount = useOnlineUsers();
+  const { data: peakData } = usePeakUsers();
 
   return (
     <footer className="bg-card border-t mt-auto">
@@ -211,8 +215,13 @@ export const Footer = () => {
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span className="text-muted-foreground">
-                  {/* TODO: Implement real-time online users */}
-                  12 Online Now
+                  {onlineCount} Online Now
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">
+                  Peak: {peakData?.peak_count || 1} ({peakData?.peak_date ? new Date(peakData.peak_date).toLocaleDateString() : 'Today'})
                 </span>
               </div>
             </div>
