@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,20 +7,32 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { HCaptchaComponent, HCaptchaRef } from '@/components/ui/hcaptcha';
 
 export const RegisterForm = () => {
   const navigate = useNavigate();
   const { signUp, loading } = useAuth();
   const { toast } = useToast();
+  const captchaRef = useRef<HCaptchaRef>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
     username: ''
   });
+  const [captchaToken, setCaptchaToken] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!captchaToken) {
+      toast({
+        title: "Verification required",
+        description: "Please complete the captcha verification.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     if (formData.password !== formData.confirmPassword) {
       toast({
@@ -41,19 +53,34 @@ export const RegisterForm = () => {
     }
 
     try {
-      await signUp(formData.email, formData.password, formData.username);
+      await signUp(formData.email, formData.password, formData.username, captchaToken);
       toast({
         title: "Account created!",
         description: "Welcome to Minor Hockey Talks!",
       });
       navigate('/');
     } catch (error) {
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken('');
       toast({
         title: "Registration failed",
         description: "Please try again with different details.",
         variant: "destructive",
       });
     }
+  };
+
+  const handleCaptchaVerify = (token: string) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaError = () => {
+    setCaptchaToken('');
+    toast({
+      title: "Captcha error",
+      description: "Please try the captcha again.",
+      variant: "destructive",
+    });
   };
 
   return (
@@ -132,10 +159,18 @@ export const RegisterForm = () => {
             </div>
 
             <div>
+              <HCaptchaComponent
+                ref={captchaRef}
+                onVerify={handleCaptchaVerify}
+                onError={handleCaptchaError}
+              />
+            </div>
+
+            <div>
               <Button
                 type="submit"
                 className="w-full"
-                disabled={loading}
+                disabled={loading || !captchaToken}
               >
                 {loading ? 'Creating account...' : 'Create account'}
               </Button>

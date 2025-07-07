@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,32 +7,60 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { HCaptchaComponent, HCaptchaRef } from '@/components/ui/hcaptcha';
 
 export const LoginForm = () => {
   const navigate = useNavigate();
   const { signIn, loading } = useAuth();
   const { toast } = useToast();
+  const captchaRef = useRef<HCaptchaRef>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  const [captchaToken, setCaptchaToken] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!captchaToken) {
+      toast({
+        title: "Verification required",
+        description: "Please complete the captcha verification.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      await signIn(formData.email, formData.password);
+      await signIn(formData.email, formData.password, captchaToken);
       toast({
         title: "Welcome back!",
         description: "You have successfully signed in.",
       });
       navigate('/');
     } catch (error) {
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken('');
       toast({
         title: "Sign in failed",
         description: "Please check your credentials and try again.",
         variant: "destructive",
       });
     }
+  };
+
+  const handleCaptchaVerify = (token: string) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaError = () => {
+    setCaptchaToken('');
+    toast({
+      title: "Captcha error",
+      description: "Please try the captcha again.",
+      variant: "destructive",
+    });
   };
 
   return (
@@ -84,10 +112,18 @@ export const LoginForm = () => {
             </div>
 
             <div>
+              <HCaptchaComponent
+                ref={captchaRef}
+                onVerify={handleCaptchaVerify}
+                onError={handleCaptchaError}
+              />
+            </div>
+
+            <div>
               <Button
                 type="submit"
                 className="w-full"
-                disabled={loading}
+                disabled={loading || !captchaToken}
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </Button>
