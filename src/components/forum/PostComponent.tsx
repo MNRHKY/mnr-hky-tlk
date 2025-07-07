@@ -257,7 +257,10 @@ export const PostComponent: React.FC<PostComponentProps> = ({
                   variant="ghost" 
                   size="sm" 
                   className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                  onClick={() => setShowReplyForm(!showReplyForm)}
+                  onClick={() => {
+                    console.log('PostComponent reply button clicked, current state:', showReplyForm);
+                    setShowReplyForm(!showReplyForm);
+                  }}
                 >
                   <MessageCircle className="h-3 w-3" />
                 </Button>
