@@ -9,6 +9,7 @@ import { useHotTopics } from '@/hooks/useHotTopics';
 import { useTopics } from '@/hooks/useTopics';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
+import { useForumSettings } from '@/hooks/useForumSettings';
 
 import { PostCard } from './PostCard';
 import { ReportModal } from './ReportModal';
@@ -16,6 +17,7 @@ import { QuickTopicModal } from './QuickTopicModal';
 
 export const ForumHome = () => {
   const { user } = useAuth();
+  const { getSetting } = useForumSettings();
   const [searchParams, setSearchParams] = useSearchParams();
   const [reportModal, setReportModal] = useState<{
     isOpen: boolean;
@@ -53,8 +55,12 @@ export const ForumHome = () => {
     <div className="space-y-6 relative w-full overflow-x-hidden max-w-4xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Minor Hockey Talk</h1>
-        <p className="text-muted-foreground">Connect with hockey parents and players across Canada</p>
+        <h1 className="text-2xl font-bold text-foreground">
+          {getSetting('forum_name', 'Minor Hockey Talks')}
+        </h1>
+        <p className="text-muted-foreground">
+          {getSetting('forum_description', 'A community forum for minor hockey discussions')}
+        </p>
       </div>
 
 

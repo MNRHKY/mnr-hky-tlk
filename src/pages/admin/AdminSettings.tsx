@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useForumSettings } from '@/hooks/useForumSettings';
 import { useEnhancedForumStats } from '@/hooks/useEnhancedForumStats';
-import { Save, Settings, Users, Shield, Database, BarChart3, Eye, TrendingUp, Calendar } from 'lucide-react';
+import { Save, Settings, Users, Shield, Database, BarChart3, Eye, TrendingUp, Calendar, Facebook, Instagram, Linkedin, Twitter, Youtube } from 'lucide-react';
 
 const AdminSettings = () => {
   const { toast } = useToast();
@@ -198,6 +198,108 @@ const AdminSettings = () => {
                       category: 'general'
                     })}
                   />
+                </div>
+
+                {/* Social Media Section */}
+                <div className="space-y-4 border-t pt-4">
+                  <div>
+                    <h3 className="font-medium mb-3">Social Media Links</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Add your social media URLs to display links on your forum
+                    </p>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="facebook-url" className="flex items-center gap-2">
+                        <Facebook className="h-4 w-4" />
+                        Facebook URL
+                      </Label>
+                      <Input
+                        id="facebook-url"
+                        value={getSetting('social_facebook', '')}
+                        onChange={(e) => updateSetting({
+                          key: 'social_facebook',
+                          value: e.target.value,
+                          type: 'string',
+                          category: 'social'
+                        })}
+                        placeholder="https://facebook.com/yourpage"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="twitter-url" className="flex items-center gap-2">
+                        <Twitter className="h-4 w-4" />
+                        Twitter/X URL
+                      </Label>
+                      <Input
+                        id="twitter-url"
+                        value={getSetting('social_twitter', '')}
+                        onChange={(e) => updateSetting({
+                          key: 'social_twitter',
+                          value: e.target.value,
+                          type: 'string',
+                          category: 'social'
+                        })}
+                        placeholder="https://twitter.com/yourhandle"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="instagram-url" className="flex items-center gap-2">
+                        <Instagram className="h-4 w-4" />
+                        Instagram URL
+                      </Label>
+                      <Input
+                        id="instagram-url"
+                        value={getSetting('social_instagram', '')}
+                        onChange={(e) => updateSetting({
+                          key: 'social_instagram',
+                          value: e.target.value,
+                          type: 'string',
+                          category: 'social'
+                        })}
+                        placeholder="https://instagram.com/youraccount"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="youtube-url" className="flex items-center gap-2">
+                        <Youtube className="h-4 w-4" />
+                        YouTube URL
+                      </Label>
+                      <Input
+                        id="youtube-url"
+                        value={getSetting('social_youtube', '')}
+                        onChange={(e) => updateSetting({
+                          key: 'social_youtube',
+                          value: e.target.value,
+                          type: 'string',
+                          category: 'social'
+                        })}
+                        placeholder="https://youtube.com/yourchannel"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin-url" className="flex items-center gap-2">
+                        <Linkedin className="h-4 w-4" />
+                        LinkedIn URL
+                      </Label>
+                      <Input
+                        id="linkedin-url"
+                        value={getSetting('social_linkedin', '')}
+                        onChange={(e) => updateSetting({
+                          key: 'social_linkedin',
+                          value: e.target.value,
+                          type: 'string',
+                          category: 'social'
+                        })}
+                        placeholder="https://linkedin.com/company/yourcompany"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
