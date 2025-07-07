@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { MessageSquare, User, Clock, ArrowLeft, ThumbsUp, Flag, Reply, ArrowUp, ArrowDown, MessageCircle, Share, Edit } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTopic } from '@/hooks/useTopic';
+import { useTopicByPath } from '@/hooks/useTopicByPath';
 import { usePosts } from '@/hooks/usePosts';
 
 
@@ -23,7 +24,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 
 export const TopicView = () => {
-  const { topicId } = useParams();
+  const { topicId, categorySlug, subcategorySlug, topicSlug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showTopicReply, setShowTopicReply] = useState(false);
@@ -41,9 +42,17 @@ export const TopicView = () => {
     contentType: 'post',
   });
 
-  const { data: topic, isLoading: topicLoading, error: topicError } = useTopic(topicId || '');
-  const { data: posts, isLoading: postsLoading } = usePosts(topicId || '');
-  const { userVote: topicVote, vote: voteOnTopic, isVoting: isVotingTopic } = useTopicVote(topicId || '');
+  // Handle both legacy UUID routing and new slug routing
+  const isLegacyRoute = !!topicId;
+  const { data: legacyTopic, isLoading: legacyLoading, error: legacyError } = useTopic(topicId || '');
+  const { data: slugTopic, isLoading: slugLoading, error: slugError } = useTopicByPath(categorySlug || '', subcategorySlug, topicSlug);
+  
+  const topic = isLegacyRoute ? legacyTopic : slugTopic;
+  const topicLoading = isLegacyRoute ? legacyLoading : slugLoading;
+  const topicError = isLegacyRoute ? legacyError : slugError;
+  
+  const { data: posts, isLoading: postsLoading } = usePosts(topic?.id || '');
+  const { userVote: topicVote, vote: voteOnTopic, isVoting: isVotingTopic } = useTopicVote(topic?.id || '');
   const { mutate: editTopic, isPending: isUpdatingTopic } = useEditTopic();
 
 
@@ -131,7 +140,7 @@ export const TopicView = () => {
       <div className="hidden md:flex items-center space-x-2 text-sm text-muted-foreground">
         <Link to="/" className="hover:text-primary">Forum</Link>
         <span>/</span>
-        <Link to={`/category/${topic.categories?.slug}`} className="hover:text-primary">
+        <Link to={`/${topic.categories?.slug}`} className="hover:text-primary">
           {topic.categories?.name}
         </Link>
         <span>/</span>
@@ -299,7 +308,9 @@ export const TopicView = () => {
                 size="sm" 
                 className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
                 onClick={() => {
-                  const shareUrl = `${window.location.origin}/topic/${topic.id}`;
+                  const shareUrl = topic.categories?.slug && topic.slug 
+                    ? `${window.location.origin}/${topic.categories.slug}/${topic.slug}`
+                    : `${window.location.origin}/topic/${topic.id}`;
                   const shareData = {
                     title: topic.title,
                     text: `Check out this topic: ${topic.title}`,
@@ -392,7 +403,7 @@ export const TopicView = () => {
               <PostComponent
                 key={reply.id}
                 post={reply}
-                topicId={topicId || ''}
+                topicId={topic.id || ''}
                 onReport={handleReport}
               />
             ))}
@@ -404,14 +415,14 @@ export const TopicView = () => {
         {/* Reply to topic form */}
         {showTopicReply && (
           <div className="border-t border-border p-3 md:p-6">
-            <InlineReplyForm
-              topicId={topicId || ''}
-              parentPostId={null}
-              parentPost={topic}
-              onCancel={() => setShowTopicReply(false)}
-              onSuccess={() => setShowTopicReply(false)}
-              isTopicReply={true}
-            />
+              <InlineReplyForm
+                topicId={topic.id || ''}
+                parentPostId={null}
+                parentPost={topic}
+                onCancel={() => setShowTopicReply(false)}
+                onSuccess={() => setShowTopicReply(false)}
+                isTopicReply={true}
+              />
           </div>
         )}
       </div>

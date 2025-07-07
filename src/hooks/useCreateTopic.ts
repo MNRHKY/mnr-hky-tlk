@@ -1,6 +1,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { generateSlugFromTitle } from '@/utils/urlHelpers';
 import { useAuth } from './useAuth';
 import { generateSessionId, getClientIP } from '@/utils/anonymousUtils';
 
@@ -34,10 +35,15 @@ export const useCreateTopic = () => {
         throw new Error(`Posts can only be created in age group & skill level categories. "${category.name}" is for browsing only.`);
       }
 
+      // Generate slug from title with unique suffix
+      const baseSlug = generateSlugFromTitle(data.title);
+      const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
+
       const topicData: any = {
         title: data.title,
         content: data.content,
         category_id: data.category_id,
+        slug: uniqueSlug,
         is_pinned: false,
         is_locked: false,
         view_count: 0,

@@ -16,6 +16,7 @@ export interface Topic {
   last_reply_at: string;
   created_at: string;
   updated_at: string;
+  slug: string;
   profiles?: {
     username: string;
     avatar_url: string | null;
@@ -23,6 +24,8 @@ export interface Topic {
   categories?: {
     name: string;
     color: string;
+    slug: string;
+    parent_category_id?: string;
   };
 }
 
@@ -37,7 +40,7 @@ export const useTopics = (categoryId?: string) => {
         .select(`
           *,
           profiles (username, avatar_url),
-          categories (name, color)
+          categories (name, color, slug, parent_category_id)
         `)
         .order('is_pinned', { ascending: false })
         .order('last_reply_at', { ascending: false });

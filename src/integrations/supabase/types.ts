@@ -355,6 +355,7 @@ export type Database = {
           is_pinned: boolean | null
           last_reply_at: string | null
           reply_count: number | null
+          slug: string
           title: string
           updated_at: string | null
           view_count: number | null
@@ -373,6 +374,7 @@ export type Database = {
           is_pinned?: boolean | null
           last_reply_at?: string | null
           reply_count?: number | null
+          slug: string
           title: string
           updated_at?: string | null
           view_count?: number | null
@@ -391,6 +393,7 @@ export type Database = {
           is_pinned?: boolean | null
           last_reply_at?: string | null
           reply_count?: number | null
+          slug?: string
           title?: string
           updated_at?: string | null
           view_count?: number | null
@@ -453,6 +456,10 @@ export type Database = {
       }
       generate_anonymous_session_id: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_slug: {
+        Args: { input_text: string }
         Returns: string
       }
       get_categories_by_activity: {

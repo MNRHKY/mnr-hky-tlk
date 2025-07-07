@@ -85,7 +85,7 @@ const Topics = () => {
                   </div>
                   <div className="flex-1">
                     <Link 
-                      to={`/topic/${topic.id}`}
+                      to={topic.slug && topic.categories?.slug ? `/${topic.categories.slug}/${topic.slug}` : `/topic/${topic.id}`}
                       className="font-medium text-gray-900 hover:text-blue-600"
                     >
                       {topic.title}

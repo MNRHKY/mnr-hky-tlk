@@ -2,33 +2,42 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useTopic = (topicId: string) => {
+export const useTopic = (identifier: string) => {
   return useQuery({
-    queryKey: ['topic', topicId],
+    queryKey: ['topic', identifier],
     queryFn: async () => {
-      console.log('Fetching topic by ID:', topicId);
+      console.log('Fetching topic by identifier:', identifier);
       
-      const { data, error } = await supabase
+      // Check if identifier is a UUID (legacy) or a slug
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+      
+      let query = supabase
         .from('topics')
         .select(`
           *,
           profiles (username, avatar_url),
-          categories (name, color, slug)
-        `)
-        .eq('id', topicId)
-        .single();
+          categories (name, color, slug, parent_category_id)
+        `);
+      
+      if (isUUID) {
+        query = query.eq('id', identifier);
+      } else {
+        query = query.eq('slug', identifier);
+      }
+      
+      const { data, error } = await query.single();
       
       if (error) {
         console.error('Error fetching topic:', error);
         throw error;
       }
       
-      // Increment view count using a separate query
-      await supabase.rpc('increment_view_count', { topic_id: topicId });
+      // Increment view count using the topic ID
+      await supabase.rpc('increment_view_count', { topic_id: data.id });
       
       console.log('Topic fetched:', data);
       return data;
     },
-    enabled: !!topicId,
+    enabled: !!identifier,
   });
 };

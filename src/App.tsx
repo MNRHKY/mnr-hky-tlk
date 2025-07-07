@@ -50,6 +50,12 @@ const App = () => (
             {/* Forum routes - wrapped in ForumLayout */}
             <Route path="/" element={<ForumLayout />}>
               <Route index element={<ForumHome />} />
+              {/* New hierarchical URL structure */}
+              <Route path=":categorySlug/:topicSlug" element={<TopicView />} />
+              <Route path=":categorySlug/:subcategorySlug/:topicSlug" element={<TopicView />} />
+              <Route path=":categorySlug" element={<CategoryView />} />
+              <Route path=":categorySlug/:subcategorySlug" element={<CategoryView />} />
+              {/* Legacy UUID-based redirects */}
               <Route path="topic/:topicId" element={<TopicView />} />
               <Route path="category/:categoryId" element={<CategoryView />} />
               <Route path="create" element={<CreateTopic />} />

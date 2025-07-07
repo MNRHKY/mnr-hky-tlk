@@ -64,7 +64,10 @@ const SubcategoryCard = ({ subcat }: { subcat: any }) => {
 };
 
 export const CategoryView = () => {
-  const { categoryId } = useParams();
+  const { categoryId, categorySlug, subcategorySlug } = useParams();
+  
+  // Handle both legacy UUID routing and new slug routing
+  const isLegacyRoute = !!categoryId;
   const { user } = useAuth();
   
   // Check if categoryId is a UUID (contains hyphens and is 36 chars) or a slug
@@ -261,7 +264,7 @@ export const CategoryView = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <Link 
-                          to={`/topic/${topic.id}`}
+                          to={topic.slug ? `/${category.slug}/${topic.slug}` : `/topic/${topic.id}`}
                           className="font-medium text-gray-900 hover:text-blue-600 text-sm sm:text-base line-clamp-2"
                         >
                           {topic.title}
