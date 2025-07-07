@@ -23,6 +23,8 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminContent from "./pages/admin/AdminContent";
 import AdminModeration from "./pages/admin/AdminModeration";
 import AdminSettings from "./pages/admin/AdminSettings";
+import { GoogleAnalytics } from "./components/analytics/GoogleAnalytics";
+import { HeaderCodeInjector } from "./components/analytics/HeaderCodeInjector";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,8 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
+        <GoogleAnalytics />
+        <HeaderCodeInjector />
         <Toaster />
         <Sonner />
         <BrowserRouter>

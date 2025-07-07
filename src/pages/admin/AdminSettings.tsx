@@ -40,21 +40,22 @@ const AdminSettings = () => {
   };
 
   const handleSaveTechnical = async () => {
-    updateSetting({
-      key: 'header_code',
-      value: headerCode,
-      type: 'code',
-      category: 'technical',
-      description: 'Custom HTML code to inject in header'
-    });
-    
-    updateSetting({
-      key: 'google_analytics_id',
-      value: googleAnalyticsId,
-      type: 'string',
-      category: 'technical',
-      description: 'Google Analytics tracking ID'
-    });
+    await Promise.all([
+      updateSetting({
+        key: 'header_code',
+        value: headerCode,
+        type: 'code',
+        category: 'technical',
+        description: 'Custom HTML code to inject in header'
+      }),
+      updateSetting({
+        key: 'google_analytics_id',
+        value: googleAnalyticsId,
+        type: 'string',
+        category: 'technical',
+        description: 'Google Analytics tracking ID'
+      })
+    ]);
   };
 
   const handleSaveAppearance = async () => {
