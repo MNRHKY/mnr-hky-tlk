@@ -56,8 +56,8 @@ export const useCategories = (parentId?: string | null, level?: number) => {
 };
 
 export const useCategoryById = (categoryId: string) => {
-  const isValidId = categoryId && categoryId.length > 0 && categoryId !== '' && 
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(categoryId);
+  const isValidId = Boolean(categoryId && categoryId.length > 0 && categoryId !== '' && 
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(categoryId));
   
   return useQuery({
     queryKey: ['category', categoryId],
@@ -84,7 +84,7 @@ export const useCategoryById = (categoryId: string) => {
 };
 
 export const useCategoryBySlug = (slug: string) => {
-  const isValidSlug = slug && slug.length > 0 && slug !== '';
+  const isValidSlug = Boolean(slug && slug.length > 0 && slug !== '');
   
   return useQuery({
     queryKey: ['category-slug', slug],
