@@ -79,11 +79,6 @@ export const AdminControls: React.FC<AdminControlsProps> = ({
                   size="sm"
                   className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                   disabled={isDeleting}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Delete button clicked for', contentType, content.id);
-                  }}
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>
