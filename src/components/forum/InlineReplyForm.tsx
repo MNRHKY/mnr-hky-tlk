@@ -3,8 +3,7 @@ import { Button } from '@/components/ui/button';
 import { MarkdownEditor } from '@/components/ui/markdown-editor';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreatePost } from '@/hooks/useCreatePost';
-import { useAnonymousPosting } from '@/hooks/useAnonymousPosting';
-import { AnonymousPostingNotice } from './AnonymousPostingNotice';
+import { useTempUser } from '@/hooks/useTempUser';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -30,7 +29,7 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
   const [contentErrors, setContentErrors] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const createPostMutation = useCreatePost();
-  const anonymousPosting = useAnonymousPosting();
+  const tempUser = useTempUser();
 
   useEffect(() => {
     // Auto-focus when form appears
@@ -54,7 +53,7 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
 
     // Validate content for anonymous users
     if (!user) {
-      if (!anonymousPosting.canPost) {
+      if (!tempUser.canPost) {
         toast({
           title: "Rate limit exceeded",
           description: "You've reached the limit of 3 posts per 12 hours for anonymous users",
@@ -63,7 +62,7 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
         return;
       }
 
-      const validation = anonymousPosting.validateContent(content);
+      const validation = tempUser.validateContent(content);
       if (!validation.isValid) {
         setContentErrors(validation.errors);
         toast({
@@ -80,11 +79,13 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
       await createPostMutation.mutateAsync({
         content,
         topic_id: topicId,
-        parent_post_id: parentPostId,
-        is_anonymous: !user
+        parent_post_id: parentPostId
       });
 
-      // Rate limiting is now handled automatically in useCreatePost
+      // Refresh rate limit for anonymous users
+      if (!user) {
+        await tempUser.refreshRateLimit();
+      }
 
       toast({
         title: "Success",
@@ -131,12 +132,17 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
       )}
 
       {/* Anonymous posting notice */}
-      {!user && (
-        <div className="mb-3">
-          <AnonymousPostingNotice
-            remainingPosts={anonymousPosting.remainingPosts}
-            canPost={anonymousPosting.canPost}
-          />
+      {!user && tempUser.tempUser && (
+        <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="text-sm text-blue-800">
+            <div className="font-medium">Posting as: {tempUser.tempUser.display_name}</div>
+            <div className="text-xs mt-1">
+              {tempUser.canPost 
+                ? `${tempUser.remainingPosts} posts remaining in the next 12 hours`
+                : 'Rate limit reached (3 posts per 12 hours)'
+              }
+            </div>
+          </div>
         </div>
       )}
 
@@ -171,7 +177,7 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={!content.trim() || createPostMutation.isPending || (!user && !anonymousPosting.canPost)}
+            disabled={!content.trim() || createPostMutation.isPending || (!user && !tempUser.canPost)}
             size="sm"
             className="h-8 px-3 text-xs"
           >

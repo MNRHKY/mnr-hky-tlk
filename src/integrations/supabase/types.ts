@@ -293,6 +293,30 @@ export type Database = {
           },
         ]
       }
+      temporary_users: {
+        Row: {
+          created_at: string
+          display_name: string
+          expires_at: string
+          id: string
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          expires_at?: string
+          id?: string
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          expires_at?: string
+          id?: string
+          session_id?: string
+        }
+        Relationships: []
+      }
       topic_votes: {
         Row: {
           anonymous_ip: unknown | null
@@ -450,6 +474,14 @@ export type Database = {
         Args: { user_ip: unknown; session_id: string }
         Returns: boolean
       }
+      check_user_rate_limit: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      cleanup_expired_temp_users: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_old_anonymous_tracking: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -460,6 +492,10 @@ export type Database = {
       }
       generate_slug: {
         Args: { input_text: string }
+        Returns: string
+      }
+      generate_temp_display_name: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       get_categories_by_activity: {
@@ -520,6 +556,10 @@ export type Database = {
           hot_score: number
         }[]
       }
+      get_or_create_temp_user: {
+        Args: { p_session_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -538,6 +578,10 @@ export type Database = {
       increment_view_count: {
         Args: { topic_id: string }
         Returns: undefined
+      }
+      is_temporary_user: {
+        Args: { user_id: string }
+        Returns: boolean
       }
       record_anonymous_post: {
         Args: { user_ip: unknown; session_id: string }

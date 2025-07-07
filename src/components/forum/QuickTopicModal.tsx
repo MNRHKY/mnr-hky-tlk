@@ -9,10 +9,9 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { MessageSquare, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateTopic } from '@/hooks/useCreateTopic';
-import { useAnonymousPosting } from '@/hooks/useAnonymousPosting';
+import { useTempUser } from '@/hooks/useTempUser';
 import { useCategoryById } from '@/hooks/useCategories';
 import { HierarchicalCategorySelector } from './HierarchicalCategorySelector';
-import { AnonymousPostingNotice } from './AnonymousPostingNotice';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -39,7 +38,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
   });
 
   const createTopicMutation = useCreateTopic();
-  const anonymousPosting = useAnonymousPosting();
+  const tempUser = useTempUser();
   const { data: currentSelectedCategory } = useCategoryById(formData.category_id || preselectedCategoryId || '');
   
   // Get category data for breadcrumb path
@@ -65,7 +64,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
 
     // Validate content for anonymous users
     if (!user) {
-      if (!anonymousPosting.canPost) {
+      if (!tempUser.canPost) {
         toast({
           title: "Rate limit exceeded",
           description: "You've reached the limit of 3 posts per 12 hours for anonymous users",
@@ -74,7 +73,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
         return;
       }
 
-      const validation = anonymousPosting.validateContent(formData.content);
+      const validation = tempUser.validateContent(formData.content);
       if (!validation.isValid) {
         setContentErrors(validation.errors);
         toast({
@@ -88,14 +87,11 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
     }
 
     try {
-      const topic = await createTopicMutation.mutateAsync({
-        ...formData,
-        is_anonymous: !user
-      });
+      const topic = await createTopicMutation.mutateAsync(formData);
 
-      // Record the post for anonymous users
+      // Refresh rate limit for anonymous users
       if (!user) {
-        await anonymousPosting.recordPost();
+        await tempUser.refreshRateLimit();
       }
 
       toast({
@@ -146,12 +142,19 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
           </DialogTitle>
         </DialogHeader>
 
-        {/* Show anonymous posting notice for non-authenticated users */}
-        {!user && (
-          <AnonymousPostingNotice
-            remainingPosts={anonymousPosting.remainingPosts}
-            canPost={anonymousPosting.canPost}
-          />
+        {/* Show temp user notice for non-authenticated users */}
+        {!user && tempUser.tempUser && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <div className="text-sm text-blue-800">
+              <div className="font-medium">Posting as: {tempUser.tempUser.display_name}</div>
+              <div className="text-xs mt-1">
+                {tempUser.canPost 
+                  ? `${tempUser.remainingPosts} posts remaining in the next 12 hours`
+                  : 'Rate limit reached (3 posts per 12 hours)'
+                }
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Show current forum selection when any category is selected */}
@@ -271,7 +274,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
             </Button>
             <Button 
               type="submit" 
-              disabled={createTopicMutation.isPending || (!user && !anonymousPosting.canPost)}
+              disabled={createTopicMutation.isPending || (!user && !tempUser.canPost)}
             >
               {createTopicMutation.isPending ? 'Creating...' : 'Create Topic'}
             </Button>

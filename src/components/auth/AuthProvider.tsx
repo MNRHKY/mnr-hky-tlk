@@ -3,6 +3,7 @@ import React, { createContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthContextType } from '@/types/auth';
+import { sessionManager } from '@/utils/sessionManager';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -13,6 +14,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userRole, setUserRole] = useState<'admin' | 'moderator' | 'user'>('user');
 
   useEffect(() => {
+    // Initialize session manager for anonymous users
+    const initializeApp = async () => {
+      try {
+        await sessionManager.initializeSession();
+      } catch (error) {
+        console.error('Failed to initialize session manager:', error);
+      }
+    };
+
+    initializeApp();
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -21,6 +33,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // Clear temp session when user logs in
+          sessionManager.clearSession();
+          
           // Fetch user role
           setTimeout(async () => {
             try {
@@ -39,6 +54,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }, 0);
         } else {
           setUserRole('user');
+          // Re-initialize temp session when user logs out
+          setTimeout(() => {
+            sessionManager.initializeSession();
+          }, 0);
         }
         
         setLoading(false);

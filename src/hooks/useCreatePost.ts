@@ -2,13 +2,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { generateSessionId, getClientIP } from '@/utils/anonymousUtils';
+import { sessionManager } from '@/utils/sessionManager';
 
 interface CreatePostData {
   content: string;
   topic_id: string;
   parent_post_id?: string | null;
-  is_anonymous?: boolean;
 }
 
 export const useCreatePost = () => {
@@ -45,20 +44,14 @@ export const useCreatePost = () => {
       if (user) {
         // Authenticated user
         postData.author_id = user.id;
-        postData.is_anonymous = false;
       } else {
-        // Anonymous user
-        if (!data.is_anonymous) {
-          throw new Error('Anonymous users must set is_anonymous to true');
+        // Anonymous user - use temporary user ID
+        const tempUserId = sessionManager.getTempUserId();
+        if (!tempUserId) {
+          throw new Error('No temporary user session available');
         }
-        postData.author_id = null;
-        postData.is_anonymous = true;
-        // Use the same session ID that useAnonymousPosting uses
-        const sessionId = generateSessionId();
-        postData.anonymous_session_id = sessionId;
-        postData.anonymous_ip = await getClientIP();
-        
-        console.log('Creating anonymous post with session ID:', sessionId);
+        postData.author_id = tempUserId;
+        console.log('Creating post with temporary user ID:', tempUserId);
       }
 
       const { data: post, error } = await supabase
@@ -95,20 +88,7 @@ export const useCreatePost = () => {
         console.error('Error incrementing reply count:', incrementError);
       }
 
-      // Record anonymous post for rate limiting
-      if (!user && post.anonymous_session_id && post.anonymous_ip) {
-        console.log('Recording anonymous post for rate limiting with session ID:', post.anonymous_session_id);
-        const { error: recordError } = await supabase.rpc('record_anonymous_post', {
-          user_ip: post.anonymous_ip,
-          session_id: post.anonymous_session_id
-        });
-        
-        if (recordError) {
-          console.error('Error recording anonymous post:', recordError);
-        } else {
-          console.log('Anonymous post recorded successfully');
-        }
-      }
+      // No need for manual rate limiting - it's handled by the temp user system
 
       console.log('Post created successfully:', post);
       return post;
