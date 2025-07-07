@@ -38,6 +38,24 @@ interface ModerationItem {
 const ReportsTab = () => {
   const { toast } = useToast();
 
+  // Helper function to generate the correct URL for reported content
+  const getReportedContentUrl = (report: any) => {
+    if (report.reported_post_id && report.post) {
+      // For posts, navigate to the parent topic
+      if (report.post.topic?.category_slug && report.post.topic?.slug) {
+        return `/${report.post.topic.category_slug}/${report.post.topic.slug}`;
+      }
+      return `/topic/${report.post.topic_id}`;
+    } else if (report.reported_topic_id && report.topic) {
+      // For topics, use category/topic slug pattern
+      if (report.topic.category_slug && report.topic.slug) {
+        return `/${report.topic.category_slug}/${report.topic.slug}`;
+      }
+      return `/topic/${report.topic.id}`;
+    }
+    return '#';
+  };
+
   const { data: reports, isLoading, refetch } = useQuery({
     queryKey: ['reports'],
     queryFn: async () => {
@@ -55,18 +73,40 @@ const ReportsTab = () => {
         .select('id, username')
         .in('id', reporterIds);
 
-      // Fetch posts with author profiles
+      // Fetch posts with topic and category info for navigation
       const postIds = reportsData.map(r => r.reported_post_id).filter(Boolean);
       const { data: posts } = await supabase
         .from('posts')
-        .select('id, content, author_id')
+        .select(`
+          id, 
+          content, 
+          author_id, 
+          topic_id,
+          topics!inner (
+            id,
+            title,
+            slug,
+            categories!inner (
+              slug
+            )
+          )
+        `)
         .in('id', postIds);
 
-      // Fetch topics with author profiles
+      // Fetch topics with category info for navigation
       const topicIds = reportsData.map(r => r.reported_topic_id).filter(Boolean);
       const { data: topics } = await supabase
         .from('topics')
-        .select('id, title, content, author_id')
+        .select(`
+          id, 
+          title, 
+          content, 
+          author_id, 
+          slug,
+          categories!inner (
+            slug
+          )
+        `)
         .in('id', topicIds);
 
       // Combine the data
@@ -150,12 +190,17 @@ const ReportsTab = () => {
                   </div>
                 </TableCell>
                 <TableCell className="max-w-md">
-                  <div className="truncate text-sm">
-                    {report.post?.content || report.topic?.content || report.topic?.title}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    by Anonymous User
-                  </div>
+                  <Link 
+                    to={getReportedContentUrl(report)}
+                    className="text-primary hover:text-primary/80 hover:underline block"
+                  >
+                    <div className="truncate text-sm font-medium">
+                      {report.post?.content || report.topic?.content || report.topic?.title}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      by Anonymous User • Click to view content
+                    </div>
+                  </Link>
                 </TableCell>
                 <TableCell>
                   <Badge 
