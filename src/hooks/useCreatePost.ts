@@ -110,10 +110,15 @@ export const useCreatePost = () => {
     onSuccess: (post) => {
       // Invalidate and refetch posts for the topic
       queryClient.invalidateQueries({ queryKey: ['posts', post.topic_id] });
-      queryClient.invalidateQueries({ queryKey: ['topics', post.topic_id] });
-      // Invalidate all topics queries (including those with categoryId and without)
+      
+      // Invalidate ALL topics queries to ensure proper refresh
       queryClient.invalidateQueries({ queryKey: ['topics'] });
+      queryClient.invalidateQueries({ queryKey: ['topics', undefined] });
       queryClient.invalidateQueries({ queryKey: ['hot-topics'] });
+      
+      // Force refetch to ensure immediate update
+      queryClient.refetchQueries({ queryKey: ['topics'] });
+      queryClient.refetchQueries({ queryKey: ['topics', undefined] });
     },
   });
 };
