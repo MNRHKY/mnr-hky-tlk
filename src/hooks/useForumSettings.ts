@@ -41,11 +41,28 @@ export const useForumSettings = () => {
       // Convert to a more usable format
       const settingsMap: ForumSettings = {};
       data?.forEach((setting: ForumSetting) => {
-        // Parse JSON values
+        // Parse JSON values based on type
         let value = setting.setting_value;
-        if (typeof value === 'string' && value.startsWith('"') && value.endsWith('"')) {
-          value = value.slice(1, -1); // Remove quotes for string values
+        
+        if (value === null || value === undefined) {
+          value = '';
+        } else if (typeof value === 'string') {
+          // For JSON strings that are double-quoted, remove the outer quotes
+          if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.slice(1, -1);
+          }
+          // For text content (like HTML), it might be stored as a JSON string
+          try {
+            const parsed = JSON.parse(value);
+            if (typeof parsed === 'string') {
+              value = parsed;
+            }
+          } catch {
+            // If it's not valid JSON, use the value as-is
+            // This handles cases where the value is already a plain string
+          }
         }
+        
         settingsMap[setting.setting_key] = {
           value,
           type: setting.setting_type,
