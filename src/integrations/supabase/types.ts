@@ -547,11 +547,11 @@ export type Database = {
           last_reply_at: string
           created_at: string
           updated_at: string
-          is_anonymous: boolean
           username: string
           avatar_url: string
           category_name: string
           category_color: string
+          category_slug: string
           hot_score: number
         }[]
       }
