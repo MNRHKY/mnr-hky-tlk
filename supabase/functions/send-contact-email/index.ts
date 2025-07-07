@@ -50,7 +50,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email to admin
     const adminEmailResponse = await resend.emails.send({
       from: "Minor Hockey Talks <noreply@resend.dev>",
-      to: ["admin@minorhockeytalks.com"], // Replace with actual admin email
+      to: ["minorhockeytalks@gmail.com"],
       subject: `Contact Form: ${subject}`,
       html: `
         <h2>New Contact Form Submission</h2>
