@@ -40,7 +40,9 @@ export const useCreateTopic = () => {
       const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
 
       // Get user's IP address for admin tracking
+      console.log('DEBUG TOPIC: About to get IP address, user exists:', !!user);
       const userIP = await getUserIPWithFallback();
+      console.log('DEBUG TOPIC: Got IP address:', userIP);
 
       const topicData: any = {
         title: data.title,
@@ -58,18 +60,22 @@ export const useCreateTopic = () => {
 
       if (user) {
         // Authenticated user
+        console.log('DEBUG TOPIC: Creating topic for authenticated user:', user.id);
         topicData.author_id = user.id;
         topicData.is_anonymous = false;
       } else {
         // Anonymous user - use temporary user ID
         const tempUserId = sessionManager.getTempUserId();
+        console.log('DEBUG TOPIC: Got temp user ID:', tempUserId);
         if (!tempUserId) {
           throw new Error('No temporary user session available');
         }
         topicData.author_id = tempUserId;
         topicData.is_anonymous = true;
-        console.log('Creating topic with temporary user ID:', tempUserId);
+        console.log('DEBUG TOPIC: Creating topic with temporary user ID, is_anonymous:', topicData.is_anonymous);
       }
+      
+      console.log('DEBUG TOPIC: Final topicData before insert:', topicData);
 
       const { data: topic, error } = await supabase
         .from('topics')

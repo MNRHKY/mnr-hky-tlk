@@ -37,7 +37,9 @@ export const useCreatePost = () => {
       }
 
       // Get user's IP address for admin tracking
+      console.log('DEBUG: About to get IP address, user exists:', !!user);
       const userIP = await getUserIPWithFallback();
+      console.log('DEBUG: Got IP address:', userIP);
 
       const postData: any = {
         content: data.content,
@@ -49,18 +51,22 @@ export const useCreatePost = () => {
 
       if (user) {
         // Authenticated user
+        console.log('DEBUG: Creating post for authenticated user:', user.id);
         postData.author_id = user.id;
         postData.is_anonymous = false;
       } else {
         // Anonymous user - use temporary user ID
         const tempUserId = sessionManager.getTempUserId();
+        console.log('DEBUG: Got temp user ID:', tempUserId);
         if (!tempUserId) {
           throw new Error('No temporary user session available');
         }
         postData.author_id = tempUserId;
         postData.is_anonymous = true;
-        console.log('Creating post with temporary user ID:', tempUserId);
+        console.log('DEBUG: Creating post with temporary user ID, is_anonymous:', postData.is_anonymous);
       }
+      
+      console.log('DEBUG: Final postData before insert:', postData);
 
       const { data: post, error } = await supabase
         .from('posts')
