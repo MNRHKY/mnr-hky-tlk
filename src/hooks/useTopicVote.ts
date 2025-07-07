@@ -120,8 +120,11 @@ export const useTopicVote = (topicId: string) => {
               anonymous_session_id: anonymousSessionId,
             });
           
-          console.log('Anonymous vote insert result:', { error: insertError });
-          if (insertError) throw insertError;
+          console.log('Anonymous vote insert result:', { error: insertError, voteType, anonymousSessionId });
+          if (insertError) {
+            console.error('Insert error details:', insertError);
+            throw insertError;
+          }
         }
       } else {
         createVotingUnavailableHandler(toast)();
