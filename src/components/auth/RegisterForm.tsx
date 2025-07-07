@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { HCaptchaComponent, HCaptchaRef } from '@/components/ui/hcaptcha';
+import { PasswordStrengthIndicator } from '@/components/ui/password-strength-indicator';
+import { PasswordValidationResult } from '@/utils/passwordValidation';
 
 export const RegisterForm = () => {
   const navigate = useNavigate();
@@ -21,9 +23,25 @@ export const RegisterForm = () => {
     username: ''
   });
   const [captchaToken, setCaptchaToken] = useState<string>('');
+  const [passwordValidation, setPasswordValidation] = useState<PasswordValidationResult>({ 
+    isValid: false, 
+    score: 0, 
+    errors: [], 
+    suggestions: [] 
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate CAPTCHA token
+    if (!captchaToken) {
+      toast({
+        title: "CAPTCHA required",
+        description: "Please complete the CAPTCHA verification.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     if (formData.password !== formData.confirmPassword) {
       toast({
@@ -34,10 +52,11 @@ export const RegisterForm = () => {
       return;
     }
 
-    if (formData.password.length < 6) {
+    // Use comprehensive password validation
+    if (!passwordValidation.isValid) {
       toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters long.",
+        title: "Password requirements not met",
+        description: "Please ensure your password meets all security requirements.",
         variant: "destructive",
       });
       return;
@@ -51,12 +70,29 @@ export const RegisterForm = () => {
       });
       navigate('/');
     } catch (error) {
+      // Reset CAPTCHA on failed attempt
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken('');
+      
       toast({
         title: "Registration failed",
         description: "Please try again with different details.",
         variant: "destructive",
       });
     }
+  };
+
+  const handleCaptchaVerify = (token: string) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaError = () => {
+    setCaptchaToken('');
+    toast({
+      title: "CAPTCHA error",
+      description: "Please try the CAPTCHA again.",
+      variant: "destructive",
+    });
   };
 
   return (
@@ -116,8 +152,16 @@ export const RegisterForm = () => {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="mt-1"
-                placeholder="Choose a password (min 6 characters)"
+                placeholder="Choose a strong password"
               />
+              
+              {/* Password Strength Indicator */}
+              <div className="mt-2">
+                <PasswordStrengthIndicator 
+                  password={formData.password}
+                  onValidationChange={setPasswordValidation}
+                />
+              </div>
             </div>
             <div>
               <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -134,11 +178,20 @@ export const RegisterForm = () => {
               />
             </div>
 
+            {/* CAPTCHA */}
+            <div>
+              <HCaptchaComponent
+                ref={captchaRef}
+                onVerify={handleCaptchaVerify}
+                onError={handleCaptchaError}
+              />
+            </div>
+
             <div>
               <Button
                 type="submit"
                 className="w-full"
-                disabled={loading}
+                disabled={loading || !captchaToken || !passwordValidation.isValid}
               >
                 {loading ? 'Creating account...' : 'Create account'}
               </Button>

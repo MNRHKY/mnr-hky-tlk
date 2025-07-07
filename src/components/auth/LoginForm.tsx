@@ -23,6 +23,16 @@ export const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate CAPTCHA token
+    if (!captchaToken) {
+      toast({
+        title: "CAPTCHA required",
+        description: "Please complete the CAPTCHA verification.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       await signIn(formData.email, formData.password);
       toast({
@@ -31,12 +41,29 @@ export const LoginForm = () => {
       });
       navigate('/');
     } catch (error) {
+      // Reset CAPTCHA on failed attempt
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken('');
+      
       toast({
         title: "Sign in failed",
         description: "Please check your credentials and try again.",
         variant: "destructive",
       });
     }
+  };
+
+  const handleCaptchaVerify = (token: string) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaError = () => {
+    setCaptchaToken('');
+    toast({
+      title: "CAPTCHA error",
+      description: "Please try the CAPTCHA again.",
+      variant: "destructive",
+    });
   };
 
   return (
@@ -87,11 +114,20 @@ export const LoginForm = () => {
               />
             </div>
 
+            {/* CAPTCHA */}
+            <div>
+              <HCaptchaComponent
+                ref={captchaRef}
+                onVerify={handleCaptchaVerify}
+                onError={handleCaptchaError}
+              />
+            </div>
+
             <div>
               <Button
                 type="submit"
                 className="w-full"
-                disabled={loading}
+                disabled={loading || !captchaToken}
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </Button>
