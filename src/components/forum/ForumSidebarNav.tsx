@@ -99,32 +99,6 @@ export const ForumSidebarNav = () => {
         </div>
       </Card>
 
-      {/* Community Info */}
-      <Card className="p-4">
-        <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-3">
-          Community
-        </h3>
-        <div className="space-y-3 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Members</span>
-            <span className="font-medium text-foreground">
-              {forumStats?.total_members || 0}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Topics</span>
-            <span className="font-medium text-foreground">
-              {forumStats?.total_topics || 0}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Posts</span>
-            <span className="font-medium text-foreground">
-              {forumStats?.total_posts || 0}
-            </span>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 };
