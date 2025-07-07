@@ -17,6 +17,7 @@ export const useTopicVote = (topicId: string) => {
   const { data: userVote } = useQuery({
     queryKey: ['topic-vote', topicId, user?.id, anonymousSessionId],
     queryFn: async () => {
+      console.log('Topic vote query running', { user: !!user, anonymousSessionId, topicId });
       if (user) {
         // Authenticated user vote lookup
         const { data, error } = await supabase
@@ -29,6 +30,7 @@ export const useTopicVote = (topicId: string) => {
         if (error) throw error;
         return data as Vote | null;
       } else if (anonymousSessionId) {
+        console.log('Looking for anonymous vote', { topicId, anonymousSessionId });
         // Anonymous user vote lookup by session ID
         const { data, error } = await supabase
           .from('topic_votes')
@@ -39,8 +41,10 @@ export const useTopicVote = (topicId: string) => {
           .maybeSingle();
         
         if (error) throw error;
+        console.log('Anonymous vote query result:', data);
         return data as Vote | null;
       }
+      console.log('No user or session found for voting');
       return null;
     },
     enabled: !!topicId && !!(user || anonymousSessionId),

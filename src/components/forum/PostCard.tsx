@@ -29,7 +29,10 @@ export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
               variant="ghost"
               size="sm"
             className={`h-6 w-6 p-0 ${userVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
-            onClick={() => vote({ voteType: 1 })}
+            onClick={() => {
+              console.log('PostCard upvote clicked', { userVote, isVoting, topicId: topic.id });
+              vote({ voteType: 1 });
+            }}
             disabled={isVoting}
           >
             <ArrowUp className="h-4 w-4" />
@@ -41,7 +44,10 @@ export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
             variant="ghost"
             size="sm"
             className={`h-6 w-6 p-0 ${userVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
-            onClick={() => vote({ voteType: -1 })}
+            onClick={() => {
+              console.log('PostCard downvote clicked', { userVote, isVoting, topicId: topic.id });
+              vote({ voteType: -1 });
+            }}
               disabled={isVoting}
             >
               <ArrowDown className="h-4 w-4" />
