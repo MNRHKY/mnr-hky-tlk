@@ -10,9 +10,6 @@ export interface Post {
   parent_post_id: string | null;
   created_at: string;
   updated_at: string;
-  is_anonymous: boolean | null;
-  anonymous_ip: string | null;
-  anonymous_session_id: string | null;
   vote_score: number | null;
   profiles?: {
     username: string;
@@ -35,7 +32,6 @@ export const usePosts = (topicId: string) => {
             id,
             content,
             created_at,
-            is_anonymous,
             profiles (username, avatar_url)
           )
         `)

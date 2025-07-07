@@ -192,7 +192,7 @@ export const TopicView = () => {
             <div className="flex items-center flex-wrap gap-3 text-xs md:text-sm text-muted-foreground">
               <div className="flex items-center space-x-1">
                 <User className="h-3 w-3 md:h-4 md:w-4" />
-                <span>{topic.is_anonymous ? 'Anonymous' : (topic.profiles?.username || 'Unknown')}</span>
+                <span>{topic.profiles?.username || 'Anonymous User'}</span>
               </div>
               <span className="hidden sm:inline">•</span>
               <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
@@ -220,8 +220,8 @@ export const TopicView = () => {
                 <div className="text-foreground text-sm md:text-base">
                   <MarkdownRenderer 
                     content={topic.content} 
-                    allowImages={!!user || !topic.is_anonymous}
-                    allowLinks={!!user || !topic.is_anonymous}
+                    allowImages={!!user || !!topic.profiles?.username}
+                    allowLinks={!!user || !!topic.profiles?.username}
                   />
                 </div>
               </div>

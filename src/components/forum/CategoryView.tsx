@@ -269,7 +269,7 @@ export const CategoryView = () => {
                           {topic.title}
                         </Link>
                         <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1 text-xs sm:text-sm text-gray-500">
-                          <span>by {topic.is_anonymous ? 'Anonymous User' : (topic.profiles?.username || 'Unknown')}</span>
+                          <span>by {topic.profiles?.username || 'Anonymous User'}</span>
                           <span className="hidden sm:inline">•</span>
                           <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
                         </div>

@@ -21,7 +21,6 @@ export const useAdminActivity = () => {
           id,
           title,
           created_at,
-          is_anonymous,
           profiles!topics_author_id_fkey (username)
         `)
         .order('created_at', { ascending: false })
@@ -36,7 +35,6 @@ export const useAdminActivity = () => {
           id,
           content,
           created_at,
-          is_anonymous,
           profiles!posts_author_id_fkey (username),
           topics!posts_topic_id_fkey (title)
         `)
@@ -52,7 +50,7 @@ export const useAdminActivity = () => {
       recentTopics?.forEach(topic => {
         activities.push({
           id: topic.id,
-          user: topic.is_anonymous ? 'Anonymous User' : (topic.profiles?.username || 'Unknown'),
+          user: topic.profiles?.username || 'Anonymous User',
           action: 'Created topic',
           content: topic.title,
           time: topic.created_at,
@@ -64,7 +62,7 @@ export const useAdminActivity = () => {
       recentPosts?.forEach(post => {
         activities.push({
           id: post.id,
-          user: post.is_anonymous ? 'Anonymous User' : (post.profiles?.username || 'Unknown'),
+          user: post.profiles?.username || 'Anonymous User',
           action: 'Replied to',
           content: post.topics?.title || 'Unknown topic',
           time: post.created_at,

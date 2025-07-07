@@ -44,7 +44,6 @@ const AdminContent = () => {
           reply_count,
           is_pinned,
           is_locked,
-          is_anonymous,
           profiles!topics_author_id_fkey (username)
         `)
         .order('created_at', { ascending: false })
@@ -59,7 +58,6 @@ const AdminContent = () => {
           id,
           content,
           created_at,
-          is_anonymous,
           profiles!posts_author_id_fkey (username),
           topics!posts_topic_id_fkey (title)
         `)
@@ -72,7 +70,7 @@ const AdminContent = () => {
         ...(topics?.map(topic => ({
           id: topic.id,
           title: topic.title,
-          author: topic.is_anonymous ? 'Anonymous' : (topic.profiles?.username || 'Unknown'),
+          author: topic.profiles?.username || 'Anonymous User',
           type: 'topic' as const,
           created_at: topic.created_at || '',
           view_count: topic.view_count || 0,
@@ -83,7 +81,7 @@ const AdminContent = () => {
         ...(posts?.map(post => ({
           id: post.id,
           title: post.topics?.title || 'Unknown Topic',
-          author: post.is_anonymous ? 'Anonymous' : (post.profiles?.username || 'Unknown'),
+          author: post.profiles?.username || 'Anonymous User',
           type: 'post' as const,
           created_at: post.created_at || '',
         })) || []),

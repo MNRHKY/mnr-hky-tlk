@@ -15,7 +15,6 @@ export interface HotTopic {
   last_reply_at: string;
   created_at: string;
   updated_at: string;
-  is_anonymous: boolean;
   username: string | null;
   avatar_url: string | null;
   category_name: string;
@@ -38,7 +37,11 @@ export const useHotTopics = (limit = 25) => {
         throw error;
       }
       
-      return data as HotTopic[];
+      return (data as any[]).map(item => ({
+        ...item,
+        category_slug: item.category_slug || '',
+        slug: item.slug || ''
+      })) as HotTopic[];
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });

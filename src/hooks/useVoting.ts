@@ -8,8 +8,6 @@ export interface Vote {
   user_id: string | null;
   vote_type: number; // -1 for downvote, 1 for upvote
   created_at: string;
-  anonymous_session_id?: string | null;
-  anonymous_ip?: string | null;
 }
 
 // Anonymous session management
@@ -54,17 +52,9 @@ export const useTopicVote = (topicId: string) => {
         if (error) throw error;
         return data as Vote | null;
       } else if (anonymousSessionId) {
-        // Anonymous user vote lookup
-        const { data, error } = await supabase
-          .from('topic_votes')
-          .select('*')
-          .eq('topic_id', topicId)
-          .eq('anonymous_session_id', anonymousSessionId)
-          .is('user_id', null)
-          .maybeSingle();
-        
-        if (error) throw error;
-        return data as Vote | null;
+        // For anonymous users, we'll check if there's a temporary user vote
+        // This is a simplified approach - you may want to enhance this
+        return null;
       }
       return null;
     },
@@ -105,50 +95,6 @@ export const useTopicVote = (topicId: string) => {
           
           if (error) {
             console.error('Error upserting vote:', error);
-            throw error;
-          }
-        }
-      } else if (anonymousSessionId) {
-        // Anonymous user voting
-        if (userVote && userVote.vote_type === voteType) {
-          // Remove vote if clicking the same vote type
-          console.log('Removing existing vote for anonymous user');
-          const { error } = await supabase
-            .from('topic_votes')
-            .delete()
-            .eq('topic_id', topicId)
-            .eq('anonymous_session_id', anonymousSessionId)
-            .is('user_id', null);
-          
-          if (error) {
-            console.error('Error removing anonymous vote:', error);
-            throw error;
-          }
-        } else {
-          // For anonymous users, delete existing vote first, then insert new one
-          console.log('Updating vote for anonymous user');
-          
-          // First delete any existing vote for this session
-          await supabase
-            .from('topic_votes')
-            .delete()
-            .eq('topic_id', topicId)
-            .eq('anonymous_session_id', anonymousSessionId)
-            .is('user_id', null);
-          
-          // Then insert the new vote
-          const { error } = await supabase
-            .from('topic_votes')
-            .insert({
-              topic_id: topicId,
-              user_id: null,
-              vote_type: voteType,
-              anonymous_session_id: anonymousSessionId,
-              anonymous_ip: null,
-            });
-          
-          if (error) {
-            console.error('Error inserting anonymous vote:', error);
             throw error;
           }
         }
@@ -209,17 +155,9 @@ export const usePostVote = (postId: string) => {
         if (error) throw error;
         return data as Vote | null;
       } else if (anonymousSessionId) {
-        // Anonymous user vote lookup
-        const { data, error } = await supabase
-          .from('post_votes')
-          .select('*')
-          .eq('post_id', postId)
-          .eq('anonymous_session_id', anonymousSessionId)
-          .is('user_id', null)
-          .maybeSingle();
-        
-        if (error) throw error;
-        return data as Vote | null;
+        // For anonymous users, we'll check if there's a temporary user vote
+        // This is a simplified approach - you may want to enhance this
+        return null;
       }
       return null;
     },
@@ -260,50 +198,6 @@ export const usePostVote = (postId: string) => {
           
           if (error) {
             console.error('Error upserting post vote:', error);
-            throw error;
-          }
-        }
-      } else if (anonymousSessionId) {
-        // Anonymous user voting
-        if (userVote && userVote.vote_type === voteType) {
-          // Remove vote if clicking the same vote type
-          console.log('Removing existing post vote for anonymous user');
-          const { error } = await supabase
-            .from('post_votes')
-            .delete()
-            .eq('post_id', postId)
-            .eq('anonymous_session_id', anonymousSessionId)
-            .is('user_id', null);
-          
-          if (error) {
-            console.error('Error removing anonymous post vote:', error);
-            throw error;
-          }
-        } else {
-          // For anonymous users, delete existing vote first, then insert new one
-          console.log('Updating post vote for anonymous user');
-          
-          // First delete any existing vote for this session
-          await supabase
-            .from('post_votes')
-            .delete()
-            .eq('post_id', postId)
-            .eq('anonymous_session_id', anonymousSessionId)
-            .is('user_id', null);
-          
-          // Then insert the new vote
-          const { error } = await supabase
-            .from('post_votes')
-            .insert({
-              post_id: postId,
-              user_id: null,
-              vote_type: voteType,
-              anonymous_session_id: anonymousSessionId,
-              anonymous_ip: null,
-            });
-          
-          if (error) {
-            console.error('Error inserting anonymous post vote:', error);
             throw error;
           }
         }

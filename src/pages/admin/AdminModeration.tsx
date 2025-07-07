@@ -219,9 +219,6 @@ const AdminModeration = () => {
           id,
           content,
           created_at,
-          is_anonymous,
-          anonymous_ip,
-          anonymous_session_id,
           profiles!posts_author_id_fkey (username),
           topics!posts_topic_id_fkey (title)
         `)
@@ -238,9 +235,6 @@ const AdminModeration = () => {
           title,
           content,
           created_at,
-          is_anonymous,
-          anonymous_ip,
-          anonymous_session_id,
           profiles!topics_author_id_fkey (username)
         `)
         .order('created_at', { ascending: false })
@@ -254,24 +248,24 @@ const AdminModeration = () => {
           type: 'post' as const,
           title: post.topics?.title || 'Unknown Topic',
           content: post.content,
-          author: post.is_anonymous ? 'Anonymous User' : (post.profiles?.username || 'Unknown'),
+          author: post.profiles?.username || 'Anonymous User',
           created_at: post.created_at || '',
           reported_count: 0, // Placeholder - we'd need a reports table
           status: 'pending' as const,
-          is_anonymous: post.is_anonymous,
-          ip_address: post.anonymous_ip as string | null,
+          is_anonymous: !post.profiles?.username,
+          ip_address: null,
         })) || []),
         ...(topics?.map(topic => ({
           id: topic.id,
           type: 'topic' as const,
           title: topic.title,
           content: topic.content || '',
-          author: topic.is_anonymous ? 'Anonymous User' : (topic.profiles?.username || 'Unknown'),
+          author: topic.profiles?.username || 'Anonymous User',
           created_at: topic.created_at || '',
           reported_count: 0, // Placeholder
           status: 'pending' as const,
-          is_anonymous: topic.is_anonymous,
-          ip_address: topic.anonymous_ip as string | null,
+          is_anonymous: !topic.profiles?.username,
+          ip_address: null,
         })) || []),
       ];
 

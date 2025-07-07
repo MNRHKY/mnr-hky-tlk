@@ -14,7 +14,6 @@ export interface SearchResult {
   reply_count: number;
   view_count: number;
   created_at: string;
-  is_anonymous: boolean;
 }
 
 export type SearchFilter = 'all' | 'categories' | 'topics' | 'posts';
@@ -43,7 +42,6 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             created_at,
             reply_count,
             view_count,
-            is_anonymous,
             profiles:author_id (username),
             categories (name, color, slug)
           `);
@@ -78,7 +76,7 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             title: topic.title,
             content: topic.content || '',
             type: 'topic',
-            author_username: topic.is_anonymous ? 'Anonymous' : (topic.profiles?.username || 'Unknown'),
+            author_username: topic.profiles?.username || 'Anonymous User',
             category_name: topic.categories?.name || 'Unknown',
             category_color: topic.categories?.color || '#3b82f6',
             category_slug: topic.categories?.slug,
@@ -86,7 +84,6 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             reply_count: topic.reply_count || 0,
             view_count: topic.view_count || 0,
             created_at: topic.created_at,
-            is_anonymous: topic.is_anonymous || false,
           });
         });
       }
@@ -104,7 +101,6 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             id,
             content,
             created_at,
-            is_anonymous,
             profiles:author_id (username),
             topics!inner (
               id,
@@ -139,7 +135,7 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             title: post.topics.title,
             content: post.content,
             type: 'post',
-            author_username: post.is_anonymous ? 'Anonymous' : (post.profiles?.username || 'Unknown'),
+            author_username: post.profiles?.username || 'Anonymous User',
             category_name: post.topics.categories?.name || 'Unknown',
             category_color: post.topics.categories?.color || '#3b82f6',
             category_slug: post.topics.categories?.slug,
@@ -147,7 +143,6 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             reply_count: post.topics.reply_count || 0,
             view_count: post.topics.view_count || 0,
             created_at: post.created_at,
-            is_anonymous: post.is_anonymous || false,
           });
         });
       }
@@ -201,7 +196,6 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             reply_count: 0,
             view_count: 0,
             created_at: category.created_at,
-            is_anonymous: false,
           });
         });
       }
