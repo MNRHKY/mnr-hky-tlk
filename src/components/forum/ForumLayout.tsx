@@ -33,8 +33,6 @@ export const ForumLayout = () => {
         </div>
       </div>
 
-      {/* Forum Stats at the bottom - hidden on mobile */}
-      {!isMobile && <ForumStats />}
       
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
