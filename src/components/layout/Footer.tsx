@@ -215,13 +215,6 @@ export const Footer = () => {
                   12 Online Now
                 </span>
               </div>
-              <div className="flex items-center space-x-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">
-                  {/* TODO: Implement peak users tracking */}
-                  Peak: 156 (Dec 15, 2024)
-                </span>
-              </div>
             </div>
           </div>
         </div>
