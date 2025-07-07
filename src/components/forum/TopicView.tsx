@@ -301,8 +301,16 @@ export const TopicView = () => {
                 size="sm" 
                 className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
                 onClick={() => {
-                  console.log('TopicView reply button clicked, current state:', showTopicReply);
                   setShowTopicReply(!showTopicReply);
+                  // Auto-scroll to reply form after state update
+                  if (!showTopicReply) {
+                    setTimeout(() => {
+                      document.getElementById('topic-reply-form')?.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                      });
+                    }, 100);
+                  }
                 }}
               >
                 <MessageCircle className="h-3 w-3" />
@@ -394,8 +402,16 @@ export const TopicView = () => {
             </h2>
             <Button 
               onClick={() => {
-                console.log('Reply to Post button clicked, current state:', showTopicReply);
                 setShowTopicReply(!showTopicReply);
+                // Auto-scroll to reply form after state update
+                if (!showTopicReply) {
+                  setTimeout(() => {
+                    document.getElementById('topic-reply-form')?.scrollIntoView({ 
+                      behavior: 'smooth', 
+                      block: 'center' 
+                    });
+                  }, 100);
+                }
               }}
               size="sm"
               variant="outline"
@@ -429,7 +445,7 @@ export const TopicView = () => {
 
         {/* Reply to topic form */}
         {showTopicReply && (
-          <div className="border-t border-border p-3 md:p-6">
+          <div id="topic-reply-form" className="border-t border-border p-3 md:p-6 bg-primary/5">
               <InlineReplyForm
                 topicId={topic.id || ''}
                 parentPostId={null}
