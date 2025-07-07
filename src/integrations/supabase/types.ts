@@ -745,6 +745,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      sync_topic_reply_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       update_peak_users: {
         Args: { current_count: number }
         Returns: undefined

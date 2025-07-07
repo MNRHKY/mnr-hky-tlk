@@ -47,6 +47,17 @@ export const useDeletePost = () => {
         }
       }
 
+      // Update reply count for the topic
+      if (post?.topic_id) {
+        const { error: incrementError } = await supabase.rpc('increment_reply_count', { 
+          topic_id: post.topic_id 
+        });
+
+        if (incrementError) {
+          console.error('Error updating reply count:', incrementError);
+        }
+      }
+
       return post;
     },
     onSuccess: (deletedPost) => {
