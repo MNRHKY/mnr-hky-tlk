@@ -26,6 +26,7 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminContent from "./pages/admin/AdminContent";
 import AdminModeration from "./pages/admin/AdminModeration";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminSEO from "./pages/admin/AdminSEO";
 import { GoogleAnalytics } from "./components/analytics/GoogleAnalytics";
 import { HeaderCodeInjector } from "./components/analytics/HeaderCodeInjector";
 
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="users" element={<AdminUsers />} />
               <Route path="content" element={<AdminContent />} />
               <Route path="moderation" element={<AdminModeration />} />
+              <Route path="seo" element={<AdminSEO />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
             

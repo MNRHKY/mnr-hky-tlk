@@ -74,13 +74,20 @@ export type Database = {
       categories: {
         Row: {
           birth_year: number | null
+          canonical_url: string | null
           color: string | null
           created_at: string | null
           description: string | null
           id: string
           is_active: boolean | null
           level: number
+          meta_description: string | null
+          meta_keywords: string | null
+          meta_title: string | null
           name: string
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
           parent_category_id: string | null
           play_level: string | null
           region: string | null
@@ -90,13 +97,20 @@ export type Database = {
         }
         Insert: {
           birth_year?: number | null
+          canonical_url?: string | null
           color?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           is_active?: boolean | null
           level?: number
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
           name: string
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
           parent_category_id?: string | null
           play_level?: string | null
           region?: string | null
@@ -106,13 +120,20 @@ export type Database = {
         }
         Update: {
           birth_year?: number | null
+          canonical_url?: string | null
           color?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           is_active?: boolean | null
           level?: number
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
           name?: string
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
           parent_category_id?: string | null
           play_level?: string | null
           region?: string | null
@@ -442,6 +463,7 @@ export type Database = {
       topics: {
         Row: {
           author_id: string | null
+          canonical_url: string | null
           category_id: string
           content: string | null
           created_at: string | null
@@ -449,7 +471,13 @@ export type Database = {
           is_locked: boolean | null
           is_pinned: boolean | null
           last_reply_at: string | null
+          meta_description: string | null
+          meta_keywords: string | null
+          meta_title: string | null
           moderation_status: string | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
           reply_count: number | null
           slug: string
           title: string
@@ -459,6 +487,7 @@ export type Database = {
         }
         Insert: {
           author_id?: string | null
+          canonical_url?: string | null
           category_id: string
           content?: string | null
           created_at?: string | null
@@ -466,7 +495,13 @@ export type Database = {
           is_locked?: boolean | null
           is_pinned?: boolean | null
           last_reply_at?: string | null
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
           moderation_status?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
           reply_count?: number | null
           slug: string
           title: string
@@ -476,6 +511,7 @@ export type Database = {
         }
         Update: {
           author_id?: string | null
+          canonical_url?: string | null
           category_id?: string
           content?: string | null
           created_at?: string | null
@@ -483,7 +519,13 @@ export type Database = {
           is_locked?: boolean | null
           is_pinned?: boolean | null
           last_reply_at?: string | null
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
           moderation_status?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
           reply_count?: number | null
           slug?: string
           title?: string
