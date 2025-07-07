@@ -15,7 +15,7 @@ export const usePeakUsers = () => {
         .single();
       
       if (error) {
-        console.error('Error fetching peak users:', error);
+        
         throw error;
       }
       

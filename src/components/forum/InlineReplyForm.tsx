@@ -40,8 +40,6 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
   }, []);
 
   const handleSubmit = async () => {
-    console.log('InlineReplyForm handleSubmit - content:', content);
-    console.log('InlineReplyForm handleSubmit - content length:', content.length);
     
     if (!content.trim()) {
       toast({
