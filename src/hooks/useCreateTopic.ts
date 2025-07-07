@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { generateSlugFromTitle } from '@/utils/urlHelpers';
 import { useAuth } from './useAuth';
 import { sessionManager } from '@/utils/sessionManager';
+import { getUserIPWithFallback } from '@/utils/ipUtils';
 
 interface CreateTopicData {
   title: string;
@@ -38,6 +39,9 @@ export const useCreateTopic = () => {
       const baseSlug = generateSlugFromTitle(data.title);
       const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
 
+      // Get user's IP address for admin tracking
+      const userIP = await getUserIPWithFallback();
+
       const topicData: any = {
         title: data.title,
         content: data.content,
@@ -48,7 +52,8 @@ export const useCreateTopic = () => {
         view_count: 0,
         reply_count: 0,
         last_reply_at: new Date().toISOString(),
-        moderation_status: category.requires_moderation ? 'pending' : 'approved'
+        moderation_status: category.requires_moderation ? 'pending' : 'approved',
+        ip_address: userIP
       };
 
       if (user) {

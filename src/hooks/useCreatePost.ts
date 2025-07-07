@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { sessionManager } from '@/utils/sessionManager';
+import { getUserIPWithFallback } from '@/utils/ipUtils';
 
 interface CreatePostData {
   content: string;
@@ -35,11 +36,15 @@ export const useCreatePost = () => {
         throw new Error(`Posts can only be created in age group & skill level categories. This topic is in "${topic.categories?.name}" which is for browsing only.`);
       }
 
+      // Get user's IP address for admin tracking
+      const userIP = await getUserIPWithFallback();
+
       const postData: any = {
         content: data.content,
         topic_id: data.topic_id,
         parent_post_id: data.parent_post_id || null,
-        moderation_status: topic.categories?.requires_moderation ? 'pending' : 'approved'
+        moderation_status: topic.categories?.requires_moderation ? 'pending' : 'approved',
+        ip_address: userIP
       };
 
       if (user) {

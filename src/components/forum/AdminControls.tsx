@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { AdminPostInfo } from './AdminPostInfo';
+import { AdminTopicInfo } from './AdminTopicInfo';
 import { useDeletePost } from '@/hooks/useDeletePost';
 import { useDeleteTopic } from '@/hooks/useDeleteTopic';
 
@@ -47,25 +48,7 @@ export const AdminControls: React.FC<AdminControlsProps> = ({
           contentType === 'post' ? (
             <AdminPostInfo post={content} />
           ) : (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-6 w-6 p-0 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Topic info clicked');
-                  }}
-                >
-                  <Info className="h-3 w-3" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Topic Info</p>
-              </TooltipContent>
-            </Tooltip>
+            <AdminTopicInfo topic={content} />
           )
         )}
 

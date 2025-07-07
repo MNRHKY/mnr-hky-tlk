@@ -16,6 +16,7 @@ export const useTopic = (identifier: string) => {
         .select(`
           *,
           profiles (username, avatar_url),
+          temporary_users (display_name),
           categories (name, color, slug, parent_category_id)
         `)
         .eq('moderation_status', 'approved');
