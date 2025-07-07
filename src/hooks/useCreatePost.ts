@@ -17,7 +17,8 @@ export const useCreatePost = () => {
 
   return useMutation({
     mutationFn: async (data: CreatePostData) => {
-      console.log('Creating post:', data);
+      console.log('Creating post with content:', data.content);
+      console.log('Full post data:', data);
 
       // Get the topic to validate its category
       const { data: topic, error: topicError } = await supabase
@@ -66,6 +67,8 @@ export const useCreatePost = () => {
         console.error('Error creating post:', error);
         throw error;
       }
+
+      console.log('Post created successfully with content:', post.content);
 
       // Update topic's reply count and last_reply_at
       const { error: updateError } = await supabase

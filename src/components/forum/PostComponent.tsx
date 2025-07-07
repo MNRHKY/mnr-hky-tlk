@@ -56,6 +56,12 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   
   // Debug logging
   console.log('PostComponent Debug:', {
+    postId: post.id,
+    postContent: post.content,
+    postContentLength: post.content?.length,
+    depth: depth,
+    parentPostId: post.parent_post_id,
+    hasParentPost: !!post.parent_post,
     user: user,
     postAuthorId: post.author_id,
     postIsAnonymous: post.is_anonymous,
