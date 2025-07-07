@@ -27,7 +27,7 @@ const SubcategoryCard = ({ subcat }: { subcat: any }) => {
   const { data: stats } = useCategoryStats(subcat.id);
   
   return (
-    <Link to={`/category/${subcat.slug}`}>
+    <Link to={`/${subcat.slug}`}>
       <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
@@ -70,32 +70,31 @@ export const CategoryView = () => {
   const isLegacyRoute = !!categoryId;
   const { user } = useAuth();
   
-  // Check if categoryId is a UUID (contains hyphens and is 36 chars) or a slug
-  const isUUID = categoryId && categoryId.includes('-') && categoryId.length === 36;
+  // Check if categoryId is a UUID (proper UUID format: 8-4-4-4-12 characters)
+  const isUUID = categoryId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(categoryId);
+  
+  // Determine which slug to use for the query
+  const slugToLookup = subcategorySlug || categorySlug || (!isUUID ? categoryId : '');
   
   // Only call hooks with valid parameters to prevent errors
   const { data: categoryBySlug, isLoading: categoryBySlugLoading, error: slugError } = useCategoryBySlug(
-    (!isUUID && categoryId) ? categoryId : ''
+    slugToLookup || ''
   );
   const { data: categoryById, isLoading: categoryByIdLoading, error: idError } = useCategoryById(
     (isUUID && categoryId) ? categoryId : ''
   );
   
   // Use the appropriate result based on what we think the categoryId is
-  let category, categoryLoading;
+  let category, categoryLoading, categoryError;
   
   if (isUUID) {
     category = categoryById;
     categoryLoading = categoryByIdLoading;
+    categoryError = idError;
   } else {
     category = categoryBySlug;
     categoryLoading = categoryBySlugLoading;
-    
-    // If slug lookup failed and the parameter might be a UUID, fallback to ID lookup
-    if (!category && !categoryLoading && slugError && categoryId && categoryId.includes('-')) {
-      category = categoryById;
-      categoryLoading = categoryByIdLoading;
-    }
+    categoryError = slugError;
   }
   const { data: subcategories, isLoading: subcategoriesLoading } = useCategoriesByActivity(category?.id, category?.level ? category.level + 1 : undefined);
   const { data: topics, isLoading: topicsLoading } = useTopics(category?.id);
@@ -114,11 +113,11 @@ export const CategoryView = () => {
     );
   }
 
-  if (!category) {
+  if (!category && !categoryLoading) {
     return (
       <div className="text-center py-8">
         <h2 className="text-xl font-semibold text-gray-900">Category not found</h2>
-        <p className="text-gray-600 mt-2">The category you're looking for doesn't exist.</p>
+        <p className="text-gray-600 mt-2">The category "{slugToLookup || categoryId}" doesn't exist.</p>
         <Button asChild className="mt-4">
           <Link to="/">Back to Home</Link>
         </Button>
