@@ -32,7 +32,7 @@ export const AdminPostInfo: React.FC<AdminPostInfoProps> = ({ post }) => {
           <div>
             <span className="font-medium">Author:</span>
             <span className="ml-2">
-              {post.is_anonymous ? 'Anonymous' : (post.profiles?.username || 'Unknown')}
+              {post.profiles?.username || 'Anonymous'}
             </span>
           </div>
           
