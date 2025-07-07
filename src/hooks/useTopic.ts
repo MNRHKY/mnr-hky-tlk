@@ -15,8 +15,6 @@ export const useTopic = (identifier: string) => {
         .from('topics')
         .select(`
           *,
-          profiles (username, avatar_url),
-          temporary_users (display_name),
           categories (name, color, slug, parent_category_id)
         `)
         .eq('moderation_status', 'approved');
@@ -27,12 +25,44 @@ export const useTopic = (identifier: string) => {
         query = query.eq('slug', identifier);
       }
       
-      const { data, error } = await query.single();
+      const { data: topicData, error } = await query.single();
       
       if (error) {
         console.error('Error fetching topic:', error);
         throw error;
       }
+      
+      // Fetch author information separately based on whether it's a temporary user or regular user
+      let authorInfo = null;
+      if (topicData.author_id) {
+        // First try to get from profiles
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username, avatar_url')
+          .eq('id', topicData.author_id)
+          .maybeSingle();
+        
+        if (profile) {
+          authorInfo = { profiles: profile };
+        } else {
+          // Try temporary users
+          const { data: tempUser } = await supabase
+            .from('temporary_users')
+            .select('display_name')
+            .eq('id', topicData.author_id)
+            .maybeSingle();
+          
+          if (tempUser) {
+            authorInfo = { temporary_users: tempUser };
+          }
+        }
+      }
+      
+      // Combine the data
+      const data = {
+        ...topicData,
+        ...authorInfo
+      };
       
       // Increment view count using the topic ID
       await supabase.rpc('increment_view_count', { topic_id: data.id });
