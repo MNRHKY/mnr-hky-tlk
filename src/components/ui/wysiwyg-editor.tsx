@@ -44,7 +44,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
 
   // Initialize editor content only once with innerHTML to match how we read it
   useEffect(() => {
-    if (editorRef.current && !isInitialized && value) {
+    if (editorRef.current && !isInitialized && value && value !== editorRef.current.innerHTML) {
       // Use innerHTML for both setting AND reading to avoid mismatch
       editorRef.current.innerHTML = value;
       setIsInitialized(true);
@@ -53,6 +53,12 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
 
   const handleInput = () => {
     if (editorRef.current) {
+      // Store cursor position before handling input
+      const selection = window.getSelection();
+      const range = selection?.getRangeAt(0);
+      const cursorOffset = range?.startOffset || 0;
+      console.log('Before handleInput - cursor position:', cursorOffset);
+      
       const content = editorRef.current.innerHTML;
       console.log('Editor input - raw content:', content);
       
@@ -62,8 +68,15 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         .replace(/<div><\/div>/g, ''); // Remove empty divs
       
       console.log('Editor input - cleaned content:', cleanContent);
-      // Don't call setEditorContent here as it causes cursor position to reset
-      onChange(cleanContent);
+      
+      // Check if content actually changed before calling onChange
+      if (cleanContent !== editorContent) {
+        console.log('Content changed, calling onChange');
+        setEditorContent(cleanContent);
+        onChange(cleanContent);
+      } else {
+        console.log('Content unchanged, skipping onChange');
+      }
     }
   };
 
