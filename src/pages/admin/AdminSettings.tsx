@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useForumSettings } from '@/hooks/useForumSettings';
 import { useEnhancedForumStats } from '@/hooks/useEnhancedForumStats';
@@ -216,20 +217,26 @@ const AdminSettings = () => {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="banner-style">Banner Style</Label>
-                      <Input
-                        id="banner-style"
+                      <Select
                         value={getSetting('banner_style', 'info')}
-                        onChange={(e) => updateSetting({
+                        onValueChange={(value) => updateSetting({
                           key: 'banner_style',
-                          value: e.target.value,
+                          value: value,
                           type: 'string',
                           category: 'banner'
                         })}
-                        placeholder="info, warning, success, error, announcement"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Options: info, warning, success, error, announcement
-                      </p>
+                      >
+                        <SelectTrigger className="bg-background">
+                          <SelectValue placeholder="Select banner style" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border shadow-lg z-50">
+                          <SelectItem value="info">Info (Blue)</SelectItem>
+                          <SelectItem value="warning">Warning (Yellow)</SelectItem>
+                          <SelectItem value="success">Success (Green)</SelectItem>
+                          <SelectItem value="error">Error (Red)</SelectItem>
+                          <SelectItem value="announcement">Announcement (Purple)</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="flex items-center justify-between">
