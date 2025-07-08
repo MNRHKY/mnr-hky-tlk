@@ -34,6 +34,7 @@ import AdminSEO from "./pages/admin/AdminSEO";
 import { GoogleAnalytics } from "./components/analytics/GoogleAnalytics";
 import { HeaderCodeInjector } from "./components/analytics/HeaderCodeInjector";
 import { CookieConsent } from "./components/cookies/CookieConsent";
+import { MaintenanceWrapper } from "./components/MaintenanceWrapper";
 
 const queryClient = new QueryClient();
 
@@ -51,45 +52,47 @@ const App = () => (
             <BrowserRouter>
             <ScrollToTop />
             <MetadataProvider>
-              <Routes>
-                {/* Authentication routes - standalone pages */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                
-                {/* Admin routes - wrapped in AdminLayout */}
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<AdminPage />} />
-                  <Route path="users" element={<AdminUsers />} />
-                  <Route path="content" element={<AdminContent />} />
-                  <Route path="moderation" element={<AdminModeration />} />
-                  <Route path="seo" element={<AdminSEO />} />
-                  <Route path="settings" element={<AdminSettings />} />
-                </Route>
-                
-                {/* Forum routes - wrapped in ForumLayout */}
-                <Route path="/" element={<ForumLayout />}>
-                  <Route index element={<ForumHome />} />
-                  {/* New hierarchical URL structure */}
-                  <Route path=":categorySlug/:topicSlug" element={<TopicView />} />
-                  <Route path=":categorySlug/:subcategorySlug/:topicSlug" element={<TopicView />} />
-                  <Route path=":categorySlug" element={<CategoryView />} />
-                  <Route path=":categorySlug/:subcategorySlug" element={<CategoryView />} />
-                  {/* Legacy UUID-based redirects */}
-                  <Route path="topic/:topicId" element={<TopicView />} />
-                  <Route path="category/:categoryId" element={<CategoryView />} />
-                  <Route path="create" element={<CreateTopic />} />
-                  <Route path="topics" element={<Topics />} />
-                  <Route path="search" element={<Search />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="settings" element={<Settings />} />
-                  <Route path="terms" element={<Terms />} />
-                  <Route path="privacy" element={<Privacy />} />
-                  <Route path="blog" element={<Blog />} />
-                </Route>
-                
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <MaintenanceWrapper>
+                <Routes>
+                  {/* Authentication routes - standalone pages */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  
+                  {/* Admin routes - wrapped in AdminLayout */}
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminPage />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="content" element={<AdminContent />} />
+                    <Route path="moderation" element={<AdminModeration />} />
+                    <Route path="seo" element={<AdminSEO />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                  </Route>
+                  
+                  {/* Forum routes - wrapped in ForumLayout */}
+                  <Route path="/" element={<ForumLayout />}>
+                    <Route index element={<ForumHome />} />
+                    {/* New hierarchical URL structure */}
+                    <Route path=":categorySlug/:topicSlug" element={<TopicView />} />
+                    <Route path=":categorySlug/:subcategorySlug/:topicSlug" element={<TopicView />} />
+                    <Route path=":categorySlug" element={<CategoryView />} />
+                    <Route path=":categorySlug/:subcategorySlug" element={<CategoryView />} />
+                    {/* Legacy UUID-based redirects */}
+                    <Route path="topic/:topicId" element={<TopicView />} />
+                    <Route path="category/:categoryId" element={<CategoryView />} />
+                    <Route path="create" element={<CreateTopic />} />
+                    <Route path="topics" element={<Topics />} />
+                    <Route path="search" element={<Search />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="terms" element={<Terms />} />
+                    <Route path="privacy" element={<Privacy />} />
+                    <Route path="blog" element={<Blog />} />
+                  </Route>
+                  
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </MaintenanceWrapper>
             </MetadataProvider>
           </BrowserRouter>
           </OnlineUsersProvider>

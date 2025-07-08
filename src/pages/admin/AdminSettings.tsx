@@ -578,7 +578,78 @@ const AdminSettings = () => {
                 <h2 className="text-xl font-semibold mb-4">System Management</h2>
               </div>
 
-              <div className="grid gap-4">
+              <div className="grid gap-6">
+                {/* Maintenance Mode Section */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-medium text-orange-600 dark:text-orange-400">⚠️ Maintenance Mode</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Take the site offline for general users while allowing admin access
+                    </p>
+                    
+                    <div className="space-y-4 border rounded-lg p-4 bg-muted/50">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label className="font-medium">Enable Maintenance Mode</Label>
+                          <div className="text-sm text-muted-foreground">
+                            Site will be offline for non-admin users
+                          </div>
+                        </div>
+                        <Switch
+                          checked={getSetting('maintenance_mode', false)}
+                          onCheckedChange={(checked) => {
+                            updateSetting({
+                              key: 'maintenance_mode',
+                              value: checked,
+                              type: 'boolean',
+                              category: 'system'
+                            });
+                            if (checked) {
+                              toast({
+                                title: "⚠️ Maintenance Mode Enabled",
+                                description: "Site is now offline for general users. Only admins can access it.",
+                                variant: "destructive"
+                              });
+                            } else {
+                              toast({
+                                title: "✅ Maintenance Mode Disabled",
+                                description: "Site is now accessible to all users.",
+                              });
+                            }
+                          }}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="maintenance-message">Maintenance Message</Label>
+                        <Textarea
+                          id="maintenance-message"
+                          value={getSetting('maintenance_message', 'We are currently performing scheduled maintenance. Please check back soon!')}
+                          onChange={(e) => updateSetting({
+                            key: 'maintenance_message',
+                            value: e.target.value,
+                            type: 'text',
+                            category: 'system'
+                          })}
+                          placeholder="Enter message to display during maintenance..."
+                          rows={3}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          This message will be displayed to users when the site is in maintenance mode
+                        </p>
+                      </div>
+                      
+                      {getSetting('maintenance_mode', false) && (
+                        <div className="bg-orange-500/10 border border-orange-500/20 rounded p-3">
+                          <p className="text-sm text-orange-600 dark:text-orange-400 font-medium">
+                            🔧 Maintenance mode is currently ACTIVE. Only admins can access the site.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-medium">Database Management</h3>
