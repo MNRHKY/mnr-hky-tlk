@@ -25,6 +25,7 @@ const AdminSettings = () => {
   const [googleAnalyticsId, setGoogleAnalyticsId] = useState('');
   const [customCss, setCustomCss] = useState('');
   const [bannerMessage, setBannerMessage] = useState('');
+  const [forumDescription, setForumDescription] = useState('');
 
   // Update local state when settings load
   React.useEffect(() => {
@@ -35,6 +36,7 @@ const AdminSettings = () => {
       const termsValue = getSetting('terms_content', '');
       const privacyValue = getSetting('privacy_content', '');
       const bannerMessageValue = getSetting('banner_message', '');
+      const forumDescriptionValue = getSetting('forum_description', 'A community forum for minor hockey discussions');
       
       console.log('Loading settings:', { headerCodeValue, gaIdValue, customCssValue });
       
@@ -44,6 +46,7 @@ const AdminSettings = () => {
       setTermsContent(termsValue);
       setPrivacyContent(privacyValue);
       setBannerMessage(bannerMessageValue);
+      setForumDescription(forumDescriptionValue);
     }
   }, [settings]); // Removed getSetting from dependencies as it changes on every render
 
@@ -278,10 +281,11 @@ const AdminSettings = () => {
                   <Label htmlFor="forum-description">Forum Description</Label>
                   <Textarea
                     id="forum-description"
-                    value={getSetting('forum_description', 'A community forum for minor hockey discussions')}
-                    onChange={(e) => updateSetting({
+                    value={forumDescription}
+                    onChange={(e) => setForumDescription(e.target.value)}
+                    onBlur={() => updateSetting({
                       key: 'forum_description',
-                      value: e.target.value,
+                      value: forumDescription,
                       type: 'string',
                       category: 'general'
                     })}
