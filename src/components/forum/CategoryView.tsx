@@ -206,7 +206,7 @@ export const CategoryView = () => {
               // Level 1 & 2 categories are for browsing only
               <div className="flex flex-col items-center gap-2">
                 <Badge variant="secondary" className="text-xs">
-                  Browse Only - Select a {category.slug?.includes('usa') || category.region === 'USA' ? 'State' : 'Province'} to Post
+                  Browse Only - Select a {category.slug?.includes('general') ? 'Category' : category.slug?.includes('usa') || category.region === 'USA' ? 'State' : 'Province'} to Post
                 </Badge>
                 <CategoryRequestModal 
                   currentCategoryId={category.id}
