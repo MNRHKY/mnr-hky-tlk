@@ -678,6 +678,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      fix_backwards_posts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       generate_anonymous_session_id: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -815,6 +819,10 @@ export type Database = {
       record_anonymous_post: {
         Args: { user_ip: unknown; session_id: string }
         Returns: undefined
+      }
+      reverse_text_content: {
+        Args: { input_text: string }
+        Returns: string
       }
       set_forum_setting: {
         Args: {

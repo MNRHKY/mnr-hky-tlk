@@ -40,29 +40,36 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [editorContent, setEditorContent] = useState(value || '');
 
-  // Initialize editor content
+  // Initialize editor content only once
   useEffect(() => {
     if (editorRef.current && !isInitialized) {
-      editorRef.current.innerHTML = value || '';
+      // Set initial content without using dangerouslySetInnerHTML
+      editorRef.current.textContent = value || '';
       setIsInitialized(true);
     }
   }, [value, isInitialized]);
 
   const handleInput = () => {
     if (editorRef.current) {
-      let content = editorRef.current.innerHTML;
-      // Clean up the HTML a bit by removing empty paragraphs and normalizing
-      content = content.replace(/<p><\/p>/g, '');
-      content = content.replace(/<div><br><\/div>/g, '<br>');
-      console.log('Editor content before onChange:', content);
-      onChange(content);
+      const content = editorRef.current.innerHTML;
+      console.log('Editor input - raw content:', content);
+      
+      // Clean up the HTML
+      const cleanContent = content
+        .replace(/<p><\/p>/g, '')
+        .replace(/<div><br><\/div>/g, '<br>');
+      
+      console.log('Editor input - cleaned content:', cleanContent);
+      setEditorContent(cleanContent);
+      onChange(cleanContent);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Remove all custom keyboard handling that might cause backwards text
     // Let the browser handle all keyboard events naturally
+    // No custom handling that could interfere with text direction
     return;
   };
 
@@ -215,7 +222,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         data-placeholder={placeholder}
-        dangerouslySetInnerHTML={{ __html: value }}
+        dir="ltr"
         suppressContentEditableWarning={true}
       />
 
