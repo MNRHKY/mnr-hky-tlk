@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
-import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
+import { HTMLRenderer } from '@/components/ui/html-renderer';
 import { MessageSquare, User, Clock, ArrowLeft, ThumbsUp, Flag, Reply, ArrowUp, ArrowDown, MessageCircle, Share, Edit } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTopic } from '@/hooks/useTopic';
@@ -222,10 +222,8 @@ export const TopicView = () => {
             ) : topic.content ? (
               <div className="bg-muted/30 rounded-md p-3 md:p-4 border border-border/50 mb-4">
                 <div className="text-foreground text-sm md:text-base">
-                  <MarkdownRenderer 
+                  <HTMLRenderer 
                     content={topic.content} 
-                    allowImages={!!user || !!topic.profiles?.username}
-                    allowLinks={!!user || !!topic.profiles?.username}
                   />
                 </div>
               </div>

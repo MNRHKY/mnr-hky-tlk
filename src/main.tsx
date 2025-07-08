@@ -1,8 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import '@uiw/react-md-editor/markdown-editor.css'
-import '@uiw/react-markdown-preview/markdown.css'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
 const root = document.getElementById("root");

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { MarkdownEditor } from '@/components/ui/markdown-editor';
+import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
 import { HTMLRenderer } from '@/components/ui/html-renderer';
 import { useForumSettings } from '@/hooks/useForumSettings';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -78,11 +78,12 @@ export const InlineContentEditor: React.FC<InlineContentEditorProps> = ({
 
       {isEditing ? (
         <div className="space-y-4">
-          <MarkdownEditor
+          <WysiwygEditor
             value={editContent}
             onChange={setEditContent}
             height={400}
             placeholder={`Enter ${title.toLowerCase()} content here...`}
+            allowImages={true}
           />
           <div className="flex gap-2">
             <Button

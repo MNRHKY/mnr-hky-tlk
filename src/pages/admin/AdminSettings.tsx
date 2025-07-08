@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useForumSettings } from '@/hooks/useForumSettings';
 import { useEnhancedForumStats } from '@/hooks/useEnhancedForumStats';
-import { MarkdownEditor } from '@/components/ui/markdown-editor';
+import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
 import { Save, Settings, Users, Shield, Database, BarChart3, Eye, TrendingUp, Calendar, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 
 const AdminSettings = () => {
@@ -326,7 +326,7 @@ const AdminSettings = () => {
               <div className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="terms-content">Terms & Conditions</Label>
-                  <MarkdownEditor
+                  <WysiwygEditor
                     value={termsContent}
                     onChange={setTermsContent}
                     placeholder="Enter terms and conditions content..."
@@ -357,7 +357,7 @@ const AdminSettings = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="privacy-content">Privacy Policy</Label>
-                  <MarkdownEditor
+                  <WysiwygEditor
                     value={privacyContent}
                     onChange={setPrivacyContent}
                     placeholder="Enter privacy policy content..."

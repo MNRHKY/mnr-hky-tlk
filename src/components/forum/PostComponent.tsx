@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
-import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
+import { HTMLRenderer } from '@/components/ui/html-renderer';
 import { Reply, ArrowUp, ArrowDown, Flag, ChevronDown, ChevronUp, MessageSquare, MessageCircle, Share, Edit, Trash2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -202,10 +202,8 @@ export const PostComponent: React.FC<PostComponentProps> = ({
             <>
               {/* MAIN REPLY CONTENT - This is the user's actual response */}
               <div className="text-foreground text-base font-normal mb-3 bg-background p-3 rounded border-l-4 border-primary">
-                <MarkdownRenderer 
+                <HTMLRenderer 
                   content={post.content} 
-                  allowImages={!!user || !post.is_anonymous}
-                  allowLinks={!!user || !post.is_anonymous}
                 />
               </div>
               {post.updated_at !== post.created_at && (
