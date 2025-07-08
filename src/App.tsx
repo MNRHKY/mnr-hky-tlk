@@ -32,6 +32,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminSEO from "./pages/admin/AdminSEO";
 import { GoogleAnalytics } from "./components/analytics/GoogleAnalytics";
 import { HeaderCodeInjector } from "./components/analytics/HeaderCodeInjector";
+import { CookieConsent } from "./components/cookies/CookieConsent";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
         <AuthProvider>
           <GoogleAnalytics />
           <HeaderCodeInjector />
+          <CookieConsent />
           <Toaster />
           <Sonner />
           <BrowserRouter>
