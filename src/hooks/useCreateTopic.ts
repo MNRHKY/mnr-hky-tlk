@@ -83,8 +83,6 @@ export const useCreateTopic = () => {
         throw error;
       }
 
-      // No need for manual rate limiting - it's handled by the temp user system
-
       console.log('Topic created successfully:', topic);
       return topic;
     },

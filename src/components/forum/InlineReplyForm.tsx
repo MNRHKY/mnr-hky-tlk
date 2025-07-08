@@ -81,8 +81,9 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
         parent_post_id: parentPostId
       });
 
-      // Refresh rate limit for anonymous users
+      // Record post and refresh rate limit for anonymous users
       if (!user) {
+        await tempUser.recordPost();
         await tempUser.refreshRateLimit();
       }
 

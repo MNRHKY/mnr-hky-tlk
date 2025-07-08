@@ -72,8 +72,9 @@ export const CreateTopic = () => {
     try {
       const topic = await createTopicMutation.mutateAsync(formData);
 
-      // Refresh rate limit for anonymous users
+      // Record post and refresh rate limit for anonymous users
       if (!user) {
+        await tempUser.recordPost();
         await tempUser.refreshRateLimit();
       }
 

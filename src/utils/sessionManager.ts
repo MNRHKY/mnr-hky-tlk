@@ -115,47 +115,80 @@ class SessionManager {
   }
 
   async checkRateLimit(): Promise<{ canPost: boolean; remainingPosts: number }> {
-    if (!this.tempUserId) {
+    if (!this.tempUserId || !this.sessionId) {
       return { canPost: false, remainingPosts: 0 };
     }
 
     try {
-      const { data, error } = await supabase.rpc('check_user_rate_limit', {
-        user_id: this.tempUserId
+      // Get client IP for anonymous rate limiting
+      const clientIP = await this.getClientIP();
+      
+      const { data, error } = await supabase.rpc('check_anonymous_rate_limit', {
+        user_ip: clientIP,
+        session_id: this.sessionId
       });
 
       if (error) {
-        console.error('Error checking rate limit:', error);
+        console.error('Error checking anonymous rate limit:', error);
         return { canPost: false, remainingPosts: 0 };
       }
 
       const canPost = data as boolean;
       
-      // Calculate remaining posts (3 max per 12 hours)
-      const { data: postData, error: postError } = await supabase
-        .from('topics')
-        .select('id')
-        .eq('author_id', this.tempUserId)
-        .gte('created_at', new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString());
+      // Get current post count from tracking table
+      const { data: trackingData, error: trackingError } = await supabase
+        .from('anonymous_post_tracking')
+        .select('post_count')
+        .or(`ip_address.eq.${clientIP},session_id.eq.${this.sessionId}`)
+        .gte('created_at', new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString())
+        .maybeSingle();
 
-      const { data: replyData, error: replyError } = await supabase
-        .from('posts')
-        .select('id')
-        .eq('author_id', this.tempUserId)
-        .gte('created_at', new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString());
-
-      if (postError || replyError) {
-        console.error('Error fetching post counts:', postError || replyError);
-        return { canPost, remainingPosts: 0 };
+      if (trackingError) {
+        console.error('Error fetching tracking data:', trackingError);
       }
 
-      const totalPosts = (postData?.length || 0) + (replyData?.length || 0);
-      const remainingPosts = Math.max(0, 5 - totalPosts);
+      const currentCount = trackingData?.post_count || 0;
+      const remainingPosts = Math.max(0, 5 - currentCount);
 
       return { canPost, remainingPosts };
     } catch (error) {
       console.error('Failed to check rate limit:', error);
       return { canPost: false, remainingPosts: 0 };
+    }
+  }
+
+  private async getClientIP(): Promise<string> {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip || '127.0.0.1';
+    } catch (error) {
+      console.warn('Failed to get real IP, using fallback');
+      const userAgent = navigator.userAgent;
+      const timestamp = Date.now();
+      const hash = btoa(`${userAgent}-${timestamp}`).slice(0, 15);
+      return `192.168.1.${hash.slice(-3).replace(/[^0-9]/g, '1')}`;
+    }
+  }
+
+  async recordPost(): Promise<void> {
+    if (!this.sessionId) {
+      console.error('No session ID available for recording post');
+      return;
+    }
+
+    try {
+      const clientIP = await this.getClientIP();
+      console.log('Recording anonymous post for IP:', clientIP, 'Session:', this.sessionId);
+      
+      await supabase.rpc('record_anonymous_post', {
+        user_ip: clientIP,
+        session_id: this.sessionId
+      });
+      
+      console.log('Post recorded successfully');
+    } catch (error) {
+      console.error('Error recording anonymous post:', error);
     }
   }
 }

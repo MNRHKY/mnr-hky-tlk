@@ -68,10 +68,15 @@ export const useTempUser = () => {
     return sessionManager.getTempUserId();
   };
 
+  const recordPost = async () => {
+    await sessionManager.recordPost();
+  };
+
   return {
     ...state,
     refreshRateLimit,
     validateContent,
-    getTempUserId
+    getTempUserId,
+    recordPost
   };
 };
