@@ -55,6 +55,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
       // Clean up the HTML a bit by removing empty paragraphs and normalizing
       content = content.replace(/<p><\/p>/g, '');
       content = content.replace(/<div><br><\/div>/g, '<br>');
+      console.log('Editor content before onChange:', content);
       onChange(content);
     }
   };
@@ -206,7 +207,10 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
           maxWidth: '100%',
           wordWrap: 'break-word',
           overflowWrap: 'break-word',
-          hyphens: 'auto'
+          hyphens: 'auto',
+          direction: 'ltr',
+          textAlign: 'left',
+          unicodeBidi: 'plaintext'
         }}
         onInput={handleInput}
         onKeyDown={handleKeyDown}

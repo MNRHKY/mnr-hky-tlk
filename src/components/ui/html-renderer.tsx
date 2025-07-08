@@ -22,6 +22,11 @@ export const HTMLRenderer: React.FC<HTMLRendererProps> = ({
   return (
     <div 
       className={cn("prose prose-sm max-w-none", className)}
+      style={{
+        direction: 'ltr',
+        textAlign: 'left',
+        unicodeBidi: 'plaintext'
+      }}
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
   );
