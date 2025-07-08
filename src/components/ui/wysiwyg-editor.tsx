@@ -60,6 +60,11 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Only handle keyboard shortcuts when toolbar is visible (authenticated users)
+    if (hideToolbar) {
+      return; // Let browser handle all keyboard events naturally for anonymous users
+    }
+
     // Handle common shortcuts
     if (e.ctrlKey || e.metaKey) {
       switch (e.key) {
