@@ -29,8 +29,11 @@ export const StickyBanner: React.FC = () => {
 
   // Don't render if loading, not enabled, or dismissed
   if (isLoading || !isEnabled || !message || isDismissed) {
+    console.log('Banner not showing:', { isLoading, isEnabled, hasMessage: !!message, isDismissed });
     return null;
   }
+
+  console.log('Banner rendering:', { isEnabled, message, style });
 
   const getStyleClasses = () => {
     switch (style) {
@@ -48,7 +51,7 @@ export const StickyBanner: React.FC = () => {
   };
 
   return (
-    <div className={`fixed top-0 left-0 right-0 z-50 border-b transition-all duration-300 ${getStyleClasses()}`}>
+    <div className={`fixed top-0 left-0 right-0 z-[100] border-b transition-all duration-300 ${getStyleClasses()}`}>
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 text-sm font-medium text-center md:text-left">
