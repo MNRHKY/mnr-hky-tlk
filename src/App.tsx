@@ -32,6 +32,7 @@ import AdminModeration from "./pages/admin/AdminModeration";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminSEO from "./pages/admin/AdminSEO";
 import { GoogleAnalytics } from "./components/analytics/GoogleAnalytics";
+import { AnalyticsProvider } from "./components/analytics/AnalyticsProvider";
 import { HeaderCodeInjector } from "./components/analytics/HeaderCodeInjector";
 import { CookieConsent } from "./components/cookies/CookieConsent";
 import { MaintenanceWrapper } from "./components/MaintenanceWrapper";
@@ -45,16 +46,17 @@ const App = () => (
       <TooltipProvider>
         <AuthProvider>
           <OnlineUsersProvider>
-            <StickyBanner />
-            <GoogleAnalytics />
-            <HeaderCodeInjector />
-            <CookieConsent />
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-            <ScrollToTop />
-            <MetadataProvider>
-              <MaintenanceWrapper>
+            <AnalyticsProvider>
+              <StickyBanner />
+              <GoogleAnalytics />
+              <HeaderCodeInjector />
+              <CookieConsent />
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+              <ScrollToTop />
+              <MetadataProvider>
+                <MaintenanceWrapper>
                 <Routes>
                   {/* Authentication routes - standalone pages */}
                   <Route path="/login" element={<Login />} />
@@ -94,9 +96,10 @@ const App = () => (
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </MaintenanceWrapper>
-            </MetadataProvider>
-          </BrowserRouter>
+                </MaintenanceWrapper>
+              </MetadataProvider>
+            </BrowserRouter>
+            </AnalyticsProvider>
           </OnlineUsersProvider>
         </AuthProvider>
       </TooltipProvider>
