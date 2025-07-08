@@ -134,7 +134,8 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-hidden p-4 sm:p-6">
+        <div className="overflow-y-auto max-h-full w-full">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <MessageSquare className="h-5 w-5" />
@@ -164,20 +165,20 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
 
         {/* Show current forum selection when any category is selected */}
         {(level1Category || level2Category || level3Category || (formData.category_id && currentSelectedCategory)) && (
-          <div className="bg-muted/50 p-3 rounded-md border">
+          <div className="bg-muted/50 p-3 rounded-md border w-full overflow-hidden">
             <div className="text-sm text-muted-foreground mb-2">Posting in:</div>
-            <Breadcrumb>
-              <BreadcrumbList>
+            <Breadcrumb className="overflow-hidden">
+              <BreadcrumbList className="flex-wrap">
                 {/* Show navigation path if it exists */}
                 {level1Category && (
                   <>
                     <BreadcrumbItem>
-                      <BreadcrumbPage className="flex items-center gap-2">
+                      <BreadcrumbPage className="flex items-center gap-2 truncate">
                         <div 
-                          className="w-3 h-3 rounded-full" 
+                          className="w-3 h-3 rounded-full flex-shrink-0" 
                           style={{ backgroundColor: level1Category.color }}
                         />
-                        {level1Category.name}
+                        <span className="truncate">{level1Category.name}</span>
                       </BreadcrumbPage>
                     </BreadcrumbItem>
                     {(level2Category || level3Category) && <BreadcrumbSeparator />}
@@ -186,12 +187,12 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
                 {level2Category && (
                   <>
                     <BreadcrumbItem>
-                      <BreadcrumbPage className="flex items-center gap-2">
+                      <BreadcrumbPage className="flex items-center gap-2 truncate">
                         <div 
-                          className="w-3 h-3 rounded-full" 
+                          className="w-3 h-3 rounded-full flex-shrink-0" 
                           style={{ backgroundColor: level2Category.color }}
                         />
-                        {level2Category.name}
+                        <span className="truncate">{level2Category.name}</span>
                       </BreadcrumbPage>
                     </BreadcrumbItem>
                     {level3Category && <BreadcrumbSeparator />}
@@ -199,24 +200,24 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
                 )}
                 {level3Category && (
                   <BreadcrumbItem>
-                    <BreadcrumbPage className="flex items-center gap-2 font-semibold">
+                    <BreadcrumbPage className="flex items-center gap-2 font-semibold truncate">
                       <div 
-                        className="w-3 h-3 rounded-full" 
+                        className="w-3 h-3 rounded-full flex-shrink-0" 
                         style={{ backgroundColor: level3Category.color }}
                       />
-                      {level3Category.name}
+                      <span className="truncate">{level3Category.name}</span>
                     </BreadcrumbPage>
                   </BreadcrumbItem>
                 )}
                 {/* Fallback for when final category is selected but no navigation path */}
                 {!level1Category && !level2Category && !level3Category && formData.category_id && currentSelectedCategory && (
                   <BreadcrumbItem>
-                    <BreadcrumbPage className="flex items-center gap-2 font-semibold">
+                    <BreadcrumbPage className="flex items-center gap-2 font-semibold truncate">
                       <div 
-                        className="w-3 h-3 rounded-full" 
+                        className="w-3 h-3 rounded-full flex-shrink-0" 
                         style={{ backgroundColor: currentSelectedCategory.color }}
                       />
-                      {currentSelectedCategory.name}
+                      <span className="truncate">{currentSelectedCategory.name}</span>
                     </BreadcrumbPage>
                   </BreadcrumbItem>
                 )}
@@ -228,7 +229,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 w-full">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-full overflow-hidden">
           <div className="space-y-2">
             <Label htmlFor="title">Topic Title</Label>
             <Input
@@ -287,6 +288,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
             </Button>
           </div>
         </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
