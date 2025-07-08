@@ -44,24 +44,17 @@ export const useForumSettings = () => {
         // Parse JSON values based on type
         let value = setting.setting_value;
         
+        console.log('Processing setting:', setting.setting_key, 'raw value:', value, 'type:', typeof value);
+        
         if (value === null || value === undefined) {
           value = '';
-        } else if (typeof value === 'string') {
-          // For JSON strings that are double-quoted, remove the outer quotes
-          if (value.startsWith('"') && value.endsWith('"')) {
-            value = value.slice(1, -1);
-          }
-          // For text content (like HTML), it might be stored as a JSON string
-          try {
-            const parsed = JSON.parse(value);
-            if (typeof parsed === 'string') {
-              value = parsed;
-            }
-          } catch {
-            // If it's not valid JSON, use the value as-is
-            // This handles cases where the value is already a plain string
-          }
+        } else {
+          // The value is already parsed from JSON by Supabase
+          // No need to parse again, just use it directly
+          value = value;
         }
+        
+        console.log('Final processed value for', setting.setting_key, ':', value);
         
         settingsMap[setting.setting_key] = {
           value,

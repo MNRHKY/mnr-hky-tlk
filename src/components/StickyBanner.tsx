@@ -12,12 +12,28 @@ export const StickyBanner: React.FC = () => {
   const style = getSetting('banner_style', 'info');
   const isDismissible = getSetting('banner_dismissible', true);
 
+  console.log('StickyBanner values:', {
+    isEnabled,
+    message,
+    style,
+    isDismissible,
+    messageLength: message?.length,
+    messageType: typeof message
+  });
+
   // Check localStorage for dismissal status
   useEffect(() => {
-    if (isDismissible && message) {
-      const dismissed = localStorage.getItem(`banner-dismissed-${message}`);
-      setIsDismissed(dismissed === 'true');
-      console.log('Banner dismissal check:', { message, dismissed, isDismissed: dismissed === 'true' });
+    if (message) {
+      // If banner is not dismissible, clear any existing dismissal
+      if (!isDismissible) {
+        localStorage.removeItem(`banner-dismissed-${message}`);
+        setIsDismissed(false);
+        console.log('Banner is not dismissible, cleared localStorage');
+      } else {
+        const dismissed = localStorage.getItem(`banner-dismissed-${message}`);
+        setIsDismissed(dismissed === 'true');
+        console.log('Banner dismissal check:', { message, dismissed, isDismissed: dismissed === 'true' });
+      }
     }
   }, [message, isDismissible]);
 
