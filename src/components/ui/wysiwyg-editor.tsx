@@ -60,34 +60,9 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Only handle keyboard shortcuts when toolbar is visible (authenticated users)
-    if (hideToolbar) {
-      return; // Let browser handle all keyboard events naturally for anonymous users
-    }
-
-    // Handle common shortcuts
-    if (e.ctrlKey || e.metaKey) {
-      switch (e.key) {
-        case 'b':
-          e.preventDefault();
-          execCommand('bold');
-          break;
-        case 'i':
-          e.preventDefault();
-          execCommand('italic');
-          break;
-        case 'u':
-          e.preventDefault();
-          execCommand('underline');
-          break;
-      }
-    }
-
-    // Handle Enter key for better paragraph handling
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      execCommand('insertHTML', '<br><br>');
-    }
+    // Remove all custom keyboard handling that might cause backwards text
+    // Let the browser handle all keyboard events naturally
+    return;
   };
 
   const execCommand = (command: string, value?: string) => {
