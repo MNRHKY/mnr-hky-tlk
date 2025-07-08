@@ -50,20 +50,27 @@ export const ForumHeader = () => {
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-80">
-          <div className="flex flex-col space-y-4 mt-8">
-            {/* Search in mobile menu */}
-            <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search forums..."
-                className="pl-10 pr-4"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </form>
+        <SheetContent side="right" className="w-[90vw] max-w-sm p-0">
+          <div className="flex flex-col h-full">
+            <div className="p-4 border-b">
+              <h2 className="text-lg font-semibold">Menu</h2>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="space-y-4">
+                {/* Search in mobile menu */}
+                <form onSubmit={handleSearch} className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search forums..."
+                    className="pl-10 pr-4"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </form>
 
-            <SharedMenuContent onNavigate={() => setMobileMenuOpen(false)} />
+                <SharedMenuContent onNavigate={() => setMobileMenuOpen(false)} />
+              </div>
+            </div>
           </div>
         </SheetContent>
       </Sheet>
