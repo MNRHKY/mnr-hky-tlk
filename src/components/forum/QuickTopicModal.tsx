@@ -134,7 +134,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <MessageSquare className="h-5 w-5" />
@@ -228,7 +228,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
           <div className="space-y-2">
             <Label htmlFor="title">Topic Title</Label>
             <Input
@@ -269,17 +269,19 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
             required
           />
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
             <Button 
               type="button" 
               variant="outline"
               onClick={() => setOpen(false)}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
               disabled={createTopicMutation.isPending || (!user && !tempUser.canPost)}
+              className="w-full sm:w-auto"
             >
               {createTopicMutation.isPending ? 'Creating...' : 'Create Topic'}
             </Button>
