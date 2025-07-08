@@ -62,7 +62,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         .replace(/<div><\/div>/g, ''); // Remove empty divs
       
       console.log('Editor input - cleaned content:', cleanContent);
-      setEditorContent(cleanContent);
+      // Don't call setEditorContent here as it causes cursor position to reset
       onChange(cleanContent);
     }
   };
