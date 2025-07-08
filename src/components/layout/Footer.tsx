@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useEnhancedForumStats } from '@/hooks/useEnhancedForumStats';
 import { useForumSettings } from '@/hooks/useForumSettings';
-import { useOnlineUsers } from '@/hooks/useOnlineUsers';
+import { useOnlineUsers } from '@/contexts/OnlineUsersContext';
 import { usePeakUsers } from '@/hooks/usePeakUsers';
 import { Facebook, Twitter, Instagram, Youtube, Users, Calendar } from 'lucide-react';
 

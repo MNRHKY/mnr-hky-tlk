@@ -1,9 +1,15 @@
-import { useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { sessionManager } from '@/utils/sessionManager';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/hooks/useAuth';
 
-export const useOnlineUsers = () => {
+interface OnlineUsersContextType {
+  onlineCount: number;
+}
+
+const OnlineUsersContext = createContext<OnlineUsersContextType | undefined>(undefined);
+
+export const OnlineUsersProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [onlineCount, setOnlineCount] = useState(0);
   const { user } = useAuth();
 
@@ -148,5 +154,17 @@ export const useOnlineUsers = () => {
     };
   }, [user]); // Re-run when user auth state changes
 
-  return onlineCount;
+  return (
+    <OnlineUsersContext.Provider value={{ onlineCount }}>
+      {children}
+    </OnlineUsersContext.Provider>
+  );
+};
+
+export const useOnlineUsers = () => {
+  const context = useContext(OnlineUsersContext);
+  if (context === undefined) {
+    throw new Error('useOnlineUsers must be used within an OnlineUsersProvider');
+  }
+  return context.onlineCount;
 };
