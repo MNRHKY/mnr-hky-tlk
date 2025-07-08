@@ -21,7 +21,7 @@ export const useAdminActivity = () => {
           id,
           title,
           created_at,
-          profiles!topics_author_id_fkey (username)
+          author_id
         `)
         .order('created_at', { ascending: false })
         .limit(5);
@@ -43,6 +43,36 @@ export const useAdminActivity = () => {
 
       if (postsError) throw postsError;
 
+      // Get unique author IDs
+      const authorIds = [...new Set([
+        ...(recentTopics?.map(topic => topic.author_id) || []),
+        ...(recentPosts?.map(post => post.author_id) || [])
+      ].filter(Boolean))];
+
+      // Fetch user data from both profiles and temporary_users
+      const [profilesData, temporaryUsersData] = await Promise.all([
+        authorIds.length > 0 ? supabase
+          .from('profiles')
+          .select('id, username')
+          .in('id', authorIds)
+          .then(({ data }) => data || []) : Promise.resolve([]),
+        
+        authorIds.length > 0 ? supabase
+          .from('temporary_users')
+          .select('id, display_name')
+          .in('id', authorIds)
+          .then(({ data }) => data || []) : Promise.resolve([])
+      ]);
+
+      // Create a map for quick user lookup
+      const userMap = new Map();
+      profilesData.forEach(profile => {
+        userMap.set(profile.id, profile.username);
+      });
+      temporaryUsersData.forEach(tempUser => {
+        userMap.set(tempUser.id, tempUser.display_name);
+      });
+
       // Combine and format activities
       const activities: AdminActivity[] = [];
 
@@ -50,7 +80,7 @@ export const useAdminActivity = () => {
       recentTopics?.forEach(topic => {
         activities.push({
           id: topic.id,
-          user: topic.profiles?.username || 'Anonymous User',
+          user: topic.author_id ? userMap.get(topic.author_id) || 'Anonymous User' : 'Anonymous User',
           action: 'Created topic',
           content: topic.title,
           time: topic.created_at,
@@ -62,7 +92,7 @@ export const useAdminActivity = () => {
       recentPosts?.forEach(post => {
         activities.push({
           id: post.id,
-          user: 'Anonymous User', // Simplified for admin activity - could be enhanced later
+          user: post.author_id ? userMap.get(post.author_id) || 'Anonymous User' : 'Anonymous User',
           action: 'Replied to',
           content: 'Topic', // Simplified for admin activity - could be enhanced later
           time: post.created_at,

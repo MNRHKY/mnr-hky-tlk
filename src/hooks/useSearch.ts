@@ -42,7 +42,7 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             created_at,
             reply_count,
             view_count,
-            profiles:author_id (username),
+            author_id,
             categories (name, color, slug)
           `);
 
@@ -69,6 +69,31 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
           );
         }) || [];
 
+        // Get author data for topics
+        const topicAuthorIds = [...new Set(filteredTopics.map(topic => topic.author_id).filter(Boolean))];
+        const [topicProfilesData, topicTempUsersData] = await Promise.all([
+          topicAuthorIds.length > 0 ? supabase
+            .from('profiles')
+            .select('id, username')
+            .in('id', topicAuthorIds)
+            .then(({ data }) => data || []) : Promise.resolve([]),
+          
+          topicAuthorIds.length > 0 ? supabase
+            .from('temporary_users')
+            .select('id, display_name')
+            .in('id', topicAuthorIds)
+            .then(({ data }) => data || []) : Promise.resolve([])
+        ]);
+
+        // Create user map for topics
+        const topicUserMap = new Map();
+        topicProfilesData.forEach(profile => {
+          topicUserMap.set(profile.id, profile.username);
+        });
+        topicTempUsersData.forEach(tempUser => {
+          topicUserMap.set(tempUser.id, tempUser.display_name);
+        });
+
         // Add topic results
         filteredTopics.forEach((topic) => {
           results.push({
@@ -76,7 +101,7 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
             title: topic.title,
             content: topic.content || '',
             type: 'topic',
-            author_username: topic.profiles?.username || 'Anonymous User',
+            author_username: topic.author_id ? topicUserMap.get(topic.author_id) || 'Anonymous User' : 'Anonymous User',
             category_name: topic.categories?.name || 'Unknown',
             category_color: topic.categories?.color || '#3b82f6',
             category_slug: topic.categories?.slug,

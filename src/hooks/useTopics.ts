@@ -39,7 +39,6 @@ export const useTopics = (categoryId?: string) => {
         .from('topics')
         .select(`
           *,
-          profiles (username, avatar_url),
           categories (name, color, slug, parent_category_id)
         `)
         .eq('moderation_status', 'approved')
@@ -50,15 +49,52 @@ export const useTopics = (categoryId?: string) => {
         query = query.eq('category_id', categoryId);
       }
       
-      const { data, error } = await query;
+      const { data: topics, error } = await query;
       
       if (error) {
         console.error('Error fetching topics:', error);
         throw error;
       }
+
+      if (!topics || topics.length === 0) {
+        return [];
+      }
+
+      // Extract unique author IDs
+      const authorIds = [...new Set(topics.map(topic => topic.author_id).filter(Boolean))];
       
-      console.log('Topics fetched:', data);
-      return data;
+      // Fetch user data from both profiles and temporary_users
+      const [profilesData, temporaryUsersData] = await Promise.all([
+        authorIds.length > 0 ? supabase
+          .from('profiles')
+          .select('id, username, avatar_url')
+          .in('id', authorIds)
+          .then(({ data }) => data || []) : Promise.resolve([]),
+        
+        authorIds.length > 0 ? supabase
+          .from('temporary_users')
+          .select('id, display_name')
+          .in('id', authorIds)
+          .then(({ data }) => data || []) : Promise.resolve([])
+      ]);
+
+      // Create a map for quick user lookup
+      const userMap = new Map();
+      profilesData.forEach(profile => {
+        userMap.set(profile.id, { username: profile.username, avatar_url: profile.avatar_url });
+      });
+      temporaryUsersData.forEach(tempUser => {
+        userMap.set(tempUser.id, { username: tempUser.display_name, avatar_url: null });
+      });
+
+      // Enrich topics with user data
+      const enrichedTopics = topics.map(topic => ({
+        ...topic,
+        profiles: topic.author_id ? userMap.get(topic.author_id) : null
+      }));
+      
+      console.log('Topics fetched:', enrichedTopics);
+      return enrichedTopics;
     },
   });
 };
