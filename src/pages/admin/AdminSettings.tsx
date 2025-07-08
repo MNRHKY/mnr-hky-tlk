@@ -201,7 +201,7 @@ const AdminSettings = () => {
                       onChange={(e) => updateSetting({
                         key: 'banner_message',
                         value: e.target.value,
-                        type: 'text',
+                        type: 'string',
                         category: 'banner'
                       })}
                       placeholder="Enter banner message..."
