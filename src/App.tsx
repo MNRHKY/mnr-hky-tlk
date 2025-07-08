@@ -8,6 +8,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { MetadataProvider } from "./components/seo/MetadataProvider";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { OnlineUsersTracker } from "./components/OnlineUsersTracker";
 import { ForumLayout } from "./components/forum/ForumLayout";
 import { AdminLayout } from "./components/admin/AdminLayout";
 import { ForumHome } from "./components/forum/ForumHome";
@@ -41,6 +42,7 @@ const App = () => (
     <HelmetProvider>
       <TooltipProvider>
         <AuthProvider>
+          <OnlineUsersTracker />
           <GoogleAnalytics />
           <HeaderCodeInjector />
           <CookieConsent />
