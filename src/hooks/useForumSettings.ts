@@ -82,12 +82,14 @@ export const useForumSettings = () => {
       
       // Convert value to JSON format
       let jsonValue = value;
-      if (type === 'string' || type === 'code') {
-        jsonValue = JSON.stringify(value);
-      } else if (type === 'boolean') {
+      if (type === 'boolean') {
         jsonValue = value;
       } else if (type === 'number') {
         jsonValue = value.toString();
+      } else {
+        // For strings and code, don't JSON.stringify since the database column is already JSONB
+        // and will handle the JSON conversion automatically
+        jsonValue = value;
       }
       
       const { error } = await supabase.rpc('set_forum_setting', {
