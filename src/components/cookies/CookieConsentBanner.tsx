@@ -17,7 +17,7 @@ export const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({
   onClose,
 }) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-background/95 backdrop-blur-sm border-t">
+    <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 bg-background/95 backdrop-blur-sm border-t animate-fade-in">
       <Card className="max-w-6xl mx-auto p-4">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex-1">
