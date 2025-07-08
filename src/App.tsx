@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { MetadataProvider } from "./components/seo/MetadataProvider";
+import { ScrollToTop } from "./components/ScrollToTop";
 import { ForumLayout } from "./components/forum/ForumLayout";
 import { AdminLayout } from "./components/admin/AdminLayout";
 import { ForumHome } from "./components/forum/ForumHome";
@@ -44,6 +45,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <MetadataProvider>
               <Routes>
                 {/* Authentication routes - standalone pages */}
