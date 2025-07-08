@@ -42,11 +42,11 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [editorContent, setEditorContent] = useState(value || '');
 
-  // Initialize editor content only once
+  // Initialize editor content only once with innerHTML to match how we read it
   useEffect(() => {
-    if (editorRef.current && !isInitialized) {
-      // Set initial content without using dangerouslySetInnerHTML
-      editorRef.current.textContent = value || '';
+    if (editorRef.current && !isInitialized && value) {
+      // Use innerHTML for both setting AND reading to avoid mismatch
+      editorRef.current.innerHTML = value;
       setIsInitialized(true);
     }
   }, [value, isInitialized]);
