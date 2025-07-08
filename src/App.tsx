@@ -35,6 +35,7 @@ import { GoogleAnalytics } from "./components/analytics/GoogleAnalytics";
 import { HeaderCodeInjector } from "./components/analytics/HeaderCodeInjector";
 import { CookieConsent } from "./components/cookies/CookieConsent";
 import { MaintenanceWrapper } from "./components/MaintenanceWrapper";
+import { StickyBanner } from "./components/StickyBanner";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
       <TooltipProvider>
         <AuthProvider>
           <OnlineUsersProvider>
+            <StickyBanner />
             <GoogleAnalytics />
             <HeaderCodeInjector />
             <CookieConsent />

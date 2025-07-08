@@ -150,7 +150,7 @@ const AdminSettings = () => {
                 <h2 className="text-xl font-semibold mb-4">General Settings</h2>
               </div>
 
-              <div className="grid gap-4">
+                <div className="grid gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="forum-name">Forum Name</Label>
                   <Input
@@ -164,6 +164,103 @@ const AdminSettings = () => {
                     })}
                     placeholder="Enter forum name"
                   />
+                </div>
+
+                {/* Site Banner Section */}
+                <div className="space-y-4 border-t pt-4">
+                  <div>
+                    <h3 className="font-medium mb-3">Site-Wide Banner</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Display a banner message at the top of every page for all visitors
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Enable Banner</Label>
+                      <div className="text-sm text-muted-foreground">
+                        Show banner to all site visitors
+                      </div>
+                    </div>
+                    <Switch
+                      checked={getSetting('banner_enabled', false)}
+                      onCheckedChange={(checked) => updateSetting({
+                        key: 'banner_enabled',
+                        value: checked,
+                        type: 'boolean',
+                        category: 'banner'
+                      })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="banner-message">Banner Message</Label>
+                    <Textarea
+                      id="banner-message"
+                      value={getSetting('banner_message', '')}
+                      onChange={(e) => updateSetting({
+                        key: 'banner_message',
+                        value: e.target.value,
+                        type: 'text',
+                        category: 'banner'
+                      })}
+                      placeholder="Enter banner message..."
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="banner-style">Banner Style</Label>
+                      <Input
+                        id="banner-style"
+                        value={getSetting('banner_style', 'info')}
+                        onChange={(e) => updateSetting({
+                          key: 'banner_style',
+                          value: e.target.value,
+                          type: 'string',
+                          category: 'banner'
+                        })}
+                        placeholder="info, warning, success, error, announcement"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Options: info, warning, success, error, announcement
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label>Dismissible</Label>
+                        <div className="text-sm text-muted-foreground">
+                          Allow users to close banner
+                        </div>
+                      </div>
+                      <Switch
+                        checked={getSetting('banner_dismissible', true)}
+                        onCheckedChange={(checked) => updateSetting({
+                          key: 'banner_dismissible',
+                          value: checked,
+                          type: 'boolean',
+                          category: 'banner'
+                        })}
+                      />
+                    </div>
+                  </div>
+
+                  {getSetting('banner_enabled', false) && (
+                    <div className="bg-muted/50 border rounded-lg p-3">
+                      <p className="text-sm font-medium mb-1">Preview:</p>
+                      <div className={`p-2 border rounded text-sm ${
+                        getSetting('banner_style', 'info') === 'warning' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-800' :
+                        getSetting('banner_style', 'info') === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-800' :
+                        getSetting('banner_style', 'info') === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-800' :
+                        getSetting('banner_style', 'info') === 'announcement' ? 'bg-purple-500/10 border-purple-500/20 text-purple-800' :
+                        'bg-blue-500/10 border-blue-500/20 text-blue-800'
+                      }`}>
+                        {getSetting('banner_message', 'Your banner message will appear here...')}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
