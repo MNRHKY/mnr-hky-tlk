@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,9 +7,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Mail, Calendar, Award, MessageSquare, TrendingUp } from 'lucide-react';
+import { EditProfileModal } from '@/components/profile/EditProfileModal';
 
 const Profile = () => {
   const { user } = useAuth();
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   const { data: profile } = useQuery({
     queryKey: ['profile', user?.id],
@@ -69,7 +71,7 @@ const Profile = () => {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
-        <Button variant="outline">Edit Profile</Button>
+        <Button variant="outline" onClick={() => setEditModalOpen(true)}>Edit Profile</Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -161,6 +163,12 @@ const Profile = () => {
           <p className="text-gray-500">No topics created yet.</p>
         )}
       </Card>
+
+      <EditProfileModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        profile={profile}
+      />
     </div>
   );
 };
