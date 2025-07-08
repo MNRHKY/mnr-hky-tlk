@@ -29,13 +29,15 @@ export const LoginForm = () => {
   });
   const { siteKey, isTestKey } = useHCaptchaSiteKey();
   const setupHCaptcha = useSetupHCaptcha();
+  const [hasTriedSetup, setHasTriedSetup] = useState(false);
 
-  // Auto-setup hCaptcha if still using test key
+  // Auto-setup hCaptcha if still using test key (only once)
   React.useEffect(() => {
-    if (isTestKey && !setupHCaptcha.isPending) {
+    if (isTestKey && !setupHCaptcha.isPending && !hasTriedSetup) {
+      setHasTriedSetup(true);
       setupHCaptcha.mutate();
     }
-  }, [isTestKey, setupHCaptcha]);
+  }, [isTestKey, setupHCaptcha.isPending, hasTriedSetup]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
