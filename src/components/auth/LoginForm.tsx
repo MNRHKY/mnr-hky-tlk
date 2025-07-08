@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { HCaptchaComponent, HCaptchaRef } from '@/components/ui/hcaptcha';
 import { useHCaptchaSiteKey } from '@/hooks/useHCaptchaSiteKey';
+import { HCaptchaSetupButton } from './HCaptchaSetupButton';
 
 export const LoginForm = () => {
   const navigate = useNavigate();
@@ -138,6 +139,9 @@ export const LoginForm = () => {
                 placeholder="Enter your password"
               />
             </div>
+
+            {/* hCaptcha Setup Notice */}
+            <HCaptchaSetupButton />
 
             {/* CAPTCHA */}
             <div>
