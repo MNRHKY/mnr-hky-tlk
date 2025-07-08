@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MarkdownEditor } from '@/components/ui/markdown-editor';
+import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import { Reply, ArrowUp, ArrowDown, Flag, ChevronDown, ChevronUp, MessageSquare, MessageCircle, Share, Edit, Trash2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -172,7 +172,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
         <div className="mb-4">
           {isEditing ? (
             <div className="space-y-3">
-              <MarkdownEditor
+              <WysiwygEditor
                 value={editContent}
                 onChange={setEditContent}
                 placeholder="Edit your post..."

@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MarkdownEditor } from '@/components/ui/markdown-editor';
+import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { MessageSquare, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -242,7 +242,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
 
           <div className="space-y-2">
             <Label htmlFor="content">Content</Label>
-            <MarkdownEditor
+            <WysiwygEditor
               value={formData.content}
               onChange={(value) => setFormData({ ...formData, content: value })}
               placeholder={user ? "Write your topic content here..." : "Write your topic content here (no images or links allowed for anonymous users)..."}

@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MarkdownEditor } from '@/components/ui/markdown-editor';
+import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateTopic } from '@/hooks/useCreateTopic';
 import { useTempUser } from '@/hooks/useTempUser';
@@ -148,7 +148,7 @@ export const CreateTopic = () => {
 
           <div className="space-y-2">
             <Label htmlFor="content">Content</Label>
-            <MarkdownEditor
+            <WysiwygEditor
               value={formData.content}
               onChange={(value) => setFormData({ ...formData, content: value })}
               placeholder={user ? "Write your topic content here..." : "Write your topic content here (no images or links allowed for anonymous users)..."}

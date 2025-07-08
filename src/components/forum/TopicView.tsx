@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { MarkdownEditor } from '@/components/ui/markdown-editor';
+import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import { MessageSquare, User, Clock, ArrowLeft, ThumbsUp, Flag, Reply, ArrowUp, ArrowDown, MessageCircle, Share, Edit } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -210,7 +210,7 @@ export const TopicView = () => {
             {/* Content */}
             {isEditingTopic ? (
               <div className="bg-muted/30 rounded-md p-3 md:p-4 border border-border/50 mb-4">
-                <MarkdownEditor
+                <WysiwygEditor
                   value={editContent}
                   onChange={setEditContent}
                   placeholder="Topic content (optional)"

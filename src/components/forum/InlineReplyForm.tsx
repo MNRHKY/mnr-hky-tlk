@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { MarkdownEditor } from '@/components/ui/markdown-editor';
+import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreatePost } from '@/hooks/useCreatePost';
 import { useTempUser } from '@/hooks/useTempUser';
@@ -151,7 +151,7 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
       )}
 
       <div className="space-y-3">
-        <MarkdownEditor
+        <WysiwygEditor
           value={content}
           onChange={setContent}
           placeholder={user ? "Write your reply..." : "Write your reply as an anonymous user (no images or links allowed)..."}
