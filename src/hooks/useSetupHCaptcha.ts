@@ -1,9 +1,10 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export const useSetupHCaptcha = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
@@ -21,6 +22,9 @@ export const useSetupHCaptcha = () => {
       return data;
     },
     onSuccess: () => {
+      // Invalidate forum settings to refresh the hCaptcha site key
+      queryClient.invalidateQueries({ queryKey: ['forum-settings'] });
+      
       toast({
         title: 'hCaptcha Configured',
         description: 'Your hCaptcha site key has been successfully configured.',
