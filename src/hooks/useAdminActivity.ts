@@ -78,9 +78,10 @@ export const useAdminActivity = () => {
 
       // Add topics
       recentTopics?.forEach(topic => {
+        const username = topic.author_id ? userMap.get(topic.author_id) || 'Anonymous User' : 'Anonymous User';
         activities.push({
           id: topic.id,
-          user: topic.author_id ? userMap.get(topic.author_id) || 'Anonymous User' : 'Anonymous User',
+          user: username,
           action: 'Created topic',
           content: topic.title,
           time: topic.created_at,
@@ -90,9 +91,10 @@ export const useAdminActivity = () => {
 
       // Add posts
       recentPosts?.forEach(post => {
+        const username = post.author_id ? userMap.get(post.author_id) || 'Anonymous User' : 'Anonymous User';
         activities.push({
           id: post.id,
-          user: post.author_id ? userMap.get(post.author_id) || 'Anonymous User' : 'Anonymous User',
+          user: username,
           action: 'Replied to',
           content: 'Topic', // Simplified for admin activity - could be enhanced later
           time: post.created_at,

@@ -96,12 +96,13 @@ export const useSearch = (query: string, filter: SearchFilter = 'all') => {
 
         // Add topic results
         filteredTopics.forEach((topic) => {
+          const authorUsername = topic.author_id ? topicUserMap.get(topic.author_id) || 'Anonymous User' : 'Anonymous User';
           results.push({
             id: topic.id,
             title: topic.title,
             content: topic.content || '',
             type: 'topic',
-            author_username: topic.author_id ? topicUserMap.get(topic.author_id) || 'Anonymous User' : 'Anonymous User',
+            author_username: authorUsername,
             category_name: topic.categories?.name || 'Unknown',
             category_color: topic.categories?.color || '#3b82f6',
             category_slug: topic.categories?.slug,

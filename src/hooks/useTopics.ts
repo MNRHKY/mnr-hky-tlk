@@ -87,11 +87,17 @@ export const useTopics = (categoryId?: string) => {
         userMap.set(tempUser.id, { username: tempUser.display_name, avatar_url: null });
       });
 
-      // Enrich topics with user data
-      const enrichedTopics = topics.map(topic => ({
-        ...topic,
-        profiles: topic.author_id ? userMap.get(topic.author_id) : null
-      }));
+      // Enrich topics with user data - avoid circular references
+      const enrichedTopics = topics.map(topic => {
+        const userData = topic.author_id ? userMap.get(topic.author_id) : null;
+        return {
+          ...topic,
+          profiles: userData ? {
+            username: userData.username,
+            avatar_url: userData.avatar_url
+          } : null
+        };
+      });
       
       console.log('Topics fetched:', enrichedTopics);
       return enrichedTopics;
