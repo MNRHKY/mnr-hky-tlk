@@ -153,10 +153,10 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   ];
 
   return (
-    <div className={cn("border border-input rounded-md bg-background overflow-hidden", className)}>
+    <div className={cn("w-full max-w-full border border-input rounded-md bg-background overflow-hidden", className)}>
       {/* Toolbar */}
       {!hideToolbar && (
-        <div className="flex items-center gap-1 p-2 border-b border-input bg-muted/50 overflow-x-auto">
+        <div className="flex items-center gap-1 p-2 border-b border-input bg-muted/50 overflow-x-auto scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {toolbarButtons.map((button, index) => (
             <Button
               key={index}
@@ -218,10 +218,16 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         ref={editorRef}
         contentEditable={!disabled}
         className={cn(
-          "w-full p-3 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 min-h-[200px] prose prose-sm max-w-none overflow-auto",
+          "w-full max-w-full p-3 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 min-h-[200px] prose prose-sm break-words",
           disabled && "opacity-50 cursor-not-allowed"
         )}
-        style={{ height: height - (hideToolbar ? 0 : 48), maxWidth: '100%' }}
+        style={{ 
+          height: height - (hideToolbar ? 0 : 48), 
+          maxWidth: '100%',
+          wordWrap: 'break-word',
+          overflowWrap: 'break-word',
+          hyphens: 'auto'
+        }}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         data-placeholder={placeholder}
@@ -230,6 +236,11 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
       />
 
       <style>{`
+        /* Hide scrollbars on toolbar */
+        .scrollbar-none::-webkit-scrollbar {
+          display: none;
+        }
+        
         [contenteditable]:empty:before {
           content: attr(data-placeholder);
           color: hsl(var(--muted-foreground));
@@ -238,28 +249,37 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         }
         [contenteditable] {
           line-height: 1.6;
-          word-wrap: break-word;
-          overflow-wrap: break-word;
+          word-wrap: break-word !important;
+          overflow-wrap: break-word !important;
+          white-space: pre-wrap;
+          box-sizing: border-box;
         }
         [contenteditable] * {
-          max-width: 100%;
+          max-width: 100% !important;
+          box-sizing: border-box;
         }
         [contenteditable] img {
           max-width: 100% !important;
+          width: 100% !important;
           height: auto !important;
           display: block;
           margin: 10px 0;
+          object-fit: contain;
         }
         [contenteditable] h1, 
         [contenteditable] h2, 
         [contenteditable] h3 {
           font-weight: 600;
           margin: 1em 0 0.5em 0;
+          word-wrap: break-word;
         }
         [contenteditable] h1 { font-size: 1.5em; }
         [contenteditable] h2 { font-size: 1.3em; }
         [contenteditable] h3 { font-size: 1.1em; }
-        [contenteditable] p { margin: 0.5em 0; }
+        [contenteditable] p { 
+          margin: 0.5em 0; 
+          word-wrap: break-word;
+        }
         [contenteditable] ul, 
         [contenteditable] ol { 
           margin: 0.5em 0; 
@@ -271,20 +291,31 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
           margin: 1em 0;
           font-style: italic;
           color: hsl(var(--muted-foreground));
+          word-wrap: break-word;
         }
         [contenteditable] a {
           color: hsl(var(--primary));
           text-decoration: underline;
           word-break: break-all;
+          overflow-wrap: break-word;
         }
         [contenteditable] br {
           line-height: 1.6;
+        }
+        [contenteditable] div,
+        [contenteditable] span {
+          max-width: 100%;
+          word-wrap: break-word;
         }
         
         /* Mobile responsive styles */
         @media (max-width: 640px) {
           [contenteditable] {
             font-size: 16px; /* Prevents zoom on iOS */
+            -webkit-text-size-adjust: 100%;
+          }
+          [contenteditable] * {
+            max-width: calc(100vw - 2rem) !important;
           }
         }
       `}</style>
