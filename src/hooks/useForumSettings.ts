@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,10 +23,10 @@ export const useForumSettings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: settings, isLoading } = useQuery({
+  const { data: settings, isLoading, refetch } = useQuery({
     queryKey: ['forum-settings'],
     queryFn: async () => {
-      console.log('Fetching forum settings');
+      console.log('Fetching forum settings from database');
       
       const { data, error } = await supabase
         .from('forum_settings')
@@ -65,9 +66,12 @@ export const useForumSettings = () => {
         };
       });
       
-      console.log('Forum settings fetched:', settingsMap);
+      console.log('Forum settings fetched and mapped:', settingsMap);
       return settingsMap;
     },
+    staleTime: 0, // Always refetch to ensure fresh data
+    refetchOnWindowFocus: true, // Refetch when window gains focus
+    refetchOnMount: true, // Always refetch on mount
   });
 
   const updateSettingMutation = useMutation({
@@ -123,7 +127,9 @@ export const useForumSettings = () => {
   });
 
   const getSetting = (key: string, defaultValue: any = '') => {
-    return settings?.[key]?.value ?? defaultValue;
+    const value = settings?.[key]?.value ?? defaultValue;
+    console.log('getSetting called for key:', key, 'value:', value, 'defaultValue:', defaultValue);
+    return value;
   };
 
   const getSettingsByCategory = (category: string) => {
@@ -138,6 +144,39 @@ export const useForumSettings = () => {
     return categorySettings;
   };
 
+  const forceRefresh = () => {
+    console.log('Force refreshing forum settings');
+    queryClient.invalidateQueries({ queryKey: ['forum-settings'] });
+    refetch();
+  };
+
+  // Add real-time updates for forum settings
+  useEffect(() => {
+    console.log('Setting up real-time subscription for forum settings');
+    
+    const channel = supabase
+      .channel('forum-settings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'forum_settings'
+        },
+        (payload) => {
+          console.log('Forum settings changed, refreshing cache:', payload);
+          queryClient.invalidateQueries({ queryKey: ['forum-settings'] });
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('Cleaning up forum settings subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient, refetch]);
+
   return {
     settings,
     isLoading,
@@ -145,5 +184,6 @@ export const useForumSettings = () => {
     isUpdating: updateSettingMutation.isPending,
     getSetting,
     getSettingsByCategory,
+    forceRefresh,
   };
 };
