@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { HCaptchaComponent, HCaptchaRef } from '@/components/ui/hcaptcha';
+import { useHCaptchaSiteKey } from '@/hooks/useHCaptchaSiteKey';
 
 export const LoginForm = () => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export const LoginForm = () => {
     windowMs: 15 * 60 * 1000, // 15 minutes
     blockDurationMs: 5 * 60 * 1000 // Block for 5 minutes
   });
+  const { siteKey } = useHCaptchaSiteKey();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,6 +143,7 @@ export const LoginForm = () => {
             <div>
               <HCaptchaComponent
                 ref={captchaRef}
+                siteKey={siteKey}
                 onVerify={handleCaptchaVerify}
                 onError={handleCaptchaError}
               />
