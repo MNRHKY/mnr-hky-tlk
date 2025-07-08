@@ -134,8 +134,7 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-hidden p-4 sm:p-6">
-        <div className="overflow-y-auto max-h-full w-full">
+      <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-x-hidden overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <MessageSquare className="h-5 w-5" />
@@ -288,7 +287,6 @@ export const QuickTopicModal = ({ preselectedCategoryId, trigger, size = "defaul
             </Button>
           </div>
         </form>
-        </div>
       </DialogContent>
     </Dialog>
   );
