@@ -23,6 +23,7 @@ const AdminSettings = () => {
   const [privacyContent, setPrivacyContent] = useState('');
   const [googleAnalyticsId, setGoogleAnalyticsId] = useState('');
   const [customCss, setCustomCss] = useState('');
+  const [bannerMessage, setBannerMessage] = useState('');
 
   // Update local state when settings load
   React.useEffect(() => {
@@ -32,6 +33,7 @@ const AdminSettings = () => {
       const customCssValue = getSetting('custom_css', '');
       const termsValue = getSetting('terms_content', '');
       const privacyValue = getSetting('privacy_content', '');
+      const bannerMessageValue = getSetting('banner_message', '');
       
       console.log('Loading settings:', { headerCodeValue, gaIdValue, customCssValue });
       
@@ -40,6 +42,7 @@ const AdminSettings = () => {
       setCustomCss(customCssValue);
       setTermsContent(termsValue);
       setPrivacyContent(privacyValue);
+      setBannerMessage(bannerMessageValue);
     }
   }, [settings]); // Removed getSetting from dependencies as it changes on every render
 
@@ -197,10 +200,11 @@ const AdminSettings = () => {
                     <Label htmlFor="banner-message">Banner Message</Label>
                     <Textarea
                       id="banner-message"
-                      value={getSetting('banner_message', '')}
-                      onChange={(e) => updateSetting({
+                      value={bannerMessage}
+                      onChange={(e) => setBannerMessage(e.target.value)}
+                      onBlur={() => updateSetting({
                         key: 'banner_message',
-                        value: e.target.value,
+                        value: bannerMessage,
                         type: 'string',
                         category: 'banner'
                       })}
@@ -257,7 +261,7 @@ const AdminSettings = () => {
                         getSetting('banner_style', 'info') === 'announcement' ? 'bg-purple-500/10 border-purple-500/20 text-purple-800' :
                         'bg-blue-500/10 border-blue-500/20 text-blue-800'
                       }`}>
-                        {getSetting('banner_message', 'Your banner message will appear here...')}
+                        {bannerMessage || 'Your banner message will appear here...'}
                       </div>
                     </div>
                   )}
