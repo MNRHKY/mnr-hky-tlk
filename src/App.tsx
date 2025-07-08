@@ -46,17 +46,17 @@ const App = () => (
       <TooltipProvider>
         <AuthProvider>
           <OnlineUsersProvider>
-            <AnalyticsProvider>
-              <StickyBanner />
-              <GoogleAnalytics />
-              <HeaderCodeInjector />
-              <CookieConsent />
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-              <ScrollToTop />
-              <MetadataProvider>
-                <MaintenanceWrapper>
+            <StickyBanner />
+            <HeaderCodeInjector />
+            <CookieConsent />
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AnalyticsProvider>
+                <GoogleAnalytics />
+                <ScrollToTop />
+                <MetadataProvider>
+                  <MaintenanceWrapper>
                 <Routes>
                   {/* Authentication routes - standalone pages */}
                   <Route path="/login" element={<Login />} />
@@ -95,11 +95,11 @@ const App = () => (
                   
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
-                </Routes>
-                </MaintenanceWrapper>
-              </MetadataProvider>
+                  </Routes>
+                  </MaintenanceWrapper>
+                </MetadataProvider>
+              </AnalyticsProvider>
             </BrowserRouter>
-            </AnalyticsProvider>
           </OnlineUsersProvider>
         </AuthProvider>
       </TooltipProvider>
