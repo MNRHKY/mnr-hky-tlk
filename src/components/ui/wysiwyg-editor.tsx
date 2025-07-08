@@ -56,13 +56,10 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
       const content = editorRef.current.innerHTML;
       console.log('Editor input - raw content:', content);
       
-      // Minimal cleaning - preserve line breaks and paragraphs
+      // Minimal cleaning - only remove truly empty elements
       const cleanContent = content
         .replace(/<p><\/p>/g, '') // Remove empty paragraphs
-        .replace(/<div><\/div>/g, '') // Remove empty divs
-        .replace(/<div><br><\/div>/g, '<br>') // Convert div+br to just br
-        .replace(/<div>/g, '<p>') // Convert divs to paragraphs
-        .replace(/<\/div>/g, '</p>'); // Convert closing divs to closing paragraphs
+        .replace(/<div><\/div>/g, ''); // Remove empty divs
       
       console.log('Editor input - cleaned content:', cleanContent);
       setEditorContent(cleanContent);
