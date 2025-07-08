@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { HCaptchaComponent, HCaptchaRef } from '@/components/ui/hcaptcha';
 import { useHCaptchaSiteKey } from '@/hooks/useHCaptchaSiteKey';
+import { useSetupHCaptcha } from '@/hooks/useSetupHCaptcha';
 
 export const LoginForm = () => {
   const navigate = useNavigate();
@@ -26,7 +27,15 @@ export const LoginForm = () => {
     windowMs: 15 * 60 * 1000, // 15 minutes
     blockDurationMs: 5 * 60 * 1000 // Block for 5 minutes
   });
-  const { siteKey } = useHCaptchaSiteKey();
+  const { siteKey, isTestKey } = useHCaptchaSiteKey();
+  const setupHCaptcha = useSetupHCaptcha();
+
+  // Auto-setup hCaptcha if still using test key
+  React.useEffect(() => {
+    if (isTestKey && !setupHCaptcha.isPending) {
+      setupHCaptcha.mutate();
+    }
+  }, [isTestKey, setupHCaptcha]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
