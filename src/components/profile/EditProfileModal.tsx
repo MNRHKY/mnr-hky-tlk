@@ -46,8 +46,8 @@ export const EditProfileModal = ({ open, onOpenChange, profile }: EditProfileMod
     if (!user?.id) throw new Error('User not authenticated');
     
     const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}-${Math.random()}.${fileExt}`;
-    const filePath = `avatars/${fileName}`;
+    const fileName = `avatar-${Math.random()}.${fileExt}`;
+    const filePath = `${user.id}/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
