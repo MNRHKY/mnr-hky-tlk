@@ -14,9 +14,10 @@ export const StickyBanner: React.FC = () => {
 
   // Check localStorage for dismissal status
   useEffect(() => {
-    if (isDismissible) {
+    if (isDismissible && message) {
       const dismissed = localStorage.getItem(`banner-dismissed-${message}`);
       setIsDismissed(dismissed === 'true');
+      console.log('Banner dismissal check:', { message, dismissed, isDismissed: dismissed === 'true' });
     }
   }, [message, isDismissible]);
 
@@ -28,12 +29,21 @@ export const StickyBanner: React.FC = () => {
   };
 
   // Don't render if loading, not enabled, or dismissed
+  console.log('Banner render check:', { 
+    isLoading, 
+    isEnabled, 
+    hasMessage: !!message, 
+    message: message?.substring(0, 50) + '...', 
+    isDismissed,
+    style 
+  });
+  
   if (isLoading || !isEnabled || !message || isDismissed) {
-    console.log('Banner not showing:', { isLoading, isEnabled, hasMessage: !!message, isDismissed });
+    console.log('Banner not showing because:', { isLoading, isEnabled, hasMessage: !!message, isDismissed });
     return null;
   }
 
-  console.log('Banner rendering:', { isEnabled, message, style });
+  console.log('Banner should be rendering now!');
 
   const getStyleClasses = () => {
     switch (style) {
@@ -51,7 +61,10 @@ export const StickyBanner: React.FC = () => {
   };
 
   return (
-    <div className={`fixed top-0 left-0 right-0 z-[100] border-b transition-all duration-300 ${getStyleClasses()}`}>
+    <div 
+      className={`fixed top-0 left-0 right-0 z-[100] border-b transition-all duration-300 ${getStyleClasses()}`}
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999 }}
+    >
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 text-sm font-medium text-center md:text-left">
