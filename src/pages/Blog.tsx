@@ -4,49 +4,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-// Mock blog data - replace with real data later
-const blogPosts = [
-  {
-    id: 1,
-    title: "Essential Skills Every Young Hockey Player Should Master",
-    excerpt: "From skating fundamentals to puck handling, discover the core skills that will set young players up for success on the ice.",
-    author: "Coach Mike Johnson",
-    date: "2024-01-15",
-    category: "Training",
-    readTime: "5 min read",
-    image: "/api/placeholder/400/200"
-  },
-  {
-    id: 2,
-    title: "Choosing the Right Equipment for Your Minor Hockey Player",
-    excerpt: "A comprehensive guide to selecting safe, appropriate, and budget-friendly hockey equipment for players at every level.",
-    author: "Sarah Thompson",
-    date: "2024-01-10",
-    category: "Equipment",
-    readTime: "8 min read",
-    image: "/api/placeholder/400/200"
-  },
-  {
-    id: 3,
-    title: "Building Team Chemistry: Lessons from Successful Minor Hockey Programs",
-    excerpt: "Explore strategies used by top minor hockey programs to foster teamwork, communication, and lasting friendships.",
-    author: "Coach Dave Wilson",
-    date: "2024-01-05",
-    category: "Team Building",
-    readTime: "6 min read",
-    image: "/api/placeholder/400/200"
-  },
-  {
-    id: 4,
-    title: "Nutrition Tips for Young Athletes: Fueling Performance on and off the Ice",
-    excerpt: "Learn how proper nutrition can enhance performance, support recovery, and promote healthy growth in young hockey players.",
-    author: "Dr. Lisa Chen",
-    date: "2023-12-28",
-    category: "Health",
-    readTime: "7 min read",
-    image: "/api/placeholder/400/200"
-  }
-];
+// Blog posts will be loaded from a CMS or database in the future
+const blogPosts: any[] = [];
 
 const categories = ["All", "Training", "Equipment", "Team Building", "Health", "Safety"];
 
