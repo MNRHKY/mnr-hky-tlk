@@ -185,7 +185,7 @@ export const CategoryRequestsManager = () => {
                 <Button
                   onClick={() => handleReview('approved')}
                   disabled={updateRequest.isPending}
-                  className="bg-success hover:bg-success/80"
+                  className="bg-success text-success-foreground hover:bg-success/90"
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Approve
