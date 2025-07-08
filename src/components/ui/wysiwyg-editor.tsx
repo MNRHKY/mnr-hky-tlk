@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { 
   Bold, 
@@ -9,7 +10,7 @@ import {
   ListOrdered,
   Quote,
   Link,
-  Type,
+  Image,
   AlignLeft,
   AlignCenter,
   AlignRight
@@ -37,6 +38,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   allowImages = true,
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize editor content
@@ -100,6 +102,40 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
     }
   };
 
+  const insertImage = () => {
+    if (!allowImages) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file.');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Please select an image smaller than 5MB.');
+      return;
+    }
+
+    // Create preview URL and insert into editor
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageUrl = e.target?.result as string;
+      const imageHtml = `<img src="${imageUrl}" alt="Uploaded image" style="max-width: 100%; height: auto; margin: 10px 0;" />`;
+      execCommand('insertHTML', imageHtml);
+    };
+    reader.readAsDataURL(file);
+
+    // Clear the input
+    event.target.value = '';
+  };
+
   const formatText = (command: string) => {
     execCommand(command);
   };
@@ -117,10 +153,10 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   ];
 
   return (
-    <div className={cn("border border-input rounded-md bg-background", className)}>
+    <div className={cn("border border-input rounded-md bg-background overflow-hidden", className)}>
       {/* Toolbar */}
       {!hideToolbar && (
-        <div className="flex items-center gap-1 p-2 border-b border-input bg-muted/50">
+        <div className="flex items-center gap-1 p-2 border-b border-input bg-muted/50 overflow-x-auto">
           {toolbarButtons.map((button, index) => (
             <Button
               key={index}
@@ -143,28 +179,49 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-8 px-2"
+                className="h-8 px-2 flex-shrink-0"
                 onClick={insertLink}
                 title="Insert Link"
                 disabled={disabled}
               >
                 <Link className="h-4 w-4 mr-1" />
-                <span className="text-xs">Link</span>
+                <span className="text-xs hidden sm:inline">Link</span>
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 flex-shrink-0"
+                onClick={insertImage}
+                title="Insert Image"
+                disabled={disabled}
+              >
+                <Image className="h-4 w-4 mr-1" />
+                <span className="text-xs hidden sm:inline">Image</span>
               </Button>
             </>
           )}
         </div>
       )}
+      
+      {/* Hidden file input for image uploads */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImageUpload}
+        className="hidden"
+      />
 
       {/* Editor */}
       <div
         ref={editorRef}
         contentEditable={!disabled}
         className={cn(
-          "w-full p-3 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 min-h-[200px] prose prose-sm max-w-none",
+          "w-full p-3 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 min-h-[200px] prose prose-sm max-w-none overflow-auto",
           disabled && "opacity-50 cursor-not-allowed"
         )}
-        style={{ height: height - (hideToolbar ? 0 : 48) }}
+        style={{ height: height - (hideToolbar ? 0 : 48), maxWidth: '100%' }}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         data-placeholder={placeholder}
@@ -181,6 +238,17 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         }
         [contenteditable] {
           line-height: 1.6;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+        }
+        [contenteditable] * {
+          max-width: 100%;
+        }
+        [contenteditable] img {
+          max-width: 100% !important;
+          height: auto !important;
+          display: block;
+          margin: 10px 0;
         }
         [contenteditable] h1, 
         [contenteditable] h2, 
@@ -207,9 +275,17 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         [contenteditable] a {
           color: hsl(var(--primary));
           text-decoration: underline;
+          word-break: break-all;
         }
         [contenteditable] br {
           line-height: 1.6;
+        }
+        
+        /* Mobile responsive styles */
+        @media (max-width: 640px) {
+          [contenteditable] {
+            font-size: 16px; /* Prevents zoom on iOS */
+          }
         }
       `}</style>
     </div>
