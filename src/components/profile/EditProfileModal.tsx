@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Upload, X } from 'lucide-react';
 
 interface EditProfileModalProps {
   open: boolean;
@@ -30,12 +31,33 @@ export const EditProfileModal = ({ open, onOpenChange, profile }: EditProfileMod
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     username: profile?.username || '',
     bio: profile?.bio || '',
     avatar_url: profile?.avatar_url || '',
   });
+  
+  const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const uploadAvatar = async (file: File): Promise<string> => {
+    if (!user?.id) throw new Error('User not authenticated');
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+    const filePath = `avatars/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+    return data.publicUrl;
+  };
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -54,6 +76,7 @@ export const EditProfileModal = ({ open, onOpenChange, profile }: EditProfileMod
         title: 'Profile updated',
         description: 'Your profile has been successfully updated.',
       });
+      setPreviewUrl(null);
       onOpenChange(false);
     },
     onError: (error) => {
@@ -65,6 +88,67 @@ export const EditProfileModal = ({ open, onOpenChange, profile }: EditProfileMod
       console.error('Profile update error:', error);
     },
   });
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please select an image file.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Please select an image smaller than 5MB.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreviewUrl(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload file
+    setUploading(true);
+    try {
+      const avatarUrl = await uploadAvatar(file);
+      setFormData({ ...formData, avatar_url: avatarUrl });
+      toast({
+        title: 'Avatar uploaded',
+        description: 'Your avatar has been uploaded successfully.',
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: 'Upload failed',
+        description: 'Failed to upload avatar. Please try again.',
+        variant: 'destructive',
+      });
+      setPreviewUrl(null);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    setFormData({ ...formData, avatar_url: '' });
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +163,10 @@ export const EditProfileModal = ({ open, onOpenChange, profile }: EditProfileMod
         bio: profile?.bio || '',
         avatar_url: profile?.avatar_url || '',
       });
+      setPreviewUrl(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
     onOpenChange(newOpen);
   };
@@ -117,17 +205,62 @@ export const EditProfileModal = ({ open, onOpenChange, profile }: EditProfileMod
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="avatar_url">Avatar URL</Label>
-            <Input
-              id="avatar_url"
-              type="url"
-              value={formData.avatar_url}
-              onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
-              placeholder="https://example.com/avatar.jpg"
+            <Label>Avatar</Label>
+            <div className="flex items-center space-x-4">
+              {/* Avatar Preview */}
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                {previewUrl || formData.avatar_url ? (
+                  <img 
+                    src={previewUrl || formData.avatar_url} 
+                    alt="Avatar preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-muted-foreground text-sm">No avatar</div>
+                )}
+              </div>
+              
+              {/* Upload Controls */}
+              <div className="flex-1 space-y-2">
+                <div className="flex space-x-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {uploading ? 'Uploading...' : 'Upload Image'}
+                  </Button>
+                  
+                  {(formData.avatar_url || previewUrl) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRemoveAvatar}
+                      disabled={uploading}
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Remove
+                    </Button>
+                  )}
+                </div>
+                
+                <p className="text-xs text-muted-foreground">
+                  Upload an image file (max 5MB). Supports JPG, PNG, GIF, etc.
+                </p>
+              </div>
+            </div>
+            
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
             />
-            <p className="text-xs text-muted-foreground">
-              Provide a direct link to your profile picture
-            </p>
           </div>
           
           <DialogFooter>
