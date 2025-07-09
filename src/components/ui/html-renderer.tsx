@@ -11,15 +11,45 @@ export const HTMLRenderer: React.FC<HTMLRendererProps> = ({
   content,
   className,
 }) => {
-  // Sanitize HTML content to prevent XSS attacks
-  const sanitizedContent = DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'a', 'code', 'pre', 'div', 'span'],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'style', 'class', 'id'],
-    ALLOW_DATA_ATTR: false,
-    ALLOW_UNKNOWN_PROTOCOLS: false,
-    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
-    FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input']
-  });
+  // Create a custom DOMPurify instance with CSS-friendly configuration
+  const sanitizedContent = React.useMemo(() => {
+    // Add a hook to preserve all CSS properties while blocking dangerous ones
+    DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
+      if (data.attrName === 'style') {
+        // Block dangerous CSS properties but allow others
+        const dangerousPatterns = [
+          /expression\s*\(/i,
+          /javascript:/i,
+          /data:/i,
+          /vbscript:/i,
+          /behavior\s*:/i,
+          /-moz-binding/i
+        ];
+        
+        const hasDangerousContent = dangerousPatterns.some(pattern => 
+          pattern.test(data.attrValue)
+        );
+        
+        if (hasDangerousContent) {
+          data.keepAttr = false;
+        }
+      }
+    });
+
+    const result = DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'a', 'code', 'pre', 'div', 'span'],
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'style', 'class', 'id'],
+      ALLOW_DATA_ATTR: false,
+      ALLOW_UNKNOWN_PROTOCOLS: false,
+      FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
+      FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input']
+    });
+
+    // Clean up the hook after use
+    DOMPurify.removeHook('uponSanitizeAttribute');
+    
+    return result;
+  }, [content]);
 
   return (
     <div 
