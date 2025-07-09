@@ -121,7 +121,10 @@ export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
                 <span className="font-medium">
                   {topic.username || 'Anonymous User'}
                 </span>
-                <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
+                <span>Created {formatDistanceToNow(new Date(topic.created_at))} ago</span>
+                {topic.last_reply_at && topic.reply_count > 0 && (
+                  <span>• Last reply {formatDistanceToNow(new Date(topic.last_reply_at))} ago</span>
+                )}
                 <Link 
                   to={topic.category_slug && topic.slug ? `/${topic.category_slug}/${topic.slug}` : `/topic/${topic.id}`}
                   className="flex items-center space-x-1 hover:text-primary transition-colors"

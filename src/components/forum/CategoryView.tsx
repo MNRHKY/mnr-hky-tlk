@@ -286,36 +286,36 @@ export const CategoryView = () => {
                              contentType="topic"
                            />
                          </div>
-                         <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1 text-xs sm:text-sm text-gray-500">
-                           <span>by {topic.profiles?.username || 'Anonymous User'}</span>
-                           <span className="hidden sm:inline">•</span>
-                           <span>{formatDistanceToNow(new Date(topic.created_at))} ago</span>
-                         </div>
-                       </div>
-                     </div>
-                     
-                     <div className="flex items-center justify-between sm:justify-end space-x-4 sm:space-x-6 text-xs sm:text-sm text-gray-500 flex-shrink-0">
-                       <div className="text-center">
-                         <div className="flex items-center space-x-1">
-                           <MessageSquare className="h-3 sm:h-4 w-3 sm:w-4" />
-                           <span>{topic.reply_count || 0}</span>
-                         </div>
-                         <span className="text-xs hidden sm:block">replies</span>
-                       </div>
-                       <div className="text-center">
-                         <div className="flex items-center space-x-1">
-                           <User className="h-3 sm:h-4 w-3 sm:w-4" />
-                           <span>{topic.view_count || 0}</span>
-                         </div>
-                         <span className="text-xs hidden sm:block">views</span>
-                       </div>
-                       <div className="text-center hidden sm:block">
-                         <div className="flex items-center space-x-1">
-                           <Clock className="h-4 w-4" />
-                           <span className="whitespace-nowrap">{formatDistanceToNow(new Date(topic.last_reply_at || topic.created_at))} ago</span>
-                         </div>
-                       </div>
-                     </div>
+                          <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1 text-xs sm:text-sm text-gray-500">
+                            <span>by {topic.profiles?.username || 'Anonymous User'}</span>
+                            <span className="hidden sm:inline">•</span>
+                            <span>Created {formatDistanceToNow(new Date(topic.created_at))} ago</span>
+                            {topic.last_reply_at && topic.reply_count > 0 && (
+                              <>
+                                <span>•</span>
+                                <span>Last reply {formatDistanceToNow(new Date(topic.last_reply_at))} ago</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between sm:justify-end space-x-4 sm:space-x-6 text-xs sm:text-sm text-gray-500 flex-shrink-0">
+                        <div className="text-center">
+                          <div className="flex items-center space-x-1">
+                            <MessageSquare className="h-3 sm:h-4 w-3 sm:w-4" />
+                            <span>{topic.reply_count || 0}</span>
+                          </div>
+                          <span className="text-xs hidden sm:block">replies</span>
+                        </div>
+                        <div className="text-center">
+                          <div className="flex items-center space-x-1">
+                            <User className="h-3 sm:h-4 w-3 sm:w-4" />
+                            <span>{topic.view_count || 0}</span>
+                          </div>
+                          <span className="text-xs hidden sm:block">views</span>
+                        </div>
+                      </div>
                    </div>
                 ))}
               </div>
