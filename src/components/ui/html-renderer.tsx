@@ -13,10 +13,12 @@ export const HTMLRenderer: React.FC<HTMLRendererProps> = ({
 }) => {
   // Sanitize HTML content to prevent XSS attacks
   const sanitizedContent = DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'a', 'code', 'pre', 'div'],
-    ALLOWED_ATTR: ['href', 'target', 'rel'],
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'a', 'code', 'pre', 'div', 'span'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'style', 'class', 'id'],
     ALLOW_DATA_ATTR: false,
-    ALLOW_UNKNOWN_PROTOCOLS: false
+    ALLOW_UNKNOWN_PROTOCOLS: false,
+    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
+    FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input']
   });
 
   return (
