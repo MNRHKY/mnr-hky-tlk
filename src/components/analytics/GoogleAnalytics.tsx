@@ -20,13 +20,15 @@ export const GoogleAnalytics = () => {
   useRouteTracking();
 
   useEffect(() => {
-    if (!trackingId || !canLoadAnalytics) {
-      // Clean up existing analytics if consent is withdrawn
-      if (!canLoadAnalytics && window.gtag) {
-        window.gtag('consent', 'update', {
-          analytics_storage: 'denied'
-        });
-      }
+    if (!trackingId) {
+      return;
+    }
+
+    // Handle consent withdrawal
+    if (!canLoadAnalytics && window.gtag) {
+      window.gtag('consent', 'update', {
+        analytics_storage: 'denied'
+      });
       return;
     }
 

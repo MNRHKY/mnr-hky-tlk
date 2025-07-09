@@ -23,18 +23,17 @@ export const CookieConsentBannerImproved: React.FC<CookieConsentBannerProps> = (
           <div className="flex-1">
             <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
-              Help us improve your experience
+              Analytics Active
             </h3>
             <p className="text-sm text-muted-foreground mb-2">
-              We use analytics cookies to understand how you use our site and improve it. 
-              This helps us provide better content and features.
+              We're using analytics to improve your experience by tracking page visits and interactions. 
+              No personal information is collected.
             </p>
             <p className="text-xs text-muted-foreground">
-              <strong>What we track:</strong> Page visits, user interactions, and site performance. 
-              We never track personal information.{' '}
+              You can opt out anytime. Analytics help us understand usage patterns and improve our site.{' '}
               <Button variant="link" className="p-0 h-auto text-xs" asChild>
                 <a href="/privacy" target="_blank" rel="noopener noreferrer">
-                  Learn more
+                  Privacy Policy
                 </a>
               </Button>
             </p>
@@ -46,10 +45,10 @@ export const CookieConsentBannerImproved: React.FC<CookieConsentBannerProps> = (
               Customize
             </Button>
             <Button variant="outline" size="sm" onClick={onRejectAll}>
-              Essential Only
+              Opt Out
             </Button>
-            <Button size="sm" onClick={onAcceptAll} className="bg-primary hover:bg-primary/90">
-              Accept Analytics
+            <Button size="sm" onClick={onClose} className="bg-primary hover:bg-primary/90">
+              Continue
             </Button>
           </div>
         </div>

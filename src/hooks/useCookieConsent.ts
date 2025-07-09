@@ -11,7 +11,7 @@ import {
 } from '@/utils/cookieConsent';
 
 export const useCookieConsent = () => {
-  const [consent, setConsent] = useState<CookieConsent | null>(getCookieConsent);
+  const [consent, setConsent] = useState<CookieConsent | null>(getCookieConsent() || defaultConsent);
   const [showBanner, setShowBanner] = useState(!getCookieConsent());
 
   useEffect(() => {

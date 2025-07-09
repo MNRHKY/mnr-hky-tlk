@@ -13,7 +13,7 @@ const CONSENT_VERSION = '1.0';
 
 export const defaultConsent: CookieConsent = {
   essential: true, // Always true - required for basic functionality
-  analytics: false,
+  analytics: true, // Default to true for opt-out model
   functional: false,
   timestamp: Date.now(),
   version: CONSENT_VERSION,
@@ -63,8 +63,8 @@ export const clearCookieConsent = (): void => {
 };
 
 export const hasConsent = (category: CookieCategory): boolean => {
-  const consent = getCookieConsent();
-  return consent?.[category] ?? false;
+  const consent = getCookieConsent() || defaultConsent;
+  return consent[category];
 };
 
 export const acceptAllCookies = (): void => {
