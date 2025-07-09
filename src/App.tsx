@@ -32,7 +32,7 @@ import AdminModeration from "./pages/admin/AdminModeration";
 import AdminSpam from "./pages/admin/AdminSpam";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminSEO from "./pages/admin/AdminSEO";
-import { GoogleAnalytics } from "./components/analytics/GoogleAnalytics";
+
 import { AnalyticsProvider } from "./components/analytics/AnalyticsProvider";
 import { HeaderCodeInjector } from "./components/analytics/HeaderCodeInjector";
 import { CookieConsent } from "./components/cookies/CookieConsent";
@@ -56,7 +56,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <AnalyticsProvider>
-                <GoogleAnalytics />
+                
                 <CookieDebugPanel />
                 <ScrollToTop />
                 <MetadataProvider>
