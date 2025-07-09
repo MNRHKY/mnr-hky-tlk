@@ -20,26 +20,17 @@ export const GoogleAnalytics = () => {
   useRouteTracking();
 
   useEffect(() => {
-    console.log('=== GoogleAnalytics Debug ===');
-    console.log('trackingId:', trackingId);
-    console.log('canLoadAnalytics:', canLoadAnalytics);
-    console.log('hasConsent(analytics):', hasConsent('analytics'));
-    
     if (!trackingId) {
-      console.log('GA: No tracking ID - exiting');
       return;
     }
 
     // Handle consent withdrawal
     if (!canLoadAnalytics && window.gtag) {
-      console.log('GA: Consent withdrawn - updating analytics_storage to denied');
       window.gtag('consent', 'update', {
         analytics_storage: 'denied'
       });
       return;
     }
-
-    console.log('GA: Loading Google Analytics script...');
 
     // Remove existing GA scripts to avoid conflicts
     const existingScript = document.querySelector('script[src*="googletagmanager.com/gtag/js"]');
@@ -51,7 +42,6 @@ export const GoogleAnalytics = () => {
     const script = document.createElement('script');
     script.async = true;
     script.src = `https://www.googletagmanager.com/gtag/js?id=${trackingId}`;
-    console.log('GA: Adding script with src:', script.src);
     document.head.appendChild(script);
 
     // Initialize gtag with enhanced configuration
@@ -61,18 +51,15 @@ export const GoogleAnalytics = () => {
     }
     window.gtag = gtag;
 
-    console.log('GA: Initializing gtag with timestamp:', new Date());
     gtag('js', new Date());
     
     // Configure consent and custom dimensions
-    console.log('GA: Setting up consent and configuration');
     gtag('consent', 'default', {
       analytics_storage: 'granted',
       ad_storage: 'denied' // Comply with privacy requirements
     });
 
     // Enhanced configuration with custom dimensions
-    console.log('GA: Configuring tracking with ID:', trackingId);
     gtag('config', trackingId, {
       // Basic page tracking
       page_title: document.title,
@@ -91,8 +78,6 @@ export const GoogleAnalytics = () => {
       // Enhanced ecommerce (for future use)
       allow_enhanced_conversions: true
     });
-
-    console.log('GA: Configuration complete - Analytics should now be active');
 
     // Track JavaScript errors
     window.addEventListener('error', (event) => {
