@@ -9,10 +9,8 @@ export const CookieDebugPanel: React.FC = () => {
   const { getSetting } = useForumSettings();
   const trackingId = getSetting('google_analytics_id', '');
 
-  // Only show in development or for debugging
-  if (process.env.NODE_ENV === 'production') {
-    return null;
-  }
+  // Hide in production
+  return null;
 
   return (
     <Card className="fixed top-4 right-4 p-3 bg-muted/90 backdrop-blur-sm border z-50 max-w-sm">
