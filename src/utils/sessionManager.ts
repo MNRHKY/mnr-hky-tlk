@@ -123,9 +123,9 @@ class SessionManager {
       // Use enhanced rate limiting
       const { data, error } = await supabase.rpc('check_enhanced_anonymous_rate_limit', {
         user_ip: await this.getClientIP(),
-        session_id: this.sessionId,
-        fingerprint_hash: null, // Will be handled by the enhanced system
-        content_type: 'post'
+        p_session_id: this.sessionId,
+        p_fingerprint_hash: null, // Will be handled by the enhanced system
+        p_content_type: 'post'
       });
 
       if (error) {
@@ -170,9 +170,9 @@ class SessionManager {
       
       await supabase.rpc('record_enhanced_anonymous_activity', {
         user_ip: clientIP,
-        session_id: this.sessionId,
-        fingerprint_hash: null,
-        content_type: 'post'
+        p_session_id: this.sessionId,
+        p_fingerprint_hash: null,
+        p_content_type: 'post'
       });
       
       console.log('Activity recorded successfully');

@@ -834,9 +834,9 @@ export type Database = {
       check_enhanced_anonymous_rate_limit: {
         Args: {
           user_ip: unknown
-          session_id: string
-          fingerprint_hash?: string
-          content_type?: string
+          p_session_id: string
+          p_fingerprint_hash?: string
+          p_content_type?: string
         }
         Returns: Json
       }
@@ -1001,9 +1001,9 @@ export type Database = {
       record_enhanced_anonymous_activity: {
         Args: {
           user_ip: unknown
-          session_id: string
-          fingerprint_hash?: string
-          content_type?: string
+          p_session_id: string
+          p_fingerprint_hash?: string
+          p_content_type?: string
         }
         Returns: undefined
       }

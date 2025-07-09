@@ -71,9 +71,9 @@ export const useEnhancedSpamDetection = () => {
 
       const { data, error } = await supabase.rpc('check_enhanced_anonymous_rate_limit', {
         user_ip: userIP,
-        session_id: sessionId,
-        fingerprint_hash: fingerprint,
-        content_type: contentType
+        p_session_id: sessionId,
+        p_fingerprint_hash: fingerprint,
+        p_content_type: contentType
       });
 
       if (error) {
@@ -148,9 +148,9 @@ export const useEnhancedSpamDetection = () => {
 
       await supabase.rpc('record_enhanced_anonymous_activity', {
         user_ip: userIP,
-        session_id: sessionId,
-        fingerprint_hash: fingerprint,
-        content_type: contentType
+        p_session_id: sessionId,
+        p_fingerprint_hash: fingerprint,
+        p_content_type: contentType
       });
     } catch (error) {
       console.error('Error recording activity:', error);
