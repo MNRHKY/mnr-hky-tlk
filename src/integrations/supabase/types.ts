@@ -46,28 +46,46 @@ export type Database = {
       }
       anonymous_post_tracking: {
         Row: {
+          block_expires_at: string | null
+          block_reason: string | null
           created_at: string | null
+          fingerprint_hash: string | null
+          first_post_at: string | null
           id: string
           ip_address: unknown
+          is_blocked: boolean | null
           last_post_at: string | null
           post_count: number | null
           session_id: string
+          topic_count: number | null
         }
         Insert: {
+          block_expires_at?: string | null
+          block_reason?: string | null
           created_at?: string | null
+          fingerprint_hash?: string | null
+          first_post_at?: string | null
           id?: string
           ip_address: unknown
+          is_blocked?: boolean | null
           last_post_at?: string | null
           post_count?: number | null
           session_id: string
+          topic_count?: number | null
         }
         Update: {
+          block_expires_at?: string | null
+          block_reason?: string | null
           created_at?: string | null
+          fingerprint_hash?: string | null
+          first_post_at?: string | null
           id?: string
           ip_address?: unknown
+          is_blocked?: boolean | null
           last_post_at?: string | null
           post_count?: number | null
           session_id?: string
+          topic_count?: number | null
         }
         Relationships: []
       }
@@ -220,6 +238,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      content_analysis: {
+        Row: {
+          confidence_score: number | null
+          content_hash: string
+          content_type: string
+          created_at: string | null
+          id: string
+          is_spam: boolean | null
+          similarity_score: number | null
+          spam_indicators: Json | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          content_hash: string
+          content_type: string
+          created_at?: string | null
+          id?: string
+          is_spam?: boolean | null
+          similarity_score?: number | null
+          spam_indicators?: Json | null
+        }
+        Update: {
+          confidence_score?: number | null
+          content_hash?: string
+          content_type?: string
+          created_at?: string | null
+          id?: string
+          is_spam?: boolean | null
+          similarity_score?: number | null
+          spam_indicators?: Json | null
+        }
+        Relationships: []
       }
       forum_settings: {
         Row: {
@@ -470,6 +521,84 @@ export type Database = {
           },
         ]
       }
+      spam_detection_config: {
+        Row: {
+          config_key: string
+          config_value: Json
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          config_key: string
+          config_value: Json
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          config_key?: string
+          config_value?: Json
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      spam_reports: {
+        Row: {
+          admin_notes: string | null
+          automated_detection: boolean | null
+          confidence_score: number | null
+          content_id: string
+          content_type: string
+          created_at: string | null
+          id: string
+          report_reason: string
+          reporter_id: string | null
+          reporter_ip: unknown | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          automated_detection?: boolean | null
+          confidence_score?: number | null
+          content_id: string
+          content_type: string
+          created_at?: string | null
+          id?: string
+          report_reason: string
+          reporter_id?: string | null
+          reporter_ip?: unknown | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          automated_detection?: boolean | null
+          confidence_score?: number | null
+          content_id?: string
+          content_type?: string
+          created_at?: string | null
+          id?: string
+          report_reason?: string
+          reporter_id?: string | null
+          reporter_ip?: unknown | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       temporary_users: {
         Row: {
           created_at: string
@@ -625,6 +754,45 @@ export type Database = {
           },
         ]
       }
+      user_behavior_patterns: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_activity: string | null
+          posting_velocity: number | null
+          rapid_posting_count: number | null
+          risk_score: number | null
+          session_duration: unknown | null
+          suspicious_patterns: Json | null
+          user_identifier: string
+          user_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_activity?: string | null
+          posting_velocity?: number | null
+          rapid_posting_count?: number | null
+          risk_score?: number | null
+          session_duration?: unknown | null
+          suspicious_patterns?: Json | null
+          user_identifier: string
+          user_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_activity?: string | null
+          posting_velocity?: number | null
+          rapid_posting_count?: number | null
+          risk_score?: number | null
+          session_duration?: unknown | null
+          suspicious_patterns?: Json | null
+          user_identifier?: string
+          user_type?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -651,6 +819,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      analyze_content_for_spam: {
+        Args: { content_text: string; content_type?: string }
+        Returns: Json
+      }
       check_anonymous_rate_limit: {
         Args: { user_ip: unknown; session_id: string }
         Returns: boolean
@@ -658,6 +830,15 @@ export type Database = {
       check_anonymous_vote_limit: {
         Args: { user_ip: unknown; session_id: string }
         Returns: boolean
+      }
+      check_enhanced_anonymous_rate_limit: {
+        Args: {
+          user_ip: unknown
+          session_id: string
+          fingerprint_hash?: string
+          content_type?: string
+        }
+        Returns: Json
       }
       check_user_rate_limit: {
         Args: { user_id: string }
@@ -668,6 +849,10 @@ export type Database = {
         Returns: undefined
       }
       cleanup_old_anonymous_tracking: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      cleanup_spam_detection_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
@@ -811,6 +996,15 @@ export type Database = {
       }
       record_anonymous_post: {
         Args: { user_ip: unknown; session_id: string }
+        Returns: undefined
+      }
+      record_enhanced_anonymous_activity: {
+        Args: {
+          user_ip: unknown
+          session_id: string
+          fingerprint_hash?: string
+          content_type?: string
+        }
         Returns: undefined
       }
       reverse_text_content: {

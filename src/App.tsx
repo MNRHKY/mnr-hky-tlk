@@ -29,6 +29,7 @@ import AdminPage from "./pages/admin/AdminPage";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminContent from "./pages/admin/AdminContent";
 import AdminModeration from "./pages/admin/AdminModeration";
+import AdminSpam from "./pages/admin/AdminSpam";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminSEO from "./pages/admin/AdminSEO";
 import { GoogleAnalytics } from "./components/analytics/GoogleAnalytics";
@@ -68,6 +69,7 @@ const App = () => (
                     <Route path="users" element={<AdminUsers />} />
                     <Route path="content" element={<AdminContent />} />
                     <Route path="moderation" element={<AdminModeration />} />
+                    <Route path="spam" element={<AdminSpam />} />
                     <Route path="seo" element={<AdminSEO />} />
                     <Route path="settings" element={<AdminSettings />} />
                   </Route>

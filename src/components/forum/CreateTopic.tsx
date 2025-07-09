@@ -9,6 +9,7 @@ import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateTopic } from '@/hooks/useCreateTopic';
 import { useTempUser } from '@/hooks/useTempUser';
+import { useEnhancedSpamDetection } from '@/hooks/useEnhancedSpamDetection';
 import { SmartCategorySelector } from './SmartCategorySelector';
 import { toast } from '@/hooks/use-toast';
 
@@ -25,6 +26,7 @@ export const CreateTopic = () => {
 
   const createTopicMutation = useCreateTopic();
   const tempUser = useTempUser();
+  const spamDetection = useEnhancedSpamDetection();
 
   // Pre-select category if passed in URL
   useEffect(() => {
@@ -45,17 +47,32 @@ export const CreateTopic = () => {
       return;
     }
 
-    // Validate content for anonymous users
+    // Enhanced validation for anonymous users
     if (!user) {
-      if (!tempUser.canPost) {
+      // Check rate limits with enhanced system
+      const rateLimitCheck = await spamDetection.checkRateLimit(tempUser.getTempUserId() || '', 'topic');
+      if (!rateLimitCheck.allowed) {
         toast({
-          title: "Rate limit exceeded",
-          description: "You've reached the limit of 5 posts per 12 hours for anonymous users",
+          title: "Posting Restricted",
+          description: rateLimitCheck.message || "Rate limit exceeded",
           variant: "destructive",
         });
         return;
       }
 
+      // Analyze content for spam
+      const contentAnalysis = await spamDetection.analyzeContent(formData.content, 'topic');
+      if (!contentAnalysis.allowed) {
+        setContentErrors([contentAnalysis.message || 'Content flagged as spam']);
+        toast({
+          title: "Content Blocked",
+          description: contentAnalysis.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Legacy validation as fallback
       const validation = tempUser.validateContent(formData.content);
       if (!validation.isValid) {
         setContentErrors(validation.errors);

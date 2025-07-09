@@ -120,37 +120,24 @@ class SessionManager {
     }
 
     try {
-      // Get client IP for anonymous rate limiting
-      const clientIP = await this.getClientIP();
-      
-      const { data, error } = await supabase.rpc('check_anonymous_rate_limit', {
-        user_ip: clientIP,
-        session_id: this.sessionId
+      // Use enhanced rate limiting
+      const { data, error } = await supabase.rpc('check_enhanced_anonymous_rate_limit', {
+        user_ip: await this.getClientIP(),
+        session_id: this.sessionId,
+        fingerprint_hash: null, // Will be handled by the enhanced system
+        content_type: 'post'
       });
 
       if (error) {
-        console.error('Error checking anonymous rate limit:', error);
+        console.error('Error checking enhanced rate limit:', error);
         return { canPost: false, remainingPosts: 0 };
       }
 
-      const canPost = data as boolean;
-      
-      // Get current post count from tracking table
-      const { data: trackingData, error: trackingError } = await supabase
-        .from('anonymous_post_tracking')
-        .select('post_count')
-        .or(`ip_address.eq.${clientIP},session_id.eq.${this.sessionId}`)
-        .gte('created_at', new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString())
-        .maybeSingle();
-
-      if (trackingError) {
-        console.error('Error fetching tracking data:', trackingError);
-      }
-
-      const currentCount = trackingData?.post_count || 0;
-      const remainingPosts = Math.max(0, 5 - currentCount);
-
-      return { canPost, remainingPosts };
+      const result = data as any;
+      return { 
+        canPost: result.allowed || false, 
+        remainingPosts: result.remaining_posts_day || 0 
+      };
     } catch (error) {
       console.error('Failed to check rate limit:', error);
       return { canPost: false, remainingPosts: 0 };
@@ -179,16 +166,18 @@ class SessionManager {
 
     try {
       const clientIP = await this.getClientIP();
-      console.log('Recording anonymous post for IP:', clientIP, 'Session:', this.sessionId);
+      console.log('Recording enhanced anonymous activity for IP:', clientIP, 'Session:', this.sessionId);
       
-      await supabase.rpc('record_anonymous_post', {
+      await supabase.rpc('record_enhanced_anonymous_activity', {
         user_ip: clientIP,
-        session_id: this.sessionId
+        session_id: this.sessionId,
+        fingerprint_hash: null,
+        content_type: 'post'
       });
       
-      console.log('Post recorded successfully');
+      console.log('Activity recorded successfully');
     } catch (error) {
-      console.error('Error recording anonymous post:', error);
+      console.error('Error recording anonymous activity:', error);
     }
   }
 }
