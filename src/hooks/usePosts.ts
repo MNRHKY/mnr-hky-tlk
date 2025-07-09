@@ -15,6 +15,7 @@ export interface Post {
     username: string;
     avatar_url: string | null;
   };
+  parent_post?: Post;
 }
 
 export const usePosts = (topicId: string) => {
@@ -40,23 +41,47 @@ export const usePosts = (topicId: string) => {
         return [];
       }
 
-      // Get unique author IDs
+      // Get unique author IDs (including from posts that might be parents)
       const authorIds = [...new Set(posts.map(p => p.author_id).filter(Boolean))];
+      
+      // Get unique parent post IDs that need to be fetched
+      const parentPostIds = [...new Set(posts.map(p => p.parent_post_id).filter(Boolean))];
+      
+      // Fetch parent posts if any exist
+      let parentPosts = [];
+      if (parentPostIds.length > 0) {
+        const { data: parentPostsData, error: parentError } = await supabase
+          .from('posts')
+          .select('*')
+          .in('id', parentPostIds);
+        
+        if (parentError) {
+          console.error('Error fetching parent posts:', parentError);
+        } else {
+          parentPosts = parentPostsData || [];
+          // Add parent post authors to authorIds for user data fetching
+          const parentAuthorIds = parentPosts.map(p => p.author_id).filter(Boolean);
+          authorIds.push(...parentAuthorIds);
+        }
+      }
+      
+      // Remove duplicates from authorIds
+      const uniqueAuthorIds = [...new Set(authorIds)];
       
       // Fetch profile data for authenticated users
       const { data: profiles } = await supabase
         .from('profiles')
         .select('id, username, avatar_url')
-        .in('id', authorIds);
+        .in('id', uniqueAuthorIds);
 
       // Fetch temporary user data
       const { data: tempUsers } = await supabase
         .from('temporary_users')
         .select('id, display_name')
-        .in('id', authorIds);
+        .in('id', uniqueAuthorIds);
 
-      // Enrich posts with user data
-      const enrichedPosts = posts.map(post => {
+      // Helper function to enrich a post with user data
+      const enrichPostWithUserData = (post: any) => {
         if (!post.author_id) {
           return { ...post, profiles: null };
         }
@@ -93,9 +118,30 @@ export const usePosts = (topicId: string) => {
             avatar_url: null
           }
         };
+      };
+
+      // Enrich parent posts with user data
+      const enrichedParentPosts = parentPosts.map(enrichPostWithUserData);
+      
+      // Create a map for quick parent post lookup
+      const parentPostMap = new Map();
+      enrichedParentPosts.forEach(parentPost => {
+        parentPostMap.set(parentPost.id, parentPost);
+      });
+
+      // Enrich posts with user data and parent post information
+      const enrichedPosts = posts.map(post => {
+        const enrichedPost = enrichPostWithUserData(post);
+        
+        // Add parent post if it exists
+        if (post.parent_post_id && parentPostMap.has(post.parent_post_id)) {
+          enrichedPost.parent_post = parentPostMap.get(post.parent_post_id);
+        }
+        
+        return enrichedPost;
       });
       
-      console.log('Posts enriched with user data:', enrichedPosts);
+      console.log('Posts enriched with user data and parent posts:', enrichedPosts);
       return enrichedPosts as Post[];
     },
     enabled: !!topicId,
