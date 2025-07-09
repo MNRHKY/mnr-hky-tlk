@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CookieConsentBanner } from './CookieConsentBanner';
+import { CookieConsentBannerImproved } from './CookieConsentBannerImproved';
 import { CookiePreferencesModal } from './CookiePreferencesModal';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 
@@ -21,7 +21,7 @@ export const CookieConsent: React.FC = () => {
 
   return (
     <>
-      <CookieConsentBanner
+      <CookieConsentBannerImproved
         onAcceptAll={acceptAll}
         onRejectAll={rejectAll}
         onShowSettings={() => setShowPreferences(true)}

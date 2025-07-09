@@ -32,12 +32,14 @@ import AdminModeration from "./pages/admin/AdminModeration";
 import AdminSpam from "./pages/admin/AdminSpam";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminSEO from "./pages/admin/AdminSEO";
-import { GoogleAnalytics } from "./components/analytics/GoogleAnalytics";
+import { GoogleAnalyticsFixed } from "./components/analytics/GoogleAnalyticsFixed";
 import { AnalyticsProvider } from "./components/analytics/AnalyticsProvider";
 import { HeaderCodeInjector } from "./components/analytics/HeaderCodeInjector";
 import { CookieConsent } from "./components/cookies/CookieConsent";
+import { CookieDebugPanel } from "./components/cookies/CookieDebugPanel";
 import { MaintenanceWrapper } from "./components/MaintenanceWrapper";
 import { StickyBanner } from "./components/StickyBanner";
+import { AdsTxt } from "./pages/AdsTxt";
 
 const queryClient = new QueryClient();
 
@@ -54,11 +56,15 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <AnalyticsProvider>
-                <GoogleAnalytics />
+                <GoogleAnalyticsFixed />
+                <CookieDebugPanel />
                 <ScrollToTop />
                 <MetadataProvider>
                   <MaintenanceWrapper>
                 <Routes>
+                  {/* Special routes */}
+                  <Route path="/ads.txt" element={<AdsTxt />} />
+                  
                   {/* Authentication routes - standalone pages */}
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />

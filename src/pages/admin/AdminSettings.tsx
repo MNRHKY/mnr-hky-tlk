@@ -12,6 +12,7 @@ import { useForumSettings } from '@/hooks/useForumSettings';
 import { useEnhancedForumStats } from '@/hooks/useEnhancedForumStats';
 import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
 import { Save, Settings, Users, Shield, Database, BarChart3, Eye, TrendingUp, Calendar, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { AnalyticsSettings } from '@/components/admin/AnalyticsSettings';
 
 const AdminSettings = () => {
   const { toast } = useToast();
@@ -122,7 +123,7 @@ const AdminSettings = () => {
       </div>
 
       <Tabs defaultValue="general" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             General
@@ -134,6 +135,10 @@ const AdminSettings = () => {
           <TabsTrigger value="technical" className="flex items-center gap-2">
             <Database className="h-4 w-4" />
             Technical
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Analytics
           </TabsTrigger>
           <TabsTrigger value="appearance" className="flex items-center gap-2">
             <Eye className="h-4 w-4" />
@@ -680,6 +685,11 @@ const AdminSettings = () => {
               </Card>
             )}
           </div>
+        </TabsContent>
+
+        {/* Analytics Settings */}
+        <TabsContent value="analytics">
+          <AnalyticsSettings />
         </TabsContent>
 
         {/* System Settings */}
