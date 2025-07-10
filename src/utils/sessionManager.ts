@@ -114,18 +114,21 @@ class SessionManager {
     localStorage.removeItem('temp_session_expiry');
   }
 
-  async checkRateLimit(): Promise<{ canPost: boolean; remainingPosts: number }> {
+  async checkRateLimit(contentType: 'post' | 'topic' = 'post'): Promise<{ canPost: boolean; remainingPosts: number }> {
     if (!this.tempUserId || !this.sessionId) {
+      console.log('DEBUG SESSION: No temp user ID or session ID available');
       return { canPost: false, remainingPosts: 0 };
     }
 
     try {
+      console.log('DEBUG SESSION: Checking rate limit for', contentType, 'with session:', this.sessionId);
+      
       // Use enhanced rate limiting
       const { data, error } = await supabase.rpc('check_enhanced_anonymous_rate_limit', {
         user_ip: await this.getClientIP(),
         p_session_id: this.sessionId,
         p_fingerprint_hash: null, // Will be handled by the enhanced system
-        p_content_type: 'post'
+        p_content_type: contentType
       });
 
       if (error) {
@@ -134,9 +137,11 @@ class SessionManager {
       }
 
       const result = data as any;
+      console.log('DEBUG SESSION: Rate limit result:', result);
+      
       return { 
         canPost: result.allowed || false, 
-        remainingPosts: result.remaining_posts_day || 0 
+        remainingPosts: contentType === 'topic' ? (result.remaining_topics_day || 0) : (result.remaining_posts_day || 0)
       };
     } catch (error) {
       console.error('Failed to check rate limit:', error);
@@ -158,7 +163,7 @@ class SessionManager {
     }
   }
 
-  async recordPost(): Promise<void> {
+  async recordPost(contentType: 'post' | 'topic' = 'post'): Promise<void> {
     if (!this.sessionId) {
       console.error('No session ID available for recording post');
       return;
@@ -166,13 +171,13 @@ class SessionManager {
 
     try {
       const clientIP = await this.getClientIP();
-      console.log('Recording enhanced anonymous activity for IP:', clientIP, 'Session:', this.sessionId);
+      console.log('Recording enhanced anonymous activity for IP:', clientIP, 'Session:', this.sessionId, 'Type:', contentType);
       
       await supabase.rpc('record_enhanced_anonymous_activity', {
         user_ip: clientIP,
         p_session_id: this.sessionId,
         p_fingerprint_hash: null,
-        p_content_type: 'post'
+        p_content_type: contentType
       });
       
       console.log('Activity recorded successfully');

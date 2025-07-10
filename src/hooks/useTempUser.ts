@@ -31,8 +31,8 @@ export const useTempUser = () => {
       // Get temp user data
       const tempUser = await sessionManager.getTempUserData();
       
-      // Check rate limit
-      const { canPost, remainingPosts } = await sessionManager.checkRateLimit();
+      // Check rate limit for posts by default
+      const { canPost, remainingPosts } = await sessionManager.checkRateLimit('post');
       
       setState({
         tempUser,
@@ -51,9 +51,9 @@ export const useTempUser = () => {
     }
   };
 
-  const refreshRateLimit = async () => {
+  const refreshRateLimit = async (contentType: 'post' | 'topic' = 'post') => {
     try {
-      const { canPost, remainingPosts } = await sessionManager.checkRateLimit();
+      const { canPost, remainingPosts } = await sessionManager.checkRateLimit(contentType);
       setState(prev => ({ ...prev, canPost, remainingPosts }));
     } catch (error) {
       console.error('Error refreshing rate limit:', error);
@@ -68,8 +68,8 @@ export const useTempUser = () => {
     return sessionManager.getTempUserId();
   };
 
-  const recordPost = async () => {
-    await sessionManager.recordPost();
+  const recordPost = async (contentType: 'post' | 'topic' = 'post') => {
+    await sessionManager.recordPost(contentType);
   };
 
   return {

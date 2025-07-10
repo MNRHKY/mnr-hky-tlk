@@ -112,8 +112,14 @@ export const CreateTopic = () => {
 
       // Record post and refresh rate limit for anonymous users
       if (!user) {
-        await tempUser.recordPost();
-        await tempUser.refreshRateLimit();
+        await tempUser.recordPost('topic');
+        await tempUser.refreshRateLimit('topic');
+        
+        // Also record activity in enhanced system
+        const tempUserId = tempUser.getTempUserId();
+        if (tempUserId) {
+          await spamDetection.recordActivity(tempUserId, 'topic');
+        }
       }
 
       toast({
