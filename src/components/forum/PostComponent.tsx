@@ -191,9 +191,15 @@ export const PostComponent: React.FC<PostComponentProps> = ({
                     <span>{formatDistanceToNow(new Date(post.parent_post.created_at))} ago</span>
                   </div>
                   <div className="text-sm text-muted-foreground bg-background/50 rounded p-2 border-l-2 border-muted">
-                    <HTMLRenderer 
-                      content={post.parent_post.content} 
-                    />
+                    {post.parent_post.moderation_status === 'approved' ? (
+                      <HTMLRenderer 
+                        content={post.parent_post.content} 
+                      />
+                    ) : (
+                      <div className="italic text-muted-foreground">
+                        [This content is under review and temporarily unavailable]
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
