@@ -42,6 +42,7 @@ import { CookieDebugPanel } from "./components/cookies/CookieDebugPanel";
 import { MaintenanceWrapper } from "./components/MaintenanceWrapper";
 import { StickyBanner } from "./components/StickyBanner";
 import { AdsTxt } from "./pages/AdsTxt";
+import { IPTrackingWrapper } from "./components/IPTrackingWrapper";
 
 const queryClient = new QueryClient();
 
@@ -58,10 +59,10 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <AnalyticsProvider>
-                
-                <CookieDebugPanel />
-                <ScrollToTop />
-                <MetadataProvider>
+                <IPTrackingWrapper>
+                  <CookieDebugPanel />
+                  <ScrollToTop />
+                  <MetadataProvider>
                   <MaintenanceWrapper>
                 <Routes>
                   {/* Special routes */}
@@ -109,6 +110,7 @@ const App = () => (
                   </Routes>
                   </MaintenanceWrapper>
                 </MetadataProvider>
+                </IPTrackingWrapper>
               </AnalyticsProvider>
             </BrowserRouter>
           </OnlineUsersProvider>

@@ -10,6 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { BannedWordsManager } from './BannedWordsManager';
 import { BannedIPsManager } from './BannedIPsManager';
+import { IPActivityDetails } from './IPActivityDetails';
+import { useAllSuspiciousIPs } from '@/hooks/useComprehensiveIPActivity';
 
 interface SpamReport {
   id: string;
@@ -49,6 +51,7 @@ interface AnonymousTracking {
 
 export const SpamManagement = () => {
   const [selectedTab, setSelectedTab] = useState('reports');
+  const [selectedIP, setSelectedIP] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch spam reports
@@ -82,43 +85,8 @@ export const SpamManagement = () => {
     }
   });
 
-  // Fetch suspicious activity including shadow-banned users
-  const { data: suspiciousActivity, isLoading: activityLoading } = useQuery({
-    queryKey: ['suspicious-activity'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('anonymous_post_tracking')
-        .select(`
-          *,
-          banned_ips!inner(
-            id,
-            ban_type,
-            reason,
-            is_active,
-            expires_at
-          )
-        `)
-        .or('is_blocked.eq.true,post_count.gte.3,topic_count.gte.2,banned_ips.ban_type.eq.shadowban')
-        .eq('banned_ips.is_active', true)
-        .order('last_post_at', { ascending: false })
-        .limit(50);
-      
-      if (error) {
-        // Fallback to original query if join fails
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('anonymous_post_tracking')
-          .select('*')
-          .or('is_blocked.eq.true,post_count.gte.3,topic_count.gte.2')
-          .order('last_post_at', { ascending: false })
-          .limit(50);
-        
-        if (fallbackError) throw fallbackError;
-        return fallbackData as AnonymousTracking[];
-      }
-      
-      return data as (AnonymousTracking & { banned_ips?: any })[];
-    }
-  });
+  // Fetch all suspicious IPs with enhanced data
+  const { data: suspiciousIPs, isLoading: activityLoading } = useAllSuspiciousIPs();
 
   // Update spam report status
   const updateReportMutation = useMutation({
@@ -192,7 +160,7 @@ export const SpamManagement = () => {
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="reports" className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4" />
             Reports
@@ -203,7 +171,11 @@ export const SpamManagement = () => {
           </TabsTrigger>
           <TabsTrigger value="activity" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
-            Activity
+            Enhanced Activity
+          </TabsTrigger>
+          <TabsTrigger value="monitoring" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Live Monitor
           </TabsTrigger>
           <TabsTrigger value="banned-words" className="flex items-center gap-2">
             <Filter className="h-4 w-4" />
@@ -335,61 +307,138 @@ export const SpamManagement = () => {
 
         <TabsContent value="activity">
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Suspicious Anonymous Activity</h3>
+            <h3 className="text-lg font-semibold mb-4">Enhanced IP Activity Monitoring</h3>
             {activityLoading ? (
-              <div>Loading activity...</div>
+              <div>Loading comprehensive activity data...</div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>IP Address</TableHead>
+                    <TableHead>Sessions</TableHead>
                     <TableHead>Posts</TableHead>
                     <TableHead>Topics</TableHead>
+                    <TableHead>Reports</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Last Activity</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {suspiciousActivity?.map((activity) => (
-                    <TableRow key={activity.id}>
-                      <TableCell className="font-mono">{activity.ip_address}</TableCell>
-                      <TableCell>{activity.post_count}</TableCell>
-                      <TableCell>{activity.topic_count}</TableCell>
+                  {suspiciousIPs?.map((ip) => (
+                    <TableRow key={`${ip.ip_address}-${ip.id}`}>
+                      <TableCell className="font-mono">{String(ip.ip_address)}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{ip.post_count + ip.topic_count}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className={ip.post_count > 5 ? "text-orange-600 font-medium" : ""}>
+                          {ip.post_count}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className={ip.topic_count > 2 ? "text-orange-600 font-medium" : ""}>
+                          {ip.topic_count}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={ip.banned_ips?.reason?.includes('report') ? "destructive" : "outline"}>
+                          Reports
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          {(activity as any).banned_ips?.ban_type === 'shadowban' && (
+                          {ip.banned_ips?.ban_type === 'shadowban' && (
                             <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
                               Shadow Banned
                             </Badge>
                           )}
-                          {activity.is_blocked ? 
-                            <Badge variant="destructive">Blocked</Badge> : 
+                          {ip.banned_ips?.ban_type === 'permanent' && (
+                            <Badge variant="destructive">Permanent Ban</Badge>
+                          )}
+                          {ip.is_blocked && (
+                            <Badge variant="destructive">Blocked</Badge>
+                          )}
+                          {!ip.is_blocked && !ip.banned_ips && (
                             <Badge variant="secondary">Active</Badge>
-                          }
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        {new Date(activity.last_post_at).toLocaleString()}
+                        {new Date(ip.last_post_at).toLocaleString()}
                       </TableCell>
                       <TableCell>
-                        <Button
-                          size="sm"
-                          variant={activity.is_blocked ? "outline" : "destructive"}
-                          onClick={() => blockUserMutation.mutate({
-                            id: activity.id,
-                            block: !activity.is_blocked,
-                            reason: activity.is_blocked ? undefined : 'Suspicious activity'
-                          })}
-                        >
-                          {activity.is_blocked ? 'Unblock' : 'Block'}
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedIP(String(ip.ip_address))}
+                          >
+                            View Details
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={ip.is_blocked ? "outline" : "destructive"}
+                            onClick={() => blockUserMutation.mutate({
+                              id: ip.id,
+                              block: !ip.is_blocked,
+                              reason: ip.is_blocked ? undefined : 'Enhanced monitoring - suspicious activity'
+                            })}
+                          >
+                            {ip.is_blocked ? 'Unblock' : 'Block'}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             )}
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="monitoring">
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Live IP Monitoring Dashboard</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card className="p-4 border-orange-200 bg-orange-50">
+                <div className="text-2xl font-bold text-orange-600">24.50.34.131</div>
+                <div className="text-sm text-muted-foreground">Primary Target IP</div>
+                <Badge variant="destructive" className="mt-2">Shadow Banned</Badge>
+              </Card>
+              <Card className="p-4">
+                <div className="text-2xl font-bold">{suspiciousIPs?.length || 0}</div>
+                <div className="text-sm text-muted-foreground">Monitored IPs</div>
+              </Card>
+              <Card className="p-4">
+                <div className="text-2xl font-bold text-green-600">Real-time</div>
+                <div className="text-sm text-muted-foreground">Monitoring Active</div>
+              </Card>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="p-4 border rounded-lg bg-muted/50">
+                <h4 className="font-medium mb-2">Quick Actions for Target IP (24.50.34.131)</h4>
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => setSelectedIP('24.50.34.131')}
+                  >
+                    View Full Activity
+                  </Button>
+                  <Button size="sm" variant="destructive" disabled>
+                    Already Shadow Banned
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="text-sm text-muted-foreground p-4 bg-blue-50 rounded-lg">
+                <strong>Monitoring Status:</strong> This dashboard automatically tracks all activity from monitored IPs. 
+                Shadow-banned users will continue to see their posts but they won't appear to other users. 
+                All attempted actions are logged for evidence collection.
+              </div>
+            </div>
           </Card>
         </TabsContent>
 
@@ -401,6 +450,14 @@ export const SpamManagement = () => {
           <BannedIPsManager />
         </TabsContent>
       </Tabs>
+
+      {/* IP Activity Details Modal */}
+      {selectedIP && (
+        <IPActivityDetails 
+          ipAddress={selectedIP} 
+          onClose={() => setSelectedIP(null)} 
+        />
+      )}
     </div>
   );
 };

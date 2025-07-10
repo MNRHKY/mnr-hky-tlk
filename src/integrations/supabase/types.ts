@@ -395,6 +395,105 @@ export type Database = {
         }
         Relationships: []
       }
+      ip_activity_log: {
+        Row: {
+          action_data: Json | null
+          activity_type: string
+          blocked_reason: string | null
+          content_id: string | null
+          content_type: string | null
+          created_at: string | null
+          id: string
+          ip_address: unknown
+          is_blocked: boolean | null
+          session_id: string | null
+        }
+        Insert: {
+          action_data?: Json | null
+          activity_type: string
+          blocked_reason?: string | null
+          content_id?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address: unknown
+          is_blocked?: boolean | null
+          session_id?: string | null
+        }
+        Update: {
+          action_data?: Json | null
+          activity_type?: string
+          blocked_reason?: string | null
+          content_id?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          is_blocked?: boolean | null
+          session_id?: string | null
+        }
+        Relationships: []
+      }
+      ip_visit_tracking: {
+        Row: {
+          category_visited: string | null
+          created_at: string | null
+          id: string
+          ip_address: unknown
+          page_path: string
+          page_title: string | null
+          referrer: string | null
+          search_query: string | null
+          session_id: string | null
+          topic_visited: string | null
+          user_agent: string | null
+          visit_duration: unknown | null
+        }
+        Insert: {
+          category_visited?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address: unknown
+          page_path: string
+          page_title?: string | null
+          referrer?: string | null
+          search_query?: string | null
+          session_id?: string | null
+          topic_visited?: string | null
+          user_agent?: string | null
+          visit_duration?: unknown | null
+        }
+        Update: {
+          category_visited?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          page_path?: string
+          page_title?: string | null
+          referrer?: string | null
+          search_query?: string | null
+          session_id?: string | null
+          topic_visited?: string | null
+          user_agent?: string | null
+          visit_duration?: unknown | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_visit_tracking_category_visited_fkey"
+            columns: ["category_visited"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ip_visit_tracking_topic_visited_fkey"
+            columns: ["topic_visited"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ip_whitelist: {
         Row: {
           bypass_level: string
@@ -1025,6 +1124,22 @@ export type Database = {
           post_count: number
         }[]
       }
+      get_comprehensive_ip_activity: {
+        Args: { target_ip: unknown }
+        Returns: {
+          ip_address: unknown
+          total_sessions: number
+          total_page_visits: number
+          total_posts: number
+          total_topics: number
+          total_reports: number
+          blocked_attempts: number
+          first_seen: string
+          last_seen: string
+          recent_activities: Json
+          ban_status: Json
+        }[]
+      }
       get_enhanced_forum_stats: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1141,6 +1256,33 @@ export type Database = {
           p_target_type: string
           p_target_id: string
           p_target_details?: Json
+        }
+        Returns: undefined
+      }
+      log_ip_activity: {
+        Args: {
+          p_ip_address: unknown
+          p_session_id: string
+          p_activity_type: string
+          p_content_id?: string
+          p_content_type?: string
+          p_action_data?: Json
+          p_is_blocked?: boolean
+          p_blocked_reason?: string
+        }
+        Returns: undefined
+      }
+      log_page_visit: {
+        Args: {
+          p_ip_address: unknown
+          p_session_id: string
+          p_page_path: string
+          p_page_title?: string
+          p_referrer?: string
+          p_user_agent?: string
+          p_search_query?: string
+          p_category_id?: string
+          p_topic_id?: string
         }
         Returns: undefined
       }
