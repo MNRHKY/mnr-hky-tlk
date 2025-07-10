@@ -36,13 +36,10 @@ export const useCreatePost = () => {
       // Get user's IP address for admin tracking
       const userIP = await getUserIPWithFallback();
 
-      // Determine moderation status: anonymous posts require pre-moderation
+      // Determine moderation status: all posts are auto-approved
       let moderationStatus = 'approved';
-      if (!user) {
-        // Anonymous posts always require moderation
-        moderationStatus = 'pending';
-      } else if (topic.categories?.requires_moderation) {
-        // Category-specific moderation requirements
+      if (topic.categories?.requires_moderation) {
+        // Category-specific moderation requirements (currently disabled for all categories)
         moderationStatus = 'pending';
       }
 
