@@ -38,7 +38,7 @@ const CategoryItem = ({ category }: { category: any }) => {
 
 export const ForumSidebarNav = () => {
   const location = useLocation();
-  const { data: categories } = useCategoriesByActivity(null, 3); // Level 3 categories by activity
+  const { data: categories } = useCategoriesByActivity(); // All active categories by activity
   const { data: forumStats } = useEnhancedForumStats();
   
   const isActive = (path: string) => location.pathname === path;
@@ -88,13 +88,15 @@ export const ForumSidebarNav = () => {
           ))}
           
           {categories && categories.length > 8 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full text-muted-foreground hover:text-primary"
-            >
-              View all categories
-            </Button>
+            <Link to="/categories">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-muted-foreground hover:text-primary"
+              >
+                View all categories
+              </Button>
+            </Link>
           )}
         </div>
       </Card>
