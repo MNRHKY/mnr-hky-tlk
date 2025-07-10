@@ -852,6 +852,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_post_references: {
+        Args: { deleted_post_id: string }
+        Returns: undefined
+      }
       cleanup_spam_detection_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
