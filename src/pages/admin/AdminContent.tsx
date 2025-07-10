@@ -13,8 +13,10 @@ import {
 } from '@/components/ui/table';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Eye, MessageSquare, Pin, Lock, Trash2 } from 'lucide-react';
+import { Eye, MessageSquare, Pin, Lock, Trash2, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { MoveTopicModal } from '@/components/admin/MoveTopicModal';
+import { useState } from 'react';
 
 interface ContentItem {
   id: string;
@@ -30,10 +32,23 @@ interface ContentItem {
   category_slug?: string;
   topic_id?: string;
   topic_slug?: string;
+  category_name?: string;
 }
 
 const AdminContent = () => {
   const { toast } = useToast();
+  const [moveTopicModal, setMoveTopicModal] = useState<{
+    isOpen: boolean;
+    topic: {
+      id: string;
+      title: string;
+      currentCategoryId: string;
+      currentCategoryName: string;
+    } | null;
+  }>({
+    isOpen: false,
+    topic: null,
+  });
 
   // Helper function to generate the correct URL for content items
   const getContentUrl = (item: ContentItem) => {
@@ -69,7 +84,8 @@ const AdminContent = () => {
           is_locked,
           author_id,
           categories!inner (
-            slug
+            slug,
+            name
           )
         `)
         .order('created_at', { ascending: false })
@@ -86,14 +102,15 @@ const AdminContent = () => {
           created_at,
           author_id,
           topic_id,
-          topics!inner (
-            id,
-            title,
-            slug,
-            categories!inner (
-              slug
+            topics!inner (
+              id,
+              title,
+              slug,
+              categories!inner (
+                slug,
+                name
+              )
             )
-          )
         `)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -113,6 +130,7 @@ const AdminContent = () => {
           is_locked: topic.is_locked,
           slug: topic.slug,
           category_slug: topic.categories?.slug,
+          category_name: topic.categories?.name,
         })) || []),
         ...(posts?.map(post => ({
           id: post.id,
@@ -123,6 +141,7 @@ const AdminContent = () => {
           topic_id: post.topic_id,
           topic_slug: post.topics?.slug,
           category_slug: post.topics?.categories?.slug,
+          category_name: post.topics?.categories?.name,
         })) || []),
       ];
 
@@ -204,6 +223,27 @@ const AdminContent = () => {
     }
   };
 
+  const handleMoveTopic = (topic: ContentItem) => {
+    if (topic.type !== 'topic') return;
+    
+    setMoveTopicModal({
+      isOpen: true,
+      topic: {
+        id: topic.id,
+        title: topic.title,
+        currentCategoryId: '', // We'll need to get this from the query
+        currentCategoryName: topic.category_name || 'Unknown Category',
+      },
+    });
+  };
+
+  const closeMoveModal = () => {
+    setMoveTopicModal({
+      isOpen: false,
+      topic: null,
+    });
+  };
+
   if (isLoading) {
     return (
       <Card className="p-6">
@@ -227,6 +267,7 @@ const AdminContent = () => {
               <TableRow>
                 <TableHead>Type</TableHead>
                 <TableHead>Title</TableHead>
+                <TableHead>Category</TableHead>
                 <TableHead>Author</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Stats</TableHead>
@@ -249,6 +290,11 @@ const AdminContent = () => {
                     >
                       {item.title}
                     </Link>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
+                      {item.category_name || 'Unknown'}
+                    </span>
                   </TableCell>
                   <TableCell>{item.author}</TableCell>
                   <TableCell>
@@ -289,6 +335,14 @@ const AdminContent = () => {
                           <Button
                             size="sm"
                             variant="outline"
+                            onClick={() => handleMoveTopic(item)}
+                            title="Move to different category"
+                          >
+                            <ArrowRight className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
                             onClick={() => handlePin(item.id, item.is_pinned || false)}
                           >
                             <Pin className="h-3 w-3" />
@@ -318,6 +372,12 @@ const AdminContent = () => {
           </Table>
         </div>
       </Card>
+
+      <MoveTopicModal
+        topic={moveTopicModal.topic}
+        isOpen={moveTopicModal.isOpen}
+        onClose={closeMoveModal}
+      />
     </div>
   );
 };
