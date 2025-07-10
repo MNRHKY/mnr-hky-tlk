@@ -85,26 +85,18 @@ export const CategoryView = () => {
   // Determine which slug to use for the query
   const slugToLookup = subcategorySlug || categorySlug || (!isUUID ? categoryId : '');
   
-  // Only call hooks with valid parameters to prevent errors
+  // Always call both hooks to avoid conditional hook issues
   const { data: categoryBySlug, isLoading: categoryBySlugLoading, error: slugError } = useCategoryBySlug(
     slugToLookup || ''
   );
   const { data: categoryById, isLoading: categoryByIdLoading, error: idError } = useCategoryById(
-    (isUUID && categoryId) ? categoryId : ''
+    isUUID ? categoryId || '' : ''
   );
   
   // Use the appropriate result based on what we think the categoryId is
-  let category, categoryLoading, categoryError;
-  
-  if (isUUID) {
-    category = categoryById;
-    categoryLoading = categoryByIdLoading;
-    categoryError = idError;
-  } else {
-    category = categoryBySlug;
-    categoryLoading = categoryBySlugLoading;
-    categoryError = slugError;
-  }
+  const category = isUUID ? categoryById : categoryBySlug;
+  const categoryLoading = isUUID ? categoryByIdLoading : categoryBySlugLoading;
+  const categoryError = isUUID ? idError : slugError;
   const { data: subcategories, isLoading: subcategoriesLoading } = useCategoriesByActivity(category?.id, category?.level ? category.level + 1 : undefined);
   const { data: topics, isLoading: topicsLoading } = useTopics(category?.id, {
     page: useInfiniteScroll ? 1 : currentPage,
