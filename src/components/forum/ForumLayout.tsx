@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Outlet } from 'react-router-dom';
+import { RedirectHandler } from '@/components/RedirectHandler';
 import { ForumHeader } from './ForumHeader';
 import { ForumSidebarNav } from './ForumSidebarNav';
 import { ForumStats } from './ForumStats';
@@ -13,6 +14,7 @@ export const ForumLayout = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden pb-16">
+      <RedirectHandler />
       <ForumHeader />
       
 

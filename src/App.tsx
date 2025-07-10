@@ -11,6 +11,7 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { OnlineUsersProvider } from "./contexts/OnlineUsersContext";
 import { ForumLayout } from "./components/forum/ForumLayout";
 import { AdminLayout } from "./components/admin/AdminLayout";
+import { RedirectHandler } from "./components/RedirectHandler";
 import { ForumHome } from "./components/forum/ForumHome";
 import { TopicView } from "./components/forum/TopicView";
 import { CategoryView } from "./components/forum/CategoryView";
