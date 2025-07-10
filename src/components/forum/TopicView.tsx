@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { useTopic } from '@/hooks/useTopic';
 import { useTopicByPath } from '@/hooks/useTopicByPath';
 import { usePosts } from '@/hooks/usePosts';
 import { useEditTopic } from '@/hooks/useEditTopic';
+import { usePostPage } from '@/hooks/usePostPage';
 import { ReportModal } from './ReportModal';
 import { PostComponent } from './PostComponent';
 import { InlineReplyForm } from './InlineReplyForm';
@@ -100,44 +101,71 @@ export const TopicView = () => {
 
   const canEditTopic = user && (user.id === topic?.author_id || user.role === 'admin' || user.role === 'moderator');
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setSearchParams(prev => {
       const newParams = new URLSearchParams(prev);
       newParams.set('page', page.toString());
       return newParams;
     });
-  };
+  }, [setSearchParams]);
 
-  // Handle scrolling to specific posts on page load
+  // Extract post ID from hash for cross-page navigation
+  const hashPostId = (() => {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#post-')) {
+      return hash.substring('#post-'.length);
+    }
+    return null;
+  })();
+
+  // Use the hook to find the correct page for the post
+  const { data: postPageInfo, isLoading: isLoadingPostPage } = usePostPage(
+    topic?.id || '', 
+    hashPostId || '', 
+    postsPerPage
+  );
+
+  // Handle cross-page navigation and scrolling to specific posts
   useEffect(() => {
-    if (posts && posts.length > 0) {
-      const hash = window.location.hash;
-      if (hash) {
-        const targetId = hash.substring(1); // Remove the # symbol
-        
-        if (targetId === 'last-reply') {
-          // Scroll to the last reply
-          const lastPost = posts[posts.length - 1];
-          if (lastPost) {
-            setTimeout(() => {
-              const element = document.getElementById(`post-${lastPost.id}`);
-              if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }
-            }, 100);
+    if (!topic?.id) return;
+    
+    const hash = window.location.hash;
+    if (!hash) return;
+    
+    const targetId = hash.substring(1); // Remove the # symbol
+    
+    if (targetId === 'last-reply') {
+      // Handle last reply - scroll to the last post on current page
+      if (posts && posts.length > 0) {
+        const lastPost = posts[posts.length - 1];
+        setTimeout(() => {
+          const element = document.getElementById(`post-${lastPost.id}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
-        } else if (targetId.startsWith('post-')) {
-          // Scroll to specific post
-          setTimeout(() => {
-            const element = document.getElementById(targetId);
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-          }, 100);
-        }
+        }, 100);
+      }
+    } else if (targetId.startsWith('post-')) {
+      // Handle specific post
+      const postId = targetId.substring('post-'.length);
+      
+      // If we have page info and need to navigate to a different page
+      if (postPageInfo && postPageInfo.page !== currentPage) {
+        handlePageChange(postPageInfo.page);
+        return; // Exit early, the page change will trigger this effect again
+      }
+      
+      // If we're on the right page, scroll to the post
+      if (posts && posts.length > 0) {
+        setTimeout(() => {
+          const element = document.getElementById(targetId);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
       }
     }
-  }, [posts]);
+  }, [posts, topic?.id, postPageInfo, currentPage, handlePageChange]);
 
   const organizeReplies = (posts: any[]) => {
     // Create a flat list sorted by creation time to maintain chronological order
