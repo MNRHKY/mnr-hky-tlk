@@ -89,6 +89,8 @@ export const useCreateTopic = () => {
     onSuccess: (topic) => {
       // Invalidate and refetch topics for the category
       queryClient.invalidateQueries({ queryKey: ['topics', topic.category_id] });
+      // Invalidate the home page "New" section (topics without category filter)
+      queryClient.invalidateQueries({ queryKey: ['topics', undefined] });
       queryClient.invalidateQueries({ queryKey: ['topics'] });
       // Also invalidate hot topics to show on home page
       queryClient.invalidateQueries({ queryKey: ['hot-topics'] });
