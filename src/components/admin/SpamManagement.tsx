@@ -22,6 +22,7 @@ interface SpamReport {
   created_at: string;
   reviewed_at?: string;
   admin_notes?: string;
+  reporter_ip?: string;
 }
 
 interface ContentAnalysis {
@@ -206,6 +207,7 @@ export const SpamManagement = () => {
                     <TableHead>Confidence</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Automated</TableHead>
+                    <TableHead>Reporter IP</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -219,15 +221,20 @@ export const SpamManagement = () => {
                         {report.confidence_score ? getConfidenceBadge(report.confidence_score) : '-'}
                       </TableCell>
                       <TableCell>{getStatusBadge(report.status)}</TableCell>
-                      <TableCell>
-                        {report.automated_detection ? 
-                          <Badge variant="outline">Auto</Badge> : 
-                          <Badge variant="secondary">Manual</Badge>
-                        }
-                      </TableCell>
-                      <TableCell>
-                        {new Date(report.created_at).toLocaleDateString()}
-                      </TableCell>
+                       <TableCell>
+                         {report.automated_detection ? 
+                           <Badge variant="outline">Auto</Badge> : 
+                           <Badge variant="secondary">Manual</Badge>
+                         }
+                       </TableCell>
+                       <TableCell>
+                         <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                           {report.reporter_ip || 'N/A'}
+                         </code>
+                       </TableCell>
+                       <TableCell>
+                         {new Date(report.created_at).toLocaleDateString()}
+                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
                           <Button
