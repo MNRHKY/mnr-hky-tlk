@@ -9,15 +9,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { MoveRight } from 'lucide-react';
-import { useCategories } from '@/hooks/useCategories';
+import { HierarchicalCategorySelector } from '@/components/forum/HierarchicalCategorySelector';
+import { useCategoryById } from '@/hooks/useCategories';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
@@ -34,7 +28,8 @@ export const ChangeCategoryModal: React.FC<ChangeCategoryModalProps> = ({
   const [open, setOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [isChanging, setIsChanging] = useState(false);
-  const { data: categories } = useCategories();
+  const { data: currentCategory } = useCategoryById(topic.category_id);
+  const { data: selectedCategory } = useCategoryById(selectedCategoryId);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -72,9 +67,6 @@ export const ChangeCategoryModal: React.FC<ChangeCategoryModalProps> = ({
     }
   };
 
-  const currentCategory = categories?.find(cat => cat.id === topic.category_id);
-  const selectedCategory = categories?.find(cat => cat.id === selectedCategoryId);
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -87,7 +79,7 @@ export const ChangeCategoryModal: React.FC<ChangeCategoryModalProps> = ({
           <MoveRight className="h-3 w-3" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Change Topic Category</DialogTitle>
           <DialogDescription>
@@ -102,32 +94,21 @@ export const ChangeCategoryModal: React.FC<ChangeCategoryModalProps> = ({
             <p><strong>Posts:</strong> {topic.reply_count || 0} posts will be moved</p>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">New Category</label>
-            <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories?.filter(cat => cat.id !== topic.category_id).map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: category.color }}
-                      />
-                      {category.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="space-y-4">
+            <HierarchicalCategorySelector
+              value={selectedCategoryId}
+              onChange={setSelectedCategoryId}
+              preselectedCategoryId={topic.category_id}
+            />
           </div>
 
-          {selectedCategoryId && (
+          {selectedCategoryId && selectedCategoryId !== topic.category_id && (
             <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded text-sm">
               <p className="text-blue-700 dark:text-blue-300">
                 <strong>Moving to:</strong> {selectedCategory?.name}
+              </p>
+              <p className="text-blue-600 dark:text-blue-400 text-xs mt-1">
+                This will move all {topic.reply_count || 0} posts to the new category
               </p>
             </div>
           )}
