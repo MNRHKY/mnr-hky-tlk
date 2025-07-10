@@ -418,6 +418,7 @@ export type Database = {
       }
       reports: {
         Row: {
+          admin_notes: string | null
           created_at: string
           description: string | null
           id: string
@@ -425,11 +426,13 @@ export type Database = {
           reported_post_id: string | null
           reported_topic_id: string | null
           reporter_id: string | null
+          reporter_ip_address: unknown | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -437,11 +440,13 @@ export type Database = {
           reported_post_id?: string | null
           reported_topic_id?: string | null
           reporter_id?: string | null
+          reporter_ip_address?: unknown | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -449,6 +454,7 @@ export type Database = {
           reported_post_id?: string | null
           reported_topic_id?: string | null
           reporter_id?: string | null
+          reporter_ip_address?: unknown | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
