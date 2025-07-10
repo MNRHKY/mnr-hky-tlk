@@ -18,19 +18,28 @@ export interface Post {
   parent_post?: Post;
 }
 
-export const usePosts = (topicId: string) => {
+interface UsePostsOptions {
+  page?: number;
+  limit?: number;
+}
+
+export const usePosts = (topicId: string, options: UsePostsOptions = {}) => {
+  const { page = 1, limit = 20 } = options;
+  const offset = (page - 1) * limit;
+
   return useQuery({
-    queryKey: ['posts', topicId],
+    queryKey: ['posts', topicId, page, limit],
     queryFn: async () => {
       console.log('Fetching posts for topic:', topicId);
       
-      // First, get all approved posts for the topic
+      // First, get paginated approved posts for the topic
       const { data: posts, error } = await supabase
         .from('posts')
         .select('*')
         .eq('topic_id', topicId)
         .eq('moderation_status', 'approved')
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .range(offset, offset + limit - 1);
       
       if (error) {
         console.error('Error fetching posts:', error);
@@ -143,6 +152,26 @@ export const usePosts = (topicId: string) => {
       
       console.log('Posts enriched with user data and parent posts:', enrichedPosts);
       return enrichedPosts as Post[];
+    },
+    enabled: !!topicId,
+  });
+};
+
+// Hook for getting total posts count
+export const usePostsCount = (topicId: string) => {
+  return useQuery({
+    queryKey: ['posts-count', topicId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_posts_count', {
+        p_topic_id: topicId
+      });
+      
+      if (error) {
+        console.error('Error fetching posts count:', error);
+        throw error;
+      }
+      
+      return data as number;
     },
     enabled: !!topicId,
   });

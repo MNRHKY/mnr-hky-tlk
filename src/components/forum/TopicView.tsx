@@ -10,7 +10,7 @@ import { MessageSquare, User, Clock, ArrowLeft, ThumbsUp, Flag, Reply, ArrowUp, 
 import { useAuth } from '@/hooks/useAuth';
 import { useTopic } from '@/hooks/useTopic';
 import { useTopicByPath } from '@/hooks/useTopicByPath';
-import { usePosts } from '@/hooks/usePosts';
+import { usePosts, usePostsCount } from '@/hooks/usePosts';
 import { useTopicVote } from '@/hooks/useVoting';
 import { useEditTopic } from '@/hooks/useEditTopic';
 import { VoteButtons } from './VoteButtons';
@@ -18,6 +18,7 @@ import { ReportModal } from './ReportModal';
 import { PostComponent } from './PostComponent';
 import { InlineReplyForm } from './InlineReplyForm';
 import { AdminControls } from './AdminControls';
+import { PostsPagination } from './PostsPagination';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 
@@ -29,6 +30,8 @@ export const TopicView = () => {
   const [isEditingTopic, setIsEditingTopic] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 20;
   
   const [reportModal, setReportModal] = useState<{
     isOpen: boolean;
@@ -49,7 +52,11 @@ export const TopicView = () => {
   const topicLoading = isLegacyRoute ? legacyLoading : slugLoading;
   const topicError = isLegacyRoute ? legacyError : slugError;
   
-  const { data: posts, isLoading: postsLoading } = usePosts(topic?.id || '');
+  const { data: posts, isLoading: postsLoading } = usePosts(topic?.id || '', {
+    page: currentPage,
+    limit: postsPerPage
+  });
+  const { data: totalPosts } = usePostsCount(topic?.id || '');
   const { userVote: topicVote, vote: voteOnTopic, isVoting: isVotingTopic } = useTopicVote(topic?.id || '');
   const { mutate: editTopic, isPending: isUpdatingTopic } = useEditTopic();
 
@@ -90,6 +97,16 @@ export const TopicView = () => {
   };
 
   const canEditTopic = user && (user.id === topic?.author_id || user.role === 'admin' || user.role === 'moderator');
+  const totalPages = Math.ceil((totalPosts || 0) / postsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of comments section
+    const commentsSection = document.querySelector('#comments-section');
+    if (commentsSection) {
+      commentsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   // Handle scrolling to specific posts on page load
   useEffect(() => {
@@ -449,11 +466,18 @@ export const TopicView = () => {
       </div>
 
       {/* Comments */}
-      <div className="bg-card">
+      <div className="bg-card" id="comments-section">
         <div className="p-3 md:p-6 border-b border-border">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">
-            Comments ({posts?.length || 0})
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base md:text-lg font-semibold text-foreground">
+              Comments ({totalPosts || 0})
+            </h2>
+            {totalPages > 1 && (
+              <span className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </span>
+            )}
+          </div>
         </div>
         
         {postsLoading ? (
@@ -476,6 +500,17 @@ export const TopicView = () => {
           </div>
         ) : (
           <p className="text-muted-foreground text-center py-8 px-3">No replies yet. Be the first to reply!</p>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-border">
+            <PostsPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </div>
         )}
       </div>
 

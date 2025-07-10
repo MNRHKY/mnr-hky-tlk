@@ -967,6 +967,10 @@ export type Database = {
           peak_date: string
         }[]
       }
+      get_posts_count: {
+        Args: { p_topic_id: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _user_id: string
