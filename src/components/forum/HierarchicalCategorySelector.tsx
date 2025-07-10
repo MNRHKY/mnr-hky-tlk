@@ -90,27 +90,12 @@ export const HierarchicalCategorySelector = ({
   };
 
   const handleLevel2Select = (categoryId: string) => {
-    console.log('DEBUG CATEGORY: Level 2 selected:', categoryId);
-    console.log('DEBUG CATEGORY: Level 3 categories:', level3Categories);
     setSelectedLevel2(categoryId);
-    
-    // Check if this level 2 category has any level 3 children
-    const hasLevel3Children = level3Categories && level3Categories.length > 0;
-    console.log('DEBUG CATEGORY: Has level 3 children:', hasLevel3Children);
-    
-    if (hasLevel3Children) {
-      console.log('DEBUG CATEGORY: Moving to step 3, clearing selection');
-      onChange('');
-      setStep(3);
-    } else {
-      // No level 3 children, so this level 2 category is selectable
-      console.log('DEBUG CATEGORY: No level 3 children, selecting level 2 category:', categoryId);
-      onChange(categoryId);
-    }
+    onChange('');
+    setStep(3);
   };
 
   const handleLevel3Select = (categoryId: string) => {
-    console.log('DEBUG CATEGORY: Level 3 selected:', categoryId);
     onChange(categoryId);
     // Immediately update the path with the level 3 selection
     if (onPathChange) {
@@ -161,8 +146,7 @@ export const HierarchicalCategorySelector = ({
 
   const selectedCategory = (value && preselectedCategory?.id === value) 
     ? preselectedCategory 
-    : level3Categories?.find(cat => cat.id === value) 
-    || level2Categories?.find(cat => cat.id === value);
+    : level3Categories?.find(cat => cat.id === value);
 
   return (
     <div className="space-y-4">
@@ -201,7 +185,7 @@ export const HierarchicalCategorySelector = ({
           <Card
             key={category.id}
             className={`cursor-pointer transition-all hover:shadow-md ${
-              ((step === 3 && value === category.id) || (step === 2 && value === category.id)) ? 'ring-2 ring-primary' : ''
+              (step === 3 && value === category.id) ? 'ring-2 ring-primary' : ''
             }`}
             onClick={() => {
               if (step === 1) handleLevel1Select(category.id);
@@ -225,8 +209,7 @@ export const HierarchicalCategorySelector = ({
                     )}
                   </div>
                 </div>
-                {((step === 1) || (step === 2 && level3Categories && level3Categories.length > 0)) && 
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                {step < 3 && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
               </div>
             </CardContent>
           </Card>

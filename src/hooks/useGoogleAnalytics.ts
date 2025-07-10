@@ -25,8 +25,6 @@ export const useGoogleAnalytics = () => {
 
     const title = customTitle || document.title;
     const path = location.pathname + location.search;
-    
-    console.log('GA: Tracking page view:', { title, path });
 
     window.gtag('config', trackingId, {
       page_title: title,

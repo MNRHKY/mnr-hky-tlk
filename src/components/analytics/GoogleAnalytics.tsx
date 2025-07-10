@@ -61,7 +61,8 @@ export const GoogleAnalytics = () => {
 
     // Enhanced configuration with custom dimensions
     gtag('config', trackingId, {
-      // Basic page tracking - let route tracking handle page_title
+      // Basic page tracking
+      page_title: document.title,
       page_location: window.location.href,
       
       // Enhanced features

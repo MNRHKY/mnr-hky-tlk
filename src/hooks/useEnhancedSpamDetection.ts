@@ -23,69 +23,51 @@ export const useEnhancedSpamDetection = () => {
 
   // Generate browser fingerprint for additional tracking
   const generateFingerprint = useCallback((): string => {
-    try {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.textBaseline = 'top';
-        ctx.font = '14px Arial';
-        ctx.fillText('Browser fingerprint', 2, 2);
-      }
-      
-      const fingerprint = [
-        navigator.userAgent || 'unknown',
-        navigator.language || 'unknown',
-        screen.width + 'x' + screen.height,
-        new Date().getTimezoneOffset(),
-        ctx ? canvas.toDataURL() : 'no-canvas',
-        navigator.hardwareConcurrency || 0
-      ].join('|');
-      
-      // Simple hash function
-      let hash = 0;
-      for (let i = 0; i < fingerprint.length; i++) {
-        const char = fingerprint.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32-bit integer
-      }
-      
-      const result = Math.abs(hash).toString(36);
-      console.log('DEBUG FINGERPRINT: Generated fingerprint:', result.substring(0, 8) + '...');
-      return result;
-    } catch (error) {
-      console.error('Error generating fingerprint:', error);
-      return 'fallback-' + Date.now().toString(36);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.textBaseline = 'top';
+      ctx.font = '14px Arial';
+      ctx.fillText('Browser fingerprint', 2, 2);
     }
+    
+    const fingerprint = [
+      navigator.userAgent,
+      navigator.language,
+      screen.width + 'x' + screen.height,
+      new Date().getTimezoneOffset(),
+      canvas.toDataURL(),
+      navigator.hardwareConcurrency || 0
+    ].join('|');
+    
+    // Simple hash function
+    let hash = 0;
+    for (let i = 0; i < fingerprint.length; i++) {
+      const char = fingerprint.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    
+    return Math.abs(hash).toString(36);
   }, []);
 
   const checkRateLimit = useCallback(async (
     sessionId: string,
     contentType: 'post' | 'topic' = 'post'
   ): Promise<SpamCheckResult & RateLimitInfo> => {
-    console.log('DEBUG SPAM: Starting rate limit check for', contentType, 'session:', sessionId);
     setIsChecking(true);
     
     try {
       const userIP = await getUserIPWithFallback();
       const fingerprint = generateFingerprint();
       
-      console.log('DEBUG SPAM: IP detected:', userIP, 'Fingerprint generated:', fingerprint ? 'yes' : 'no');
-      
       if (!userIP) {
-        console.log('DEBUG SPAM: IP detection failed');
         return {
           allowed: false,
           reason: 'ip_detection_failed',
           message: 'Unable to verify your connection. Please try again.'
         };
       }
-
-      console.log('DEBUG SPAM: Calling check_enhanced_anonymous_rate_limit with:', {
-        userIP: userIP.substring(0, 8) + '...',
-        sessionId,
-        fingerprint: fingerprint.substring(0, 8) + '...',
-        contentType
-      });
 
       const { data, error } = await supabase.rpc('check_enhanced_anonymous_rate_limit', {
         user_ip: userIP,
@@ -103,7 +85,6 @@ export const useEnhancedSpamDetection = () => {
         };
       }
 
-      console.log('DEBUG SPAM: Rate limit check result:', data);
       return data as unknown as SpamCheckResult & RateLimitInfo;
     } catch (error) {
       console.error('Error checking rate limit:', error);

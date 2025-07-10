@@ -179,7 +179,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
             </div>
           ) : (
             <div className="space-y-3">
-              {/* Show original comment being replied to or orphaned indicator */}
+              {/* Show original comment being replied to */}
               {post.parent_post_id && post.parent_post && (
                 <div className="bg-muted/30 border border-border rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
@@ -195,19 +195,6 @@ export const PostComponent: React.FC<PostComponentProps> = ({
                     <HTMLRenderer 
                       content={post.parent_post.content} 
                     />
-                  </div>
-                </div>
-              )}
-              
-              {/* Show orphaned post indicator */}
-              {post.parent_post_id && !post.parent_post && (
-                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-                  <div className="flex items-center gap-2 mb-2 text-xs text-destructive">
-                    <MessageCircle className="h-3 w-3" />
-                    <span>Originally replying to a deleted post</span>
-                  </div>
-                  <div className="text-sm text-destructive/70 bg-background/50 rounded p-2 border-l-2 border-destructive/30">
-                    <em>[The original post this was replying to has been deleted]</em>
                   </div>
                 </div>
               )}

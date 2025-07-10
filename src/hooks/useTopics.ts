@@ -30,17 +30,9 @@ export interface Topic {
   };
 }
 
-interface UseTopicsOptions {
-  page?: number;
-  limit?: number;
-}
-
-export const useTopics = (categoryId?: string, options: UseTopicsOptions = {}) => {
-  const { page = 1, limit = 25 } = options;
-  const offset = (page - 1) * limit;
-
+export const useTopics = (categoryId?: string) => {
   return useQuery({
-    queryKey: ['topics', categoryId, page, limit],
+    queryKey: ['topics', categoryId],
     queryFn: async () => {
       console.log('Fetching topics for category:', categoryId);
       
@@ -48,12 +40,12 @@ export const useTopics = (categoryId?: string, options: UseTopicsOptions = {}) =
         .from('topics')
         .select(`
           *,
-          categories (name, color, slug, parent_category_id)
+          categories (name, color, slug, parent_category_id),
+          last_post_id:posts!inner(id)
         `)
         .eq('moderation_status', 'approved')
         .order('is_pinned', { ascending: false })
-        .order('last_reply_at', { ascending: false })
-        .range(offset, offset + limit - 1);
+        .order('last_reply_at', { ascending: false });
       
       if (categoryId) {
         query = query.eq('category_id', categoryId);
@@ -134,25 +126,6 @@ export const useTopics = (categoryId?: string, options: UseTopicsOptions = {}) =
       
       console.log('Topics fetched:', enrichedTopics);
       return enrichedTopics;
-    },
-  });
-};
-
-// Hook for getting total topics count
-export const useTopicsCount = (categoryId?: string) => {
-  return useQuery({
-    queryKey: ['topics-count', categoryId],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_topics_count', {
-        p_category_id: categoryId || null
-      });
-      
-      if (error) {
-        console.error('Error fetching topics count:', error);
-        throw error;
-      }
-      
-      return data as number;
     },
   });
 };

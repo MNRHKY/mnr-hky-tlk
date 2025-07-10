@@ -20,10 +20,10 @@ export const useCreateTopic = () => {
     mutationFn: async (data: CreateTopicData) => {
       console.log('Creating topic:', data);
 
-      // Get category info
+      // Get category info including moderation requirements
       const { data: category, error: categoryError } = await supabase
         .from('categories')
-        .select('level, name')
+        .select('level, name, requires_moderation')
         .eq('id', data.category_id)
         .single();
 
@@ -31,8 +31,8 @@ export const useCreateTopic = () => {
         throw new Error('Invalid category selected');
       }
 
-      if (category.level < 2) {
-        throw new Error(`Posts can only be created in tournament or age group categories. "${category.name}" is for browsing only.`);
+      if (category.level !== 3) {
+        throw new Error(`Posts can only be created in age group & skill level categories. "${category.name}" is for browsing only.`);
       }
 
       // Generate slug from title with unique suffix
@@ -49,7 +49,7 @@ export const useCreateTopic = () => {
         view_count: 0,
         reply_count: 0,
         last_reply_at: new Date().toISOString(),
-        moderation_status: 'approved'
+        moderation_status: category.requires_moderation ? 'pending' : 'approved'
       };
 
       if (user) {
@@ -89,11 +89,7 @@ export const useCreateTopic = () => {
     onSuccess: (topic) => {
       // Invalidate and refetch topics for the category
       queryClient.invalidateQueries({ queryKey: ['topics', topic.category_id] });
-      // Invalidate the home page "New" section (topics without category filter)
-      queryClient.invalidateQueries({ queryKey: ['topics', undefined] });
       queryClient.invalidateQueries({ queryKey: ['topics'] });
-      // Also invalidate hot topics to show on home page
-      queryClient.invalidateQueries({ queryKey: ['hot-topics'] });
     },
   });
 };

@@ -13,35 +13,6 @@ import { useEnhancedSpamDetection } from '@/hooks/useEnhancedSpamDetection';
 import { SmartCategorySelector } from './SmartCategorySelector';
 import { toast } from '@/hooks/use-toast';
 
-const TopicLimitNotice = ({ tempUser }: { tempUser: any }) => {
-  const [topicLimits, setTopicLimits] = React.useState({ canPost: true, remainingPosts: 5 });
-
-  React.useEffect(() => {
-    tempUser.checkTopicLimit?.().then((limits: any) => {
-      if (limits) setTopicLimits(limits);
-    });
-  }, [tempUser]);
-
-  return (
-    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-      <div className="text-sm text-blue-800">
-        <div className="font-medium">Posting as: {tempUser.tempUser.display_name}</div>
-        <div className="text-xs mt-1">
-          {topicLimits.canPost 
-            ? `${topicLimits.remainingPosts} topics remaining today`
-            : 'Daily topic limit reached (5 topics per day)'
-          }
-        </div>
-        <div className="text-xs mt-2 text-blue-600">
-          <a href="/register" className="underline hover:no-underline">
-            Create account for unlimited posting + images/links
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 export const CreateTopic = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -67,26 +38,10 @@ export const CreateTopic = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('DEBUG TOPIC CREATE: Starting submit process');
-    console.log('DEBUG TOPIC CREATE: User:', user);
-    console.log('DEBUG TOPIC CREATE: TempUser state:', { tempUser: tempUser.tempUser, canPost: tempUser.canPost, remainingPosts: tempUser.remainingPosts });
-    console.log('DEBUG TOPIC CREATE: Form data:', formData);
-    console.log('DEBUG TOPIC CREATE: Missing fields:', {
-      title: !formData.title,
-      content: !formData.content,
-      category_id: !formData.category_id
-    });
-    
     if (!formData.title || !formData.content || !formData.category_id) {
-      const missingFields = [];
-      if (!formData.title) missingFields.push('title');
-      if (!formData.content) missingFields.push('content');
-      if (!formData.category_id) missingFields.push('category');
-      
-      console.log('DEBUG TOPIC CREATE: Missing fields detected:', missingFields);
       toast({
         title: "Error",
-        description: `Please fill in all fields. Missing: ${missingFields.join(', ')}`,
+        description: "Please fill in all fields",
         variant: "destructive",
       });
       return;
@@ -94,25 +49,8 @@ export const CreateTopic = () => {
 
     // Enhanced validation for anonymous users
     if (!user) {
-      console.log('DEBUG TOPIC CREATE: Processing anonymous user validation');
-      const tempUserId = tempUser.getTempUserId();
-      console.log('DEBUG TOPIC CREATE: TempUserId:', tempUserId);
-      
-      if (!tempUserId) {
-        console.log('DEBUG TOPIC CREATE: No temp user ID available');
-        toast({
-          title: "Error",
-          description: "Unable to create session. Please refresh and try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
       // Check rate limits with enhanced system
-      console.log('DEBUG TOPIC CREATE: Checking rate limits');
-      const rateLimitCheck = await spamDetection.checkRateLimit(tempUserId, 'topic');
-      console.log('DEBUG TOPIC CREATE: Rate limit result:', rateLimitCheck);
-      
+      const rateLimitCheck = await spamDetection.checkRateLimit(tempUser.getTempUserId() || '', 'topic');
       if (!rateLimitCheck.allowed) {
         toast({
           title: "Posting Restricted",
@@ -122,21 +60,16 @@ export const CreateTopic = () => {
         return;
       }
 
-      // Analyze content for spam with better error handling
-      try {
-        const contentAnalysis = await spamDetection.analyzeContent(formData.content, 'topic');
-        if (!contentAnalysis.allowed) {
-          setContentErrors([contentAnalysis.message || 'Content flagged as spam']);
-          toast({
-            title: "Content Blocked",
-            description: contentAnalysis.message,
-            variant: "destructive",
-          });
-          return;
-        }
-      } catch (error) {
-        console.error('Content analysis failed:', error);
-        // Continue with creation if analysis fails (fail-open approach)
+      // Analyze content for spam
+      const contentAnalysis = await spamDetection.analyzeContent(formData.content, 'topic');
+      if (!contentAnalysis.allowed) {
+        setContentErrors([contentAnalysis.message || 'Content flagged as spam']);
+        toast({
+          title: "Content Blocked",
+          description: contentAnalysis.message,
+          variant: "destructive",
+        });
+        return;
       }
 
       // Legacy validation as fallback
@@ -158,14 +91,8 @@ export const CreateTopic = () => {
 
       // Record post and refresh rate limit for anonymous users
       if (!user) {
-        await tempUser.recordPost('topic');
-        await tempUser.refreshRateLimit('topic');
-        
-        // Also record activity in enhanced system
-        const tempUserId = tempUser.getTempUserId();
-        if (tempUserId) {
-          await spamDetection.recordActivity(tempUserId, 'topic');
-        }
+        await tempUser.recordPost();
+        await tempUser.refreshRateLimit();
       }
 
       toast({
@@ -199,7 +126,22 @@ export const CreateTopic = () => {
 
       {/* Show temp user notice for non-authenticated users */}
       {!user && tempUser.tempUser && (
-        <TopicLimitNotice tempUser={tempUser} />
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="text-sm text-blue-800">
+            <div className="font-medium">Posting as: {tempUser.tempUser.display_name}</div>
+            <div className="text-xs mt-1">
+              {tempUser.canPost 
+                ? `${tempUser.remainingPosts} posts remaining in the next 12 hours`
+                : 'Rate limit reached (5 posts per 12 hours)'
+              }
+            </div>
+            <div className="text-xs mt-2 text-blue-600">
+              <a href="/register" className="underline hover:no-underline">
+                Create account for unlimited posting + images/links
+              </a>
+            </div>
+          </div>
+        </div>
       )}
 
       <Card className="p-6">
@@ -217,14 +159,7 @@ export const CreateTopic = () => {
 
           <SmartCategorySelector
             value={formData.category_id}
-            onChange={(value) => {
-              console.log('DEBUG CATEGORY SELECTION: onChange called with value:', value);
-              setFormData(prev => {
-                const newData = { ...prev, category_id: value };
-                console.log('DEBUG CATEGORY SELECTION: New form data:', newData);
-                return newData;
-              });
-            }}
+            onChange={(value) => setFormData({ ...formData, category_id: value })}
             currentCategoryId={searchParams.get('category') || undefined}
             required
           />

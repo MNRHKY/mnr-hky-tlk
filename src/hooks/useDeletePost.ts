@@ -3,48 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
-// Function to clean up content references when a post is deleted
-const cleanupPostReferences = async (deletedPostId: string, deletedContent: string) => {
-  try {
-    // Find posts that might reference the deleted post
-    const { data: postsWithReferences, error } = await supabase
-      .from('posts')
-      .select('id, content')
-      .or(`content.ilike.%${deletedPostId}%,content.ilike.%[Deleted Post]%`);
-
-    if (error) {
-      console.error('Error finding posts with references:', error);
-      return;
-    }
-
-    // Update posts that reference the deleted post
-    for (const post of postsWithReferences || []) {
-      let updatedContent = post.content;
-      
-      // Replace references to the deleted post with placeholder text
-      updatedContent = updatedContent.replace(
-        new RegExp(`<blockquote[^>]*>.*?${deletedPostId}.*?</blockquote>`, 'gi'),
-        '<blockquote style="border-left: 4px solid #dc2626; padding: 8px; margin: 8px 0; background: #fef2f2; color: #dc2626;"><em>[This post was deleted]</em></blockquote>'
-      );
-      
-      // Clean up any remaining post ID references
-      updatedContent = updatedContent.replace(
-        new RegExp(deletedPostId, 'g'),
-        '[deleted-post]'
-      );
-
-      if (updatedContent !== post.content) {
-        await supabase
-          .from('posts')
-          .update({ content: updatedContent })
-          .eq('id', post.id);
-      }
-    }
-  } catch (error) {
-    console.error('Error cleaning up post references:', error);
-  }
-};
-
 export const useDeletePost = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -52,7 +10,7 @@ export const useDeletePost = () => {
 
   return useMutation({
     mutationFn: async (postId: string) => {
-      // First get post details for audit logging and check for replies
+      // First get post details for audit logging
       const { data: post, error: fetchError } = await supabase
         .from('posts')
         .select('id, content, author_id, topic_id, created_at')
@@ -61,18 +19,7 @@ export const useDeletePost = () => {
 
       if (fetchError) throw fetchError;
 
-      // Check how many replies this post has
-      const { count: replyCount } = await supabase
-        .from('posts')
-        .select('*', { count: 'exact', head: true })
-        .eq('parent_post_id', postId);
-
-      // Clean up content references in other posts before deletion
-      if (post) {
-        await cleanupPostReferences(postId, post.content);
-      }
-
-      // Delete the post (replies will now be orphaned, not deleted due to SET NULL constraint)
+      // Delete the post
       const { error } = await supabase
         .from('posts')
         .delete()
@@ -80,7 +27,7 @@ export const useDeletePost = () => {
 
       if (error) throw error;
 
-      // Log the admin action with reply information
+      // Log the admin action
       if (user?.role === 'admin' && post) {
         try {
           await supabase.rpc('log_admin_action', {
@@ -92,8 +39,7 @@ export const useDeletePost = () => {
               content: post.content?.substring(0, 100) + '...',
               author_id: post.author_id,
               topic_id: post.topic_id,
-              created_at: post.created_at,
-              orphaned_replies: replyCount || 0
+              created_at: post.created_at
             }
           });
         } catch (auditError) {
@@ -112,19 +58,14 @@ export const useDeletePost = () => {
         }
       }
 
-      return { ...post, orphaned_replies: replyCount || 0 };
+      return post;
     },
     onSuccess: (deletedPost) => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['topic'] });
-      
-      const replyMessage = deletedPost.orphaned_replies > 0 
-        ? ` ${deletedPost.orphaned_replies} replies were orphaned.`
-        : '';
-      
       toast({
         title: "Post deleted",
-        description: `The post has been successfully deleted.${replyMessage}`,
+        description: "The post has been successfully deleted.",
       });
     },
     onError: (error) => {

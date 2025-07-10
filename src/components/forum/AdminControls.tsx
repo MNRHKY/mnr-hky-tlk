@@ -6,7 +6,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useAuth } from '@/hooks/useAuth';
 import { AdminPostInfo } from './AdminPostInfo';
 import { AdminTopicInfo } from './AdminTopicInfo';
-import { ChangeCategoryModal } from '../admin/ChangeCategoryModal';
 import { useDeletePost } from '@/hooks/useDeletePost';
 import { useDeleteTopic } from '@/hooks/useDeleteTopic';
 
@@ -51,11 +50,6 @@ export const AdminControls: React.FC<AdminControlsProps> = ({
           ) : (
             <AdminTopicInfo topic={content} />
           )
-        )}
-
-        {/* Change Category Button - only for topics */}
-        {contentType === 'topic' && (
-          <ChangeCategoryModal topic={content} />
         )}
 
         {/* Delete Button */}

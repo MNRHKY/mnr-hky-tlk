@@ -17,10 +17,10 @@ export const useCreatePost = () => {
 
   return useMutation({
     mutationFn: async (data: CreatePostData) => {
-      // Get the topic to validate its category
+      // Get the topic to validate its category and check moderation requirements
       const { data: topic, error: topicError } = await supabase
         .from('topics')
-        .select('category_id, categories(level, name)')
+        .select('category_id, categories(level, name, requires_moderation)')
         .eq('id', data.topic_id)
         .single();
 
@@ -40,7 +40,7 @@ export const useCreatePost = () => {
         content: data.content,
         topic_id: data.topic_id,
         parent_post_id: data.parent_post_id || null,
-        moderation_status: 'approved',
+        moderation_status: topic.categories?.requires_moderation ? 'pending' : 'approved',
         ip_address: userIP
       };
 

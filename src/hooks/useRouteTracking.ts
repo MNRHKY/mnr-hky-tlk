@@ -3,7 +3,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { useGoogleAnalytics } from './useGoogleAnalytics';
 import { useForumSettings } from './useForumSettings';
 import { useTopic } from './useTopic';
-import { useCategoryBySlug } from './useCategories';
+import { useCategoryBySlug } from './useCategoryBySlug';
 
 export const useRouteTracking = () => {
   const location = useLocation();
@@ -19,7 +19,7 @@ export const useRouteTracking = () => {
   useEffect(() => {
     const generatePageTitle = () => {
       const baseTitle = getSetting('forum_name', 'Minor Hockey Talks');
-      const separator = ' | ';
+      const separator = ' - ';
 
       // Topic page
       if (topic && params.topicSlug) {
