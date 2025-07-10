@@ -4,6 +4,7 @@ import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreatePost } from '@/hooks/useCreatePost';
 import { useTempUser } from '@/hooks/useTempUser';
+import { useEnhancedSpamDetection } from '@/hooks/useEnhancedSpamDetection';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -31,6 +32,7 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const createPostMutation = useCreatePost();
   const tempUser = useTempUser();
+  const { analyzeContent } = useEnhancedSpamDetection();
 
   useEffect(() => {
     // Auto-focus when form appears
@@ -48,6 +50,22 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
         variant: "destructive",
       });
       return;
+    }
+
+    // Check for banned words and spam
+    try {
+      const spamAnalysis = await analyzeContent(content, 'post');
+      if (!spamAnalysis.allowed) {
+        toast({
+          title: "Content not allowed",
+          description: spamAnalysis.message || "Your content contains prohibited material",
+          variant: "destructive",
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('Spam analysis failed:', error);
+      // Continue with post creation if analysis fails
     }
 
     // Validate content for anonymous users
@@ -103,9 +121,10 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
       onSuccess();
     } catch (error) {
       console.error('Error creating post:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to post reply. Please try again.";
       toast({
         title: "Error",
-        description: "Failed to post reply. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     }

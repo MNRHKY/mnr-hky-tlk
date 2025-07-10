@@ -17,6 +17,22 @@ export const useCreatePost = () => {
 
   return useMutation({
     mutationFn: async (data: CreatePostData) => {
+      // Check for banned words first
+      const { data: bannedWordsResult, error: bannedWordsError } = await supabase
+        .rpc('check_banned_words', { content_text: data.content });
+
+      if (bannedWordsError) {
+        console.error('Banned words check failed:', bannedWordsError);
+        // Continue with creation if check fails to avoid blocking legitimate posts
+      } else if (bannedWordsResult) {
+        const result = bannedWordsResult as { is_blocked: boolean; matches: Array<{ word: string }> };
+        if (result.is_blocked) {
+          const matches = result.matches || [];
+          const bannedWords = matches.map((match: any) => match.word).join(', ');
+          throw new Error(`You are not allowed to make posts with: ${bannedWords}`);
+        }
+      }
+
       // Get the topic to validate its category and check moderation requirements
       const { data: topic, error: topicError } = await supabase
         .from('topics')
