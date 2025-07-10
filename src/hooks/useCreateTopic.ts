@@ -20,10 +20,10 @@ export const useCreateTopic = () => {
     mutationFn: async (data: CreateTopicData) => {
       console.log('Creating topic:', data);
 
-      // Get category info including moderation requirements
+      // Get category info
       const { data: category, error: categoryError } = await supabase
         .from('categories')
-        .select('level, name, requires_moderation')
+        .select('level, name')
         .eq('id', data.category_id)
         .single();
 
@@ -49,7 +49,7 @@ export const useCreateTopic = () => {
         view_count: 0,
         reply_count: 0,
         last_reply_at: new Date().toISOString(),
-        moderation_status: category.requires_moderation ? 'pending' : 'approved'
+        moderation_status: 'approved'
       };
 
       if (user) {
