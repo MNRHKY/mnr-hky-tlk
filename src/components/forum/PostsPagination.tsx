@@ -1,4 +1,6 @@
 import React from 'react';
+import { Button } from '@/components/ui/button';
+import { ChevronFirst, ChevronLast } from 'lucide-react';
 import {
   Pagination,
   PaginationContent,
@@ -13,6 +15,7 @@ interface PostsPaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  showJumpToLatest?: boolean;
   className?: string;
 }
 
@@ -20,6 +23,7 @@ export const PostsPagination: React.FC<PostsPaginationProps> = ({
   currentPage,
   totalPages,
   onPageChange,
+  showJumpToLatest = true,
   className
 }) => {
   if (totalPages <= 1) return null;
@@ -55,8 +59,33 @@ export const PostsPagination: React.FC<PostsPaginationProps> = ({
   const visiblePages = getVisiblePages();
 
   return (
-    <Pagination className={className}>
+    <div className="flex flex-col sm:flex-row items-center gap-4">
+      {/* Jump to Latest Button */}
+      {showJumpToLatest && currentPage < totalPages && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(totalPages)}
+          className="flex items-center gap-2"
+        >
+          <ChevronLast className="h-4 w-4" />
+          Jump to Latest
+        </Button>
+      )}
+
+      <Pagination className={className}>
       <PaginationContent>
+        {/* First page button */}
+        {currentPage > 2 && (
+          <PaginationItem>
+            <PaginationLink
+              onClick={() => onPageChange(1)}
+              className="cursor-pointer"
+            >
+              <ChevronFirst className="h-4 w-4" />
+            </PaginationLink>
+          </PaginationItem>
+        )}
         {currentPage > 1 && (
           <PaginationItem>
             <PaginationPrevious 
@@ -90,7 +119,20 @@ export const PostsPagination: React.FC<PostsPaginationProps> = ({
             />
           </PaginationItem>
         )}
+
+        {/* Last page button */}
+        {currentPage < totalPages - 1 && (
+          <PaginationItem>
+            <PaginationLink
+              onClick={() => onPageChange(totalPages)}
+              className="cursor-pointer"
+            >
+              <ChevronLast className="h-4 w-4" />
+            </PaginationLink>
+          </PaginationItem>
+        )}
       </PaginationContent>
     </Pagination>
+    </div>
   );
 };

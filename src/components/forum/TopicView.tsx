@@ -19,6 +19,9 @@ import { PostComponent } from './PostComponent';
 import { InlineReplyForm } from './InlineReplyForm';
 import { AdminControls } from './AdminControls';
 import { PostsPagination } from './PostsPagination';
+import { useUrlPagination } from '@/hooks/useUrlPagination';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { InfiniteScroll } from '@/components/ui/infinite-scroll';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 
@@ -30,7 +33,9 @@ export const TopicView = () => {
   const [isEditingTopic, setIsEditingTopic] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const { currentPage, setPage } = useUrlPagination(1);
+  const [useInfiniteScroll, setUseInfiniteScroll] = useState(false);
+  const isMobile = useIsMobile();
   const postsPerPage = 20;
   
   const [reportModal, setReportModal] = useState<{
@@ -53,8 +58,8 @@ export const TopicView = () => {
   const topicError = isLegacyRoute ? legacyError : slugError;
   
   const { data: posts, isLoading: postsLoading } = usePosts(topic?.id || '', {
-    page: currentPage,
-    limit: postsPerPage
+    page: useInfiniteScroll ? 1 : currentPage,
+    limit: useInfiniteScroll ? currentPage * postsPerPage : postsPerPage
   });
   const { data: totalPosts } = usePostsCount(topic?.id || '');
   const { userVote: topicVote, vote: voteOnTopic, isVoting: isVotingTopic } = useTopicVote(topic?.id || '');
@@ -98,15 +103,27 @@ export const TopicView = () => {
 
   const canEditTopic = user && (user.id === topic?.author_id || user.role === 'admin' || user.role === 'moderator');
   const totalPages = Math.ceil((totalPosts || 0) / postsPerPage);
+  const hasMorePosts = useInfiniteScroll && (currentPage * postsPerPage) < (totalPosts || 0);
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    setPage(page);
     // Scroll to top of comments section
     const commentsSection = document.querySelector('#comments-section');
     if (commentsSection) {
       commentsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  const handleLoadMore = () => {
+    if (hasMorePosts) {
+      setPage(currentPage + 1);
+    }
+  };
+
+  // Auto-enable infinite scroll on mobile
+  useEffect(() => {
+    setUseInfiniteScroll(isMobile);
+  }, [isMobile]);
 
   // Handle scrolling to specific posts on page load
   useEffect(() => {
@@ -472,11 +489,24 @@ export const TopicView = () => {
             <h2 className="text-base md:text-lg font-semibold text-foreground">
               Comments ({totalPosts || 0})
             </h2>
-            {totalPages > 1 && (
-              <span className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {totalPages > 1 && !useInfiniteScroll && (
+                <span className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages}
+                </span>
+              )}
+              {/* Mobile scroll toggle */}
+              {isMobile && totalPages > 1 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setUseInfiniteScroll(!useInfiniteScroll)}
+                  className="text-xs"
+                >
+                  {useInfiniteScroll ? 'Pagination' : 'Infinite Scroll'}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
         
@@ -487,23 +517,42 @@ export const TopicView = () => {
             ))}
           </div>
         ) : posts && posts.length > 0 ? (
-          <div className="space-y-1">
-            {organizeReplies(posts).map((reply) => (
-              <PostComponent
-                key={reply.id}
-                post={reply}
-                topicId={topic.id || ''}
-                depth={0}
-                onReport={handleReport}
-              />
-            ))}
-          </div>
+          useInfiniteScroll ? (
+            <InfiniteScroll
+              items={organizeReplies(posts)}
+              loading={postsLoading}
+              hasMore={hasMorePosts}
+              onLoadMore={handleLoadMore}
+              renderItem={(reply, index) => (
+                <PostComponent
+                  key={reply.id}
+                  post={reply}
+                  topicId={topic.id || ''}
+                  depth={0}
+                  onReport={handleReport}
+                />
+              )}
+              className="space-y-1"
+            />
+          ) : (
+            <div className="space-y-1">
+              {organizeReplies(posts).map((reply) => (
+                <PostComponent
+                  key={reply.id}
+                  post={reply}
+                  topicId={topic.id || ''}
+                  depth={0}
+                  onReport={handleReport}
+                />
+              ))}
+            </div>
+          )
         ) : (
           <p className="text-muted-foreground text-center py-8 px-3">No replies yet. Be the first to reply!</p>
         )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
+        {/* Pagination - only show when not using infinite scroll */}
+        {!useInfiniteScroll && totalPages > 1 && (
           <div className="p-4 border-t border-border">
             <PostsPagination
               currentPage={currentPage}
