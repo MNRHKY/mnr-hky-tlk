@@ -38,6 +38,10 @@ export const CreateTopic = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('DEBUG TOPIC CREATE: Starting submit process');
+    console.log('DEBUG TOPIC CREATE: User:', user);
+    console.log('DEBUG TOPIC CREATE: TempUser state:', { tempUser: tempUser.tempUser, canPost: tempUser.canPost, remainingPosts: tempUser.remainingPosts });
+    
     if (!formData.title || !formData.content || !formData.category_id) {
       toast({
         title: "Error",
@@ -49,8 +53,25 @@ export const CreateTopic = () => {
 
     // Enhanced validation for anonymous users
     if (!user) {
+      console.log('DEBUG TOPIC CREATE: Processing anonymous user validation');
+      const tempUserId = tempUser.getTempUserId();
+      console.log('DEBUG TOPIC CREATE: TempUserId:', tempUserId);
+      
+      if (!tempUserId) {
+        console.log('DEBUG TOPIC CREATE: No temp user ID available');
+        toast({
+          title: "Error",
+          description: "Unable to create session. Please refresh and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       // Check rate limits with enhanced system
-      const rateLimitCheck = await spamDetection.checkRateLimit(tempUser.getTempUserId() || '', 'topic');
+      console.log('DEBUG TOPIC CREATE: Checking rate limits');
+      const rateLimitCheck = await spamDetection.checkRateLimit(tempUserId, 'topic');
+      console.log('DEBUG TOPIC CREATE: Rate limit result:', rateLimitCheck);
+      
       if (!rateLimitCheck.allowed) {
         toast({
           title: "Posting Restricted",
