@@ -204,7 +204,7 @@ export const ForumHome = () => {
           ) : hotTopics && hotTopics.length > 0 ? (
             <div className="space-y-4">
               {[...hotTopics]
-                .sort((a, b) => b.vote_score - a.vote_score)
+                .sort((a, b) => b.view_count - a.view_count)
                 .map((topic) => (
                   <PostCard 
                     key={topic.id} 
