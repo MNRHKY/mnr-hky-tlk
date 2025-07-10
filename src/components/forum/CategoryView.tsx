@@ -7,7 +7,7 @@ import { MessageSquare, User, Clock, Pin, Plus, ChevronRight, Home, HelpCircle }
 
 import { useCategoriesByActivity } from '@/hooks/useCategoriesByActivity';
 import { useCategoryById, useCategoryBySlug } from '@/hooks/useCategories';
-import { useTopics } from '@/hooks/useTopics';
+import { useTopicsLegacy as useTopics } from '@/hooks/useTopicsLegacy';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategoryStats } from '@/hooks/useCategoryStats';
 import { formatDistanceToNow } from 'date-fns';

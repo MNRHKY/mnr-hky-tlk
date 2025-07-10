@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MessageSquare, User, Clock, Pin, Search } from 'lucide-react';
 
-import { useTopics } from '@/hooks/useTopics';
+import { useTopicsLegacy as useTopics } from '@/hooks/useTopicsLegacy';
 import { formatDistanceToNow } from 'date-fns';
 
 const Topics = () => {

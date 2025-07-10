@@ -24,25 +24,53 @@ export interface HotTopic {
   last_post_id: string | null;
 }
 
-export const useHotTopics = (limit = 25) => {
+export interface PaginatedHotTopicsResult {
+  data: HotTopic[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+}
+
+export const useHotTopics = (page = 1, limit = 10) => {
+  const offset = (page - 1) * limit;
+  
   return useQuery({
-    queryKey: ['hot-topics', limit],
+    queryKey: ['hot-topics', page, limit],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_hot_topics', {
-        limit_count: limit
-      });
+      const [topicsResult, countResult] = await Promise.all([
+        supabase.rpc('get_hot_topics', {
+          limit_count: limit,
+          offset_count: offset
+        }),
+        supabase.rpc('get_hot_topics_count')
+      ]);
       
-      if (error) {
-        console.error('Error fetching hot topics:', error);
-        throw error;
+      if (topicsResult.error) {
+        console.error('Error fetching hot topics:', topicsResult.error);
+        throw topicsResult.error;
       }
       
-      return (data as any[]).map(item => ({
+      if (countResult.error) {
+        console.error('Error fetching hot topics count:', countResult.error);
+        throw countResult.error;
+      }
+      
+      const topics = (topicsResult.data as any[]).map(item => ({
         ...item,
         category_slug: item.category_slug || '',
         slug: item.slug || '',
         last_post_id: item.last_post_id || null
       })) as HotTopic[];
+      
+      const totalCount = countResult.data as number;
+      const totalPages = Math.ceil(totalCount / limit);
+      
+      return {
+        data: topics,
+        totalCount,
+        totalPages,
+        currentPage: page
+      } as PaginatedHotTopicsResult;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });

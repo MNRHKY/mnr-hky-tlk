@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useTopics } from '@/hooks/useTopics';
+import { useTopicsLegacy as useTopics } from '@/hooks/useTopicsLegacy';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 

@@ -7,9 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, Clock, Star, MessageSquare, User as UserIcon, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { useHotTopics } from '@/hooks/useHotTopics';
 import { useTopics } from '@/hooks/useTopics';
+import { useHotTopicsLegacy } from '@/hooks/useHotTopicsLegacy';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
 import { useForumSettings } from '@/hooks/useForumSettings';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 
 import { PostCard } from './PostCard';
 import { ReportModal } from './ReportModal';
@@ -26,10 +28,18 @@ export const ForumHome = () => {
     isOpen: false,
   });
   
+  // Pagination state for each tab
+  const [hotPage, setHotPage] = useState(1);
+  const [newPage, setNewPage] = useState(1);
+  const [topPage, setTopPage] = useState(1);
+  
   const sortBy = searchParams.get('sort') || 'new';
   
-  const { data: hotTopics, isLoading: hotTopicsLoading } = useHotTopics(25);
-  const { data: newTopics, isLoading: newTopicsLoading } = useTopics();
+  // Paginated data hooks
+  const { data: hotTopicsData, isLoading: hotTopicsLoading } = useHotTopics(hotPage, 10);
+  const { data: newTopicsData, isLoading: newTopicsLoading } = useTopics(undefined, newPage, 10);
+  const { data: topTopicsData, isLoading: topTopicsLoading } = useHotTopicsLegacy(100); // Get more for sorting
+  
   const { data: level1Forums } = useCategories(null, 1); // Only Level 1 forums
   const { data: level2Forums } = useCategories(undefined, 2); // Province/State forums
   
@@ -40,6 +50,10 @@ export const ForumHome = () => {
     } else {
       setSearchParams({ sort: value });
     }
+    // Reset pagination when changing sort
+    setHotPage(1);
+    setNewPage(1);
+    setTopPage(1);
   };
 
   const handleReport = (topicId: string) => {
@@ -49,7 +63,7 @@ export const ForumHome = () => {
     });
   };
 
-  const isLoading = hotTopicsLoading || newTopicsLoading;
+  const isLoading = hotTopicsLoading || newTopicsLoading || topTopicsLoading;
 
   return (
     <div className="space-y-6 relative w-full overflow-x-hidden max-w-4xl mx-auto">
@@ -130,22 +144,32 @@ export const ForumHome = () => {
 
         {/* Hot Posts */}
         <TabsContent value="hot" className="space-y-4">
-          {isLoading ? (
+          {hotTopicsLoading ? (
             <div className="space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="h-32 bg-muted rounded animate-pulse"></div>
               ))}
             </div>
-          ) : hotTopics && hotTopics.length > 0 ? (
-            <div className="space-y-4">
-              {hotTopics.map((topic) => (
-                <PostCard 
-                  key={topic.id} 
-                  topic={topic} 
-                  onReport={handleReport}
-                />
-              ))}
-            </div>
+          ) : hotTopicsData && hotTopicsData.data.length > 0 ? (
+            <>
+              <div className="space-y-4">
+                {hotTopicsData.data.map((topic) => (
+                  <PostCard 
+                    key={topic.id} 
+                    topic={topic} 
+                    onReport={handleReport}
+                  />
+                ))}
+              </div>
+              <PaginationControls
+                currentPage={hotPage}
+                totalPages={hotTopicsData.totalPages}
+                totalItems={hotTopicsData.totalCount}
+                itemsPerPage={10}
+                onPageChange={setHotPage}
+                loading={hotTopicsLoading}
+              />
+            </>
           ) : (
             <Card className="p-8 text-center">
               <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -157,32 +181,42 @@ export const ForumHome = () => {
 
         {/* New Posts */}
         <TabsContent value="new" className="space-y-4">
-          {isLoading ? (
+          {newTopicsLoading ? (
             <div className="space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="h-32 bg-muted rounded animate-pulse"></div>
               ))}
             </div>
-          ) : newTopics && newTopics.length > 0 ? (
-            <div className="space-y-4">
-              {newTopics.slice(0, 25).map((topic) => (
-                <PostCard 
-                  key={topic.id} 
-                   topic={{
-                     ...topic,
-                     username: topic.profiles?.username || null,
-                     avatar_url: topic.profiles?.avatar_url || null,
-                     category_name: topic.categories?.name || 'General',
-                     category_color: topic.categories?.color || '#3b82f6',
-                     category_slug: topic.categories?.slug || '',
-                     slug: topic.slug,
-                     hot_score: 0,
-                     last_post_id: topic.last_post_id
-                   }}
-                  onReport={handleReport}
-                />
-              ))}
-            </div>
+          ) : newTopicsData && newTopicsData.data.length > 0 ? (
+            <>
+              <div className="space-y-4">
+                {newTopicsData.data.map((topic) => (
+                  <PostCard 
+                    key={topic.id} 
+                     topic={{
+                       ...topic,
+                       username: topic.profiles?.username || null,
+                       avatar_url: topic.profiles?.avatar_url || null,
+                       category_name: topic.categories?.name || 'General',
+                       category_color: topic.categories?.color || '#3b82f6',
+                       category_slug: topic.categories?.slug || '',
+                       slug: topic.slug,
+                       hot_score: 0,
+                       last_post_id: topic.last_post_id
+                     }}
+                    onReport={handleReport}
+                  />
+                ))}
+              </div>
+              <PaginationControls
+                currentPage={newPage}
+                totalPages={newTopicsData.totalPages}
+                totalItems={newTopicsData.totalCount}
+                itemsPerPage={10}
+                onPageChange={setNewPage}
+                loading={newTopicsLoading}
+              />
+            </>
           ) : (
             <Card className="p-8 text-center">
               <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -194,16 +228,17 @@ export const ForumHome = () => {
 
         {/* Top Posts */}
         <TabsContent value="top" className="space-y-4">
-          {isLoading ? (
+          {topTopicsLoading ? (
             <div className="space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="h-32 bg-muted rounded animate-pulse"></div>
               ))}
             </div>
-          ) : hotTopics && hotTopics.length > 0 ? (
+          ) : topTopicsData && topTopicsData.length > 0 ? (
             <div className="space-y-4">
-              {[...hotTopics]
+              {[...topTopicsData]
                 .sort((a, b) => b.view_count - a.view_count)
+                .slice((topPage - 1) * 10, topPage * 10)
                 .map((topic) => (
                   <PostCard 
                     key={topic.id} 
@@ -211,6 +246,14 @@ export const ForumHome = () => {
                     onReport={handleReport}
                   />
                 ))}
+              <PaginationControls
+                currentPage={topPage}
+                totalPages={Math.ceil(topTopicsData.length / 10)}
+                totalItems={topTopicsData.length}
+                itemsPerPage={10}
+                onPageChange={setTopPage}
+                loading={topTopicsLoading}
+              />
             </div>
           ) : (
             <Card className="p-8 text-center">

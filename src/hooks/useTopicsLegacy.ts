@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -12,7 +11,6 @@ export interface Topic {
   is_locked: boolean;
   view_count: number;
   reply_count: number;
-  
   last_reply_at: string;
   created_at: string;
   updated_at: string;
@@ -30,22 +28,13 @@ export interface Topic {
   };
 }
 
-export interface PaginatedTopicsResult {
-  data: Topic[];
-  totalCount: number;
-  totalPages: number;
-  currentPage: number;
-}
-
-export const useTopics = (categoryId?: string, page = 1, limit = 10) => {
-  const offset = (page - 1) * limit;
-  
+// Legacy hook for backward compatibility - returns array of topics
+export const useTopicsLegacy = (categoryId?: string, limit = 25) => {
   return useQuery({
-    queryKey: ['topics', categoryId, page, limit],
+    queryKey: ['topics-legacy', categoryId, limit],
     queryFn: async () => {
       console.log('Fetching topics for category:', categoryId);
       
-      // Get topics with pagination
       let query = supabase
         .from('topics')
         .select(`
@@ -55,39 +44,21 @@ export const useTopics = (categoryId?: string, page = 1, limit = 10) => {
         .eq('moderation_status', 'approved')
         .order('is_pinned', { ascending: false })
         .order('last_reply_at', { ascending: false })
-        .range(offset, offset + limit - 1);
+        .limit(limit);
       
       if (categoryId) {
         query = query.eq('category_id', categoryId);
       }
       
-      // Get total count
-      const countResult = await supabase.rpc('get_topics_total_count', {
-        p_category_id: categoryId || null
-      });
-      
-      const [{ data: topics, error }, { data: totalCount, error: countError }] = await Promise.all([
-        query,
-        Promise.resolve({ data: countResult.data, error: countResult.error })
-      ]);
+      const { data: topics, error } = await query;
       
       if (error) {
         console.error('Error fetching topics:', error);
         throw error;
       }
-      
-      if (countError) {
-        console.error('Error fetching topics count:', countError);
-        throw countError;
-      }
 
       if (!topics || topics.length === 0) {
-        return {
-          data: [],
-          totalCount: 0,
-          totalPages: 0,
-          currentPage: page
-        } as PaginatedTopicsResult;
+        return [];
       }
 
       // Extract unique author IDs
@@ -153,15 +124,7 @@ export const useTopics = (categoryId?: string, page = 1, limit = 10) => {
       });
       
       console.log('Topics fetched:', enrichedTopics);
-      
-      const totalPages = Math.ceil((totalCount as number) / limit);
-      
-      return {
-        data: enrichedTopics,
-        totalCount: totalCount as number,
-        totalPages,
-        currentPage: page
-      } as PaginatedTopicsResult;
+      return enrichedTopics;
     },
   });
 };

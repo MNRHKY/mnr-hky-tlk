@@ -825,7 +825,9 @@ export type Database = {
         }[]
       }
       get_hot_topics: {
-        Args: { limit_count?: number }
+        Args:
+          | { limit_count?: number }
+          | { limit_count?: number; offset_count?: number }
         Returns: {
           id: string
           title: string
@@ -849,6 +851,10 @@ export type Database = {
           last_post_id: string
         }[]
       }
+      get_hot_topics_count: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       get_or_create_temp_user: {
         Args: { p_session_id: string }
         Returns: string
@@ -865,6 +871,10 @@ export type Database = {
         Returns: number
       }
       get_topics_count: {
+        Args: { p_category_id?: string }
+        Returns: number
+      }
+      get_topics_total_count: {
         Args: { p_category_id?: string }
         Returns: number
       }
