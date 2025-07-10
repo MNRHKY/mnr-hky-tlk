@@ -740,6 +740,10 @@ export type Database = {
         }
         Returns: Json
       }
+      check_previous_report_status: {
+        Args: { p_post_id?: string; p_topic_id?: string }
+        Returns: Json
+      }
       check_user_rate_limit: {
         Args: { user_id: string }
         Returns: boolean
@@ -876,6 +880,10 @@ export type Database = {
       get_posts_count: {
         Args: { p_topic_id: string }
         Returns: number
+      }
+      get_reporter_behavior: {
+        Args: { p_reporter_id?: string; p_reporter_ip?: unknown }
+        Returns: Json
       }
       get_topics_count: {
         Args: { p_category_id?: string }

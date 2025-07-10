@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,11 +10,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
-import { CheckCircle, X, Eye, Save, ExternalLink, Trash2, RotateCcw } from 'lucide-react';
+import { CheckCircle, X, Eye, Save, ExternalLink, Trash2, RotateCcw, AlertTriangle, TrendingUp } from 'lucide-react';
 
 interface ReportDetailsModalProps {
   isOpen: boolean;
@@ -26,7 +27,45 @@ interface ReportDetailsModalProps {
 export const ReportDetailsModal = ({ isOpen, onClose, report, onUpdate }: ReportDetailsModalProps) => {
   const [adminNotes, setAdminNotes] = useState(report?.admin_notes || '');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [reporterBehavior, setReporterBehavior] = useState<any>(null);
+  const [previousReports, setPreviousReports] = useState<any>(null);
   const { toast } = useToast();
+
+  // Load reporter behavior data when modal opens
+  useEffect(() => {
+    if (isOpen && report) {
+      loadReporterData();
+      loadPreviousReports();
+    }
+  }, [isOpen, report]);
+
+  const loadReporterData = async () => {
+    if (!report) return;
+    
+    try {
+      const { data: behavior } = await supabase.rpc('get_reporter_behavior', {
+        p_reporter_id: report.reporter_id || null,
+        p_reporter_ip: report.reporter_ip_address || null
+      });
+      setReporterBehavior(behavior);
+    } catch (error) {
+      console.error('Error loading reporter behavior:', error);
+    }
+  };
+
+  const loadPreviousReports = async () => {
+    if (!report) return;
+    
+    try {
+      const { data: previousStatus } = await supabase.rpc('check_previous_report_status', {
+        p_post_id: report.reported_post_id || null,
+        p_topic_id: report.reported_topic_id || null
+      });
+      setPreviousReports(previousStatus);
+    } catch (error) {
+      console.error('Error loading previous reports:', error);
+    }
+  };
 
   const handleSaveNotes = async () => {
     if (!report) return;
@@ -61,12 +100,20 @@ export const ReportDetailsModal = ({ isOpen, onClose, report, onUpdate }: Report
     
     setIsUpdating(true);
     try {
+      // Add specific notes for repeat reports
+      let finalNotes = adminNotes.trim() || '';
+      if (previousReports?.was_previously_approved && status === 'dismissed') {
+        finalNotes = finalNotes 
+          ? `${finalNotes}\n\n[Auto] Dismissed repeat report on previously approved content.`
+          : '[Auto] Dismissed repeat report on previously approved content.';
+      }
+      
       const { error } = await supabase
         .from('reports')
         .update({
           status,
           reviewed_at: new Date().toISOString(),
-          admin_notes: adminNotes.trim() || null,
+          admin_notes: finalNotes || null,
         })
         .eq('id', report.id);
 
@@ -251,8 +298,17 @@ export const ReportDetailsModal = ({ isOpen, onClose, report, onUpdate }: Report
           </div>
 
           {/* Reporter Information */}
-          <div className="space-y-2">
-            <h3 className="font-semibold">Reporter Information</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Reporter Information</h3>
+              {reporterBehavior?.is_problematic_reporter && (
+                <Badge variant="destructive" className="text-xs">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Problematic Reporter
+                </Badge>
+              )}
+            </div>
+            
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <Label className="text-muted-foreground">Username</Label>
@@ -263,6 +319,60 @@ export const ReportDetailsModal = ({ isOpen, onClose, report, onUpdate }: Report
                 <p className="font-mono text-sm">{formatIPAddress(report.reporter_ip_address)}</p>
               </div>
             </div>
+
+            {/* Reporter Behavior Stats */}
+            {reporterBehavior && (
+              <div className="bg-muted/50 p-3 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  <Label className="font-medium">Reporter Activity</Label>
+                </div>
+                <div className="grid grid-cols-4 gap-3 text-xs">
+                  <div>
+                    <p className="text-muted-foreground">Total Reports</p>
+                    <p className="font-semibold">{reporterBehavior.total_reports}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Today</p>
+                    <p className="font-semibold">{reporterBehavior.reports_today}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Dismissed</p>
+                    <p className="font-semibold">{reporterBehavior.dismissed_reports}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Success Rate</p>
+                    <p className="font-semibold">
+                      {reporterBehavior.total_reports > 0 
+                        ? Math.round((1 - reporterBehavior.dismissed_reports / reporterBehavior.total_reports) * 100)
+                        : 0}%
+                    </p>
+                  </div>
+                </div>
+                {reporterBehavior.recent_repeat_reports > 0 && (
+                  <Alert className="mt-2 border-orange-200 bg-orange-50">
+                    <AlertTriangle className="h-4 w-4 text-orange-600" />
+                    <AlertDescription className="text-orange-800 text-xs">
+                      This reporter has made {reporterBehavior.recent_repeat_reports} reports on previously approved content in the last 24 hours.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            )}
+
+            {/* Previous Reports Warning */}
+            {previousReports?.was_previously_approved && (
+              <Alert className="border-amber-200 bg-amber-50">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-800 text-sm">
+                  <strong>Repeat Report:</strong> This content was previously reviewed and approved 
+                  {previousReports.last_approved_at && (
+                    <span> on {new Date(previousReports.last_approved_at).toLocaleDateString()}</span>
+                  )}. 
+                  Total reports on this content: {previousReports.total_reports}
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
 
           <Separator />
@@ -411,6 +521,30 @@ export const ReportDetailsModal = ({ isOpen, onClose, report, onUpdate }: Report
                   Close Report
                 </Button>
               </div>
+              
+              {/* Quick Actions for Repeat Reports */}
+              {previousReports?.was_previously_approved && (
+                <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                  <p className="text-sm text-amber-800 mb-2">
+                    <strong>Quick Action:</strong> This appears to be a repeat report on approved content.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setAdminNotes(prev => 
+                        prev ? `${prev}\n\nContent was previously approved. Dismissing repeat report.` 
+                             : 'Content was previously approved. Dismissing repeat report.'
+                      );
+                      handleStatusUpdate('dismissed');
+                    }}
+                    disabled={isUpdating}
+                    className="text-amber-700 border-amber-300 hover:bg-amber-100"
+                  >
+                    Auto-Dismiss Repeat Report
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
