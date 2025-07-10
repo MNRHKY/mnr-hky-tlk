@@ -12,13 +12,43 @@ export const useTopicByPath = (categorySlug: string, subcategorySlug?: string, t
         return null;
       }
       
-      // Get category ID first
-      let categoryQuery = supabase
-        .from('categories')
-        .select('id, parent_category_id')
-        .eq('slug', subcategorySlug || categorySlug);
+      // Get category ID first - handle hierarchical structure
+      let categoryData;
+      let categoryError;
       
-      const { data: categoryData, error: categoryError } = await categoryQuery.single();
+      if (subcategorySlug) {
+        // Hierarchical: validate parent-child relationship
+        const { data: parentCategory, error: parentError } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('slug', categorySlug)
+          .single();
+        
+        if (parentError) {
+          console.error('Error fetching parent category:', parentError);
+          throw parentError;
+        }
+        
+        const { data: childCategory, error: childError } = await supabase
+          .from('categories')
+          .select('id, parent_category_id')
+          .eq('slug', subcategorySlug)
+          .eq('parent_category_id', parentCategory.id)
+          .single();
+        
+        categoryData = childCategory;
+        categoryError = childError;
+      } else {
+        // Single category
+        const { data, error } = await supabase
+          .from('categories')
+          .select('id, parent_category_id')
+          .eq('slug', categorySlug)
+          .single();
+        
+        categoryData = data;
+        categoryError = error;
+      }
       
       if (categoryError) {
         console.error('Error fetching category:', categoryError);
@@ -30,7 +60,7 @@ export const useTopicByPath = (categorySlug: string, subcategorySlug?: string, t
         .from('topics')
         .select(`
           *,
-          categories (name, color, slug, parent_category_id)
+          categories (name, color, slug, parent_category_id, parent_category:categories!parent_category_id(slug, name))
         `)
         .eq('slug', topicSlug)
         .eq('category_id', categoryData.id)

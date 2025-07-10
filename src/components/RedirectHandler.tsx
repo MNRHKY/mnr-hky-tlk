@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getRedirectUrl } from '@/utils/urlRedirects';
+import { migrateUrl } from '@/utils/urlMigration';
 
 export const RedirectHandler = () => {
   const params = useParams();
@@ -9,6 +10,13 @@ export const RedirectHandler = () => {
 
   useEffect(() => {
     const { categorySlug, subcategorySlug, topicSlug } = params;
+    
+    // Check for URL migration first
+    const migratedUrl = migrateUrl(location.pathname);
+    if (migratedUrl) {
+      navigate(migratedUrl, { replace: true });
+      return;
+    }
     
     // Check if we need to redirect the category slug
     if (categorySlug) {
