@@ -88,11 +88,9 @@ const App = () => (
                     <Route path=":categorySlug/:subcategorySlug/:topicSlug" element={<TopicView />} />
                     <Route path=":categorySlug" element={<CategoryView />} />
                     <Route path=":categorySlug/:subcategorySlug" element={<CategoryView />} />
-                    {/* Legacy URL patterns with /category/ prefix */}
-                    <Route path="category/:categorySlug" element={<CategoryView />} />
-                    <Route path="category/:categorySlug/:subcategorySlug" element={<CategoryView />} />
                     {/* Legacy UUID-based redirects */}
                     <Route path="topic/:topicId" element={<TopicView />} />
+                    <Route path="category/:categoryId" element={<CategoryView />} />
                     <Route path="create" element={<CreateTopic />} />
                     <Route path="topics" element={<Topics />} />
                     <Route path="search" element={<Search />} />
