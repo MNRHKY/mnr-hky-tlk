@@ -177,8 +177,8 @@ export const CategoryView = () => {
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             {/* Show different content based on category level */}
-            {category.level === 3 ? (
-              // Only level 3 categories allow topic creation
+            {category.level >= 2 ? (
+              // Level 2 (tournaments) and Level 3 (age groups) allow topic creation
               <>
                 <QuickTopicModal 
                   preselectedCategoryId={category.id}
@@ -203,14 +203,10 @@ export const CategoryView = () => {
                 />
               </>
             ) : (
-              // Level 1 & 2 categories are for browsing only
+              // Only Level 1 categories are for browsing only
               <div className="flex flex-col items-center gap-2">
                 <Badge variant="secondary" className="text-xs">
-                  Browse Only - Select a {
-                    category.slug?.includes('general') ? 'Category' : 
-                    category.slug?.includes('tournaments') ? 'Location' :
-                    category.slug?.includes('usa') || category.region === 'USA' ? 'State' : 'Province'
-                  } to Post
+                  Browse Only - Select a Category to Post
                 </Badge>
                 <CategoryRequestModal 
                   currentCategoryId={category.id}
