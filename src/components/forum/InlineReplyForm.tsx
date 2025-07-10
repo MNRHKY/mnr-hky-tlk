@@ -75,7 +75,7 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
     }
 
     try {
-      await createPostMutation.mutateAsync({
+      const newPost = await createPostMutation.mutateAsync({
         content,
         topic_id: topicId,
         parent_post_id: parentPostId
@@ -87,10 +87,18 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
         await tempUser.refreshRateLimit();
       }
 
-      toast({
-        title: "Success",
-        description: "Reply posted successfully!",
-      });
+      // Show appropriate success message based on moderation status
+      if (newPost.moderation_status === 'pending') {
+        toast({
+          title: "Reply submitted",
+          description: "Your reply is being reviewed and will appear once approved. Anonymous posts require moderation for community safety.",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Reply posted successfully!",
+        });
+      }
       
       onSuccess();
     } catch (error) {
@@ -133,8 +141,8 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
 
       {/* Anonymous posting notice */}
       {!user && tempUser.tempUser && (
-        <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-          <div className="text-sm text-blue-800">
+        <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-md">
+          <div className="text-sm text-amber-800">
             <div className="font-medium">Posting as: {tempUser.tempUser.display_name}</div>
             <div className="text-xs mt-1">
               {tempUser.canPost 
@@ -142,9 +150,12 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
                 : 'Rate limit reached (5 posts per 12 hours)'
               }
             </div>
-            <div className="text-xs mt-2 text-blue-600">
+            <div className="text-xs mt-1 text-amber-700 font-medium">
+              ⚠️ Anonymous posts require moderation and won't appear immediately
+            </div>
+            <div className="text-xs mt-2 text-amber-600">
               <Link to="/register" className="underline hover:no-underline">
-                Create account for unlimited posting + images/links
+                Create account for immediate posting + images/links
               </Link>
             </div>
           </div>

@@ -82,7 +82,7 @@ export const ReportModal = ({ isOpen, onClose, postId, topicId, contentType }: R
       } else {
         toast({
           title: "Report submitted",
-          description: "Thank you for your report. We'll review it soon.",
+          description: "The content has been hidden pending review. Thank you for keeping our community safe.",
         });
         onClose();
         setReason('');

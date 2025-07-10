@@ -36,11 +36,21 @@ export const useCreatePost = () => {
       // Get user's IP address for admin tracking
       const userIP = await getUserIPWithFallback();
 
+      // Determine moderation status: anonymous posts require pre-moderation
+      let moderationStatus = 'approved';
+      if (!user) {
+        // Anonymous posts always require moderation
+        moderationStatus = 'pending';
+      } else if (topic.categories?.requires_moderation) {
+        // Category-specific moderation requirements
+        moderationStatus = 'pending';
+      }
+
       const postData: any = {
         content: data.content,
         topic_id: data.topic_id,
         parent_post_id: data.parent_post_id || null,
-        moderation_status: topic.categories?.requires_moderation ? 'pending' : 'approved',
+        moderation_status: moderationStatus,
         ip_address: userIP
       };
 
@@ -90,18 +100,26 @@ export const useCreatePost = () => {
       
       return post;
     },
-    onSuccess: (post) => {
-      // Invalidate and refetch posts for the topic
-      queryClient.invalidateQueries({ queryKey: ['posts', post.topic_id] });
+    onSuccess: (post, variables) => {
+      // Show appropriate success message based on moderation status
+      if (post.moderation_status === 'pending') {
+        // This will be shown via toast in the component that calls this hook
+      }
       
-      // Invalidate ALL topics queries to ensure proper refresh
-      queryClient.invalidateQueries({ queryKey: ['topics'] });
-      queryClient.invalidateQueries({ queryKey: ['topics', undefined] });
-      queryClient.invalidateQueries({ queryKey: ['hot-topics'] });
-      
-      // Force refetch to ensure immediate update
-      queryClient.refetchQueries({ queryKey: ['topics'] });
-      queryClient.refetchQueries({ queryKey: ['topics', undefined] });
+      // Only invalidate queries if post is approved (visible immediately)
+      if (post.moderation_status === 'approved') {
+        // Invalidate and refetch posts for the topic
+        queryClient.invalidateQueries({ queryKey: ['posts', post.topic_id] });
+        
+        // Invalidate ALL topics queries to ensure proper refresh
+        queryClient.invalidateQueries({ queryKey: ['topics'] });
+        queryClient.invalidateQueries({ queryKey: ['topics', undefined] });
+        queryClient.invalidateQueries({ queryKey: ['hot-topics'] });
+        
+        // Force refetch to ensure immediate update
+        queryClient.refetchQueries({ queryKey: ['topics'] });
+        queryClient.refetchQueries({ queryKey: ['topics', undefined] });
+      }
     },
   });
 };
