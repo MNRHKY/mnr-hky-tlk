@@ -40,8 +40,7 @@ export const useTopics = (categoryId?: string) => {
         .from('topics')
         .select(`
           *,
-          categories (name, color, slug, parent_category_id),
-          last_post_id:posts!inner(id)
+          categories (name, color, slug, parent_category_id)
         `)
         .eq('moderation_status', 'approved')
         .order('is_pinned', { ascending: false })
