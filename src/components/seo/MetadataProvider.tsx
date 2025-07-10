@@ -82,7 +82,7 @@ export const MetadataProvider: React.FC<MetadataProviderProps> = ({ children }) 
   // Determine page metadata based on current route
   const getPageMetadata = (): PageMetadata => {
     const baseTitle = "Minor Hockey Talks";
-    const baseSeparator = " - ";
+    const baseSeparator = " | ";
 
     // Custom metadata takes highest priority
     if (Object.keys(customMetadata).length > 0) {

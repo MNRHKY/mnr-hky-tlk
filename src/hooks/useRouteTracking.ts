@@ -19,7 +19,7 @@ export const useRouteTracking = () => {
   useEffect(() => {
     const generatePageTitle = () => {
       const baseTitle = getSetting('forum_name', 'Minor Hockey Talks');
-      const separator = ' - ';
+      const separator = ' | ';
 
       // Topic page
       if (topic && params.topicSlug) {
