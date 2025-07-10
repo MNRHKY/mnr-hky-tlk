@@ -82,19 +82,41 @@ export const SpamManagement = () => {
     }
   });
 
-  // Fetch suspicious activity
+  // Fetch suspicious activity including shadow-banned users
   const { data: suspiciousActivity, isLoading: activityLoading } = useQuery({
     queryKey: ['suspicious-activity'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('anonymous_post_tracking')
-        .select('*')
-        .or('is_blocked.eq.true,post_count.gte.3,topic_count.gte.2')
+        .select(`
+          *,
+          banned_ips!inner(
+            id,
+            ban_type,
+            reason,
+            is_active,
+            expires_at
+          )
+        `)
+        .or('is_blocked.eq.true,post_count.gte.3,topic_count.gte.2,banned_ips.ban_type.eq.shadowban')
+        .eq('banned_ips.is_active', true)
         .order('last_post_at', { ascending: false })
         .limit(50);
       
-      if (error) throw error;
-      return data as AnonymousTracking[];
+      if (error) {
+        // Fallback to original query if join fails
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('anonymous_post_tracking')
+          .select('*')
+          .or('is_blocked.eq.true,post_count.gte.3,topic_count.gte.2')
+          .order('last_post_at', { ascending: false })
+          .limit(50);
+        
+        if (fallbackError) throw fallbackError;
+        return fallbackData as AnonymousTracking[];
+      }
+      
+      return data as (AnonymousTracking & { banned_ips?: any })[];
     }
   });
 
@@ -335,10 +357,17 @@ export const SpamManagement = () => {
                       <TableCell>{activity.post_count}</TableCell>
                       <TableCell>{activity.topic_count}</TableCell>
                       <TableCell>
-                        {activity.is_blocked ? 
-                          <Badge variant="destructive">Blocked</Badge> : 
-                          <Badge variant="secondary">Active</Badge>
-                        }
+                        <div className="flex gap-1">
+                          {(activity as any).banned_ips?.ban_type === 'shadowban' && (
+                            <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                              Shadow Banned
+                            </Badge>
+                          )}
+                          {activity.is_blocked ? 
+                            <Badge variant="destructive">Blocked</Badge> : 
+                            <Badge variant="secondary">Active</Badge>
+                          }
+                        </div>
                       </TableCell>
                       <TableCell>
                         {new Date(activity.last_post_at).toLocaleString()}
