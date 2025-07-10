@@ -23,6 +23,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Blog from "./pages/Blog";
 import Topics from "./pages/Topics";
+import { Categories } from "./pages/Categories";
 import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/admin/AdminPage";
@@ -93,6 +94,7 @@ const App = () => (
                     <Route path="category/:categoryId" element={<CategoryView />} />
                     <Route path="create" element={<CreateTopic />} />
                     <Route path="topics" element={<Topics />} />
+                    <Route path="categories" element={<Categories />} />
                     <Route path="search" element={<Search />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="settings" element={<Settings />} />
