@@ -18,19 +18,44 @@ export interface Post {
   parent_post?: Post;
 }
 
-export const usePosts = (topicId: string) => {
+interface UsePostsOptions {
+  page?: number;
+  limit?: number;
+}
+
+interface UsePostsResult {
+  posts: Post[];
+  totalCount: number;
+}
+
+export const usePosts = (topicId: string, options: UsePostsOptions = {}) => {
+  const { page = 1, limit = 20 } = options;
+  const offset = (page - 1) * limit;
+
   return useQuery({
-    queryKey: ['posts', topicId],
-    queryFn: async () => {
-      console.log('Fetching posts for topic:', topicId);
+    queryKey: ['posts', topicId, page, limit],
+    queryFn: async (): Promise<UsePostsResult> => {
+      console.log('Fetching posts for topic:', topicId, 'page:', page);
       
-      // First, get all approved posts for the topic
+      // Get total count using the database function
+      const { data: countData, error: countError } = await supabase
+        .rpc('get_posts_count', { p_topic_id: topicId });
+      
+      if (countError) {
+        console.error('Error fetching posts count:', countError);
+        throw countError;
+      }
+
+      const totalCount = countData || 0;
+
+      // Get paginated posts for the topic
       const { data: posts, error } = await supabase
         .from('posts')
         .select('*')
         .eq('topic_id', topicId)
         .eq('moderation_status', 'approved')
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .range(offset, offset + limit - 1);
       
       if (error) {
         console.error('Error fetching posts:', error);
@@ -38,7 +63,7 @@ export const usePosts = (topicId: string) => {
       }
 
       if (!posts || posts.length === 0) {
-        return [];
+        return { posts: [], totalCount };
       }
 
       // Get unique author IDs (including from posts that might be parents)
@@ -142,7 +167,7 @@ export const usePosts = (topicId: string) => {
       });
       
       console.log('Posts enriched with user data and parent posts:', enrichedPosts);
-      return enrichedPosts as Post[];
+      return { posts: enrichedPosts as Post[], totalCount };
     },
     enabled: !!topicId,
   });

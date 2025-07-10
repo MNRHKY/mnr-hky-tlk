@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
 import { HTMLRenderer } from '@/components/ui/html-renderer';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 import { MessageSquare, User, Clock, ArrowLeft, ThumbsUp, Flag, Reply, ArrowUp, ArrowDown, MessageCircle, Share, Edit } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTopic } from '@/hooks/useTopic';
@@ -22,11 +23,16 @@ import { toast } from '@/hooks/use-toast';
 export const TopicView = () => {
   const { topicId, categorySlug, subcategorySlug, topicSlug } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const [showTopicReply, setShowTopicReply] = useState(false);
   const [isEditingTopic, setIsEditingTopic] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
+  
+  // Pagination state
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const postsPerPage = 20;
   
   const [reportModal, setReportModal] = useState<{
     isOpen: boolean;
@@ -47,7 +53,13 @@ export const TopicView = () => {
   const topicLoading = isLegacyRoute ? legacyLoading : slugLoading;
   const topicError = isLegacyRoute ? legacyError : slugError;
   
-  const { data: posts, isLoading: postsLoading } = usePosts(topic?.id || '');
+  const { data: postsData, isLoading: postsLoading } = usePosts(topic?.id || '', {
+    page: currentPage,
+    limit: postsPerPage
+  });
+  
+  const posts = postsData?.posts || [];
+  const totalPosts = postsData?.totalCount || 0;
   const { mutate: editTopic, isPending: isUpdatingTopic } = useEditTopic();
 
 
@@ -87,6 +99,14 @@ export const TopicView = () => {
   };
 
   const canEditTopic = user && (user.id === topic?.author_id || user.role === 'admin' || user.role === 'moderator');
+
+  const handlePageChange = (page: number) => {
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('page', page.toString());
+      return newParams;
+    });
+  };
 
   // Handle scrolling to specific posts on page load
   useEffect(() => {
@@ -411,7 +431,7 @@ export const TopicView = () => {
       <div className="bg-card">
         <div className="p-3 md:p-6 border-b border-border">
           <h2 className="text-base md:text-lg font-semibold text-foreground">
-            Comments ({posts?.length || 0})
+            Comments ({totalPosts})
           </h2>
         </div>
         
@@ -435,6 +455,18 @@ export const TopicView = () => {
           </div>
         ) : (
           <p className="text-muted-foreground text-center py-8 px-3">No replies yet. Be the first to reply!</p>
+        )}
+        
+        {/* Pagination Controls */}
+        {totalPosts > 0 && (
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={Math.ceil(totalPosts / postsPerPage)}
+            totalItems={totalPosts}
+            itemsPerPage={postsPerPage}
+            onPageChange={handlePageChange}
+            loading={postsLoading}
+          />
         )}
       </div>
 
