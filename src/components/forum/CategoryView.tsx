@@ -128,109 +128,113 @@ export const CategoryView = () => {
 
   // Determine if we should show subcategories or topics
   const hasSubcategories = subcategories && subcategories.length > 0;
-  const isLevel3Category = category.level === 3; // Only Level 3 categories can have topics
+  const isLevel3Category = category?.level === 3; // Only Level 3 categories can have topics
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full overflow-x-hidden">
       {/* Breadcrumb */}
-      <Breadcrumb className="overflow-x-auto">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link to="/">
-                <Home className="h-4 w-4" />
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage className="max-w-full truncate">{category.name}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+      {category && (
+        <Breadcrumb className="overflow-x-auto">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/">
+                  <Home className="h-4 w-4" />
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="max-w-full truncate">{category.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      )}
 
       {/* Category Header */}
-      <Card className="p-4 sm:p-6 w-full">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center space-x-3">
-                <div 
-                  className="w-4 h-4 rounded-full flex-shrink-0" 
-                  style={{ backgroundColor: category.color }}
-                />
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 min-w-0 truncate">{category.name}</h1>
-              </div>
-              <AdminControls 
-                content={category} 
-                contentType="category" 
-                onDelete={() => window.location.href = '/'}
-              />
-            </div>
-            <p className="text-gray-600 mb-4 text-sm sm:text-base">{category.description}</p>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
-              {category.region && <span>Region: {category.region}</span>}
-              {category.birth_year && <span>Birth Year: {category.birth_year}</span>}
-              {category.play_level && <span>Level: {category.play_level}</span>}
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-            {/* Show different content based on category level */}
-            {category.level === 3 ? (
-              // Only level 3 categories allow topic creation
-              <>
-                <QuickTopicModal 
-                  preselectedCategoryId={category.id}
-                  trigger={
-                    <Button size="sm" className="w-full sm:w-auto">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Start Discussion
-                    </Button>
-                  }
-                />
-                
-                {/* Category request button */}
-                <CategoryRequestModal 
-                  currentCategoryId={category.id}
-                  trigger={
-                    <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                      <HelpCircle className="h-4 w-4 mr-2" />
-                      <span className="hidden sm:inline">Request Category</span>
-                      <span className="sm:hidden">Request</span>
-                    </Button>
-                  }
-                />
-              </>
-            ) : (
-              // Level 1 & 2 categories are for browsing only
-              <div className="flex flex-col items-center gap-2">
-                <Badge variant="secondary" className="text-xs">
-                  Browse Only - Select a {
-                    category.slug?.includes('general') ? 'Category' : 
-                    category.slug?.includes('tournaments') ? 'Location' :
-                    category.slug?.includes('usa') || category.region === 'USA' ? 'State' : 'Province'
-                  } to Post
-                </Badge>
-                <CategoryRequestModal 
-                  currentCategoryId={category.id}
-                  trigger={
-                    <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                      <HelpCircle className="h-4 w-4 mr-2" />
-                      <span className="hidden sm:inline">Request Category</span>
-                      <span className="sm:hidden">Request</span>
-                    </Button>
-                  }
+      {category && (
+        <Card className="p-4 sm:p-6 w-full">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-3">
+                  <div 
+                    className="w-4 h-4 rounded-full flex-shrink-0" 
+                    style={{ backgroundColor: category.color }}
+                  />
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900 min-w-0 truncate">{category.name}</h1>
+                </div>
+                <AdminControls 
+                  content={category} 
+                  contentType="category" 
+                  onDelete={() => window.location.href = '/'}
                 />
               </div>
-            )}
+              <p className="text-gray-600 mb-4 text-sm sm:text-base">{category.description}</p>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
+                {category.region && <span>Region: {category.region}</span>}
+                {category.birth_year && <span>Birth Year: {category.birth_year}</span>}
+                {category.play_level && <span>Level: {category.play_level}</span>}
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+              {/* Show different content based on category level */}
+              {category.level === 3 ? (
+                // Only level 3 categories allow topic creation
+                <>
+                  <QuickTopicModal 
+                    preselectedCategoryId={category.id}
+                    trigger={
+                      <Button size="sm" className="w-full sm:w-auto">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Start Discussion
+                      </Button>
+                    }
+                  />
+                  
+                  {/* Category request button */}
+                  <CategoryRequestModal 
+                    currentCategoryId={category.id}
+                    trigger={
+                      <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                        <HelpCircle className="h-4 w-4 mr-2" />
+                        <span className="hidden sm:inline">Request Category</span>
+                        <span className="sm:hidden">Request</span>
+                      </Button>
+                    }
+                  />
+                </>
+              ) : (
+                // Level 1 & 2 categories are for browsing only
+                <div className="flex flex-col items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    Browse Only - Select a {
+                      category.slug?.includes('general') ? 'Category' : 
+                      category.slug?.includes('tournaments') ? 'Location' :
+                      category.slug?.includes('usa') || category.region === 'USA' ? 'State' : 'Province'
+                    } to Post
+                  </Badge>
+                  <CategoryRequestModal 
+                    currentCategoryId={category.id}
+                    trigger={
+                      <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                        <HelpCircle className="h-4 w-4 mr-2" />
+                        <span className="hidden sm:inline">Request Category</span>
+                        <span className="sm:hidden">Request</span>
+                      </Button>
+                    }
+                  />
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
 
 
       {/* Subcategories or Topics */}
-      {hasSubcategories ? (
+      {category && hasSubcategories ? (
         <>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Browse Categories</h2>
@@ -252,7 +256,7 @@ export const CategoryView = () => {
             ))}
           </div>
         </>
-      ) : (
+      ) : category ? (
         <>
           <div className="flex items-center justify-between">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Topics</h2>
@@ -275,12 +279,12 @@ export const CategoryView = () => {
                        </div>
                        <div className="flex-1 min-w-0">
                          <div className="flex items-center justify-between mb-1">
-                           <Link 
-                             to={topic.slug ? `/${category.slug}/${topic.slug}` : `/topic/${topic.id}`}
-                             className="font-medium text-gray-900 hover:text-blue-600 text-sm sm:text-base line-clamp-2 flex-1"
-                           >
-                             {topic.title}
-                           </Link>
+                            <Link 
+                              to={topic.slug ? `/${category.slug}/${topic.slug}` : `/topic/${topic.id}`}
+                              className="font-medium text-gray-900 hover:text-blue-600 text-sm sm:text-base line-clamp-2 flex-1"
+                            >
+                              {topic.title}
+                            </Link>
                            <AdminControls 
                              content={topic} 
                              contentType="topic"
@@ -337,7 +341,7 @@ export const CategoryView = () => {
             )}
           </Card>
         </>
-      )}
+      ) : null}
     </div>
   );
 };

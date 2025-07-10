@@ -852,6 +852,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_post_references: {
+        Args: { deleted_post_id: string }
+        Returns: undefined
+      }
       cleanup_spam_detection_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -962,6 +966,14 @@ export type Database = {
           peak_count: number
           peak_date: string
         }[]
+      }
+      get_posts_count: {
+        Args: { p_topic_id: string }
+        Returns: number
+      }
+      get_topics_count: {
+        Args: { p_category_id?: string }
+        Returns: number
       }
       has_role: {
         Args: {
