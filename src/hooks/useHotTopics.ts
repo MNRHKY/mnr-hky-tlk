@@ -22,6 +22,8 @@ export interface HotTopic {
   slug: string;
   hot_score: number;
   last_post_id: string | null;
+  parent_category_id: string | null;
+  parent_category_slug: string | null;
 }
 
 export interface PaginatedHotTopicsResult {
@@ -59,7 +61,9 @@ export const useHotTopics = (page = 1, limit = 10) => {
         ...item,
         category_slug: item.category_slug || '',
         slug: item.slug || '',
-        last_post_id: item.last_post_id || null
+        last_post_id: item.last_post_id || null,
+        parent_category_id: item.parent_category_id || null,
+        parent_category_slug: item.parent_category_slug || null
       })) as HotTopic[];
       
       const totalCount = countResult.data as number;

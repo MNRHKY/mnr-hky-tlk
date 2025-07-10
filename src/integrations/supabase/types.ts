@@ -831,9 +831,7 @@ export type Database = {
         }[]
       }
       get_hot_topics: {
-        Args:
-          | { limit_count?: number }
-          | { limit_count?: number; offset_count?: number }
+        Args: { limit_count?: number; offset_count?: number }
         Returns: {
           id: string
           title: string
@@ -844,6 +842,7 @@ export type Database = {
           is_locked: boolean
           view_count: number
           reply_count: number
+          vote_score: number
           last_reply_at: string
           created_at: string
           updated_at: string
@@ -855,6 +854,8 @@ export type Database = {
           slug: string
           hot_score: number
           last_post_id: string
+          parent_category_id: string
+          parent_category_slug: string
         }[]
       }
       get_hot_topics_count: {

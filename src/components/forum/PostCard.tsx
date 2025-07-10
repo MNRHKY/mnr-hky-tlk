@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { HotTopic } from '@/hooks/useHotTopics';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AdminControls } from './AdminControls';
+import { generateCategoryUrl } from '@/utils/urlHelpers';
 
 interface PostCardProps {
   topic: HotTopic;
@@ -18,6 +19,15 @@ export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
+  // Generate the category URL for the clickable badge
+  const categoryUrl = generateCategoryUrl({
+    slug: topic.category_slug,
+    parent_category_id: topic.parent_category_id,
+    parent_category: topic.parent_category_slug ? {
+      slug: topic.parent_category_slug
+    } : undefined
+  });
+
   return (
     <div className="bg-card border-b border-border hover:bg-muted/50 transition-colors">
       <div className="p-3 md:p-4">
@@ -27,17 +37,22 @@ export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
           <div className="flex-1 min-w-0">
             {/* Category and meta info */}
             <div className="flex items-center flex-wrap gap-2 mb-2">
-              <Badge 
-                variant="secondary" 
-                className="text-xs px-2 py-0.5"
-                style={{ 
-                  borderColor: topic.category_color,
-                  color: topic.category_color,
-                  backgroundColor: `${topic.category_color}10`
-                }}
+              <Link 
+                to={categoryUrl}
+                className="inline-block hover:opacity-80 transition-opacity"
               >
-                {topic.category_name}
-              </Badge>
+                <Badge 
+                  variant="secondary" 
+                  className="text-xs px-2 py-0.5 cursor-pointer"
+                  style={{ 
+                    borderColor: topic.category_color,
+                    color: topic.category_color,
+                    backgroundColor: `${topic.category_color}10`
+                  }}
+                >
+                  {topic.category_name}
+                </Badge>
+              </Link>
               {topic.is_pinned && (
                 <div className="flex items-center space-x-1 text-green-600">
                   <Pin className="h-3 w-3" />

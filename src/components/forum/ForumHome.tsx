@@ -202,7 +202,9 @@ export const ForumHome = () => {
                        category_slug: topic.categories?.slug || '',
                        slug: topic.slug,
                        hot_score: 0,
-                       last_post_id: topic.last_post_id
+                       last_post_id: topic.last_post_id,
+                       parent_category_id: topic.categories?.parent_category_id || null,
+                       parent_category_slug: null // Not available in useTopics data
                      }}
                     onReport={handleReport}
                   />
@@ -242,7 +244,11 @@ export const ForumHome = () => {
                 .map((topic) => (
                   <PostCard 
                     key={topic.id} 
-                    topic={topic} 
+                    topic={{
+                      ...topic,
+                      parent_category_id: null, // Not available in legacy hot topics
+                      parent_category_slug: null // Not available in legacy hot topics
+                    }} 
                     onReport={handleReport}
                   />
                 ))}
