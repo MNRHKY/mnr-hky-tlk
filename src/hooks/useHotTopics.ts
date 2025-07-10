@@ -22,6 +22,7 @@ export interface HotTopic {
   category_slug: string;
   slug: string;
   hot_score: number;
+  last_post_id: string | null;
 }
 
 export const useHotTopics = (limit = 25) => {
@@ -40,7 +41,8 @@ export const useHotTopics = (limit = 25) => {
       return (data as any[]).map(item => ({
         ...item,
         category_slug: item.category_slug || '',
-        slug: item.slug || ''
+        slug: item.slug || '',
+        last_post_id: item.last_post_id || null
       })) as HotTopic[];
     },
     staleTime: 1000 * 60 * 5, // 5 minutes

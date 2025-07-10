@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -90,6 +90,37 @@ export const TopicView = () => {
   };
 
   const canEditTopic = user && (user.id === topic?.author_id || user.role === 'admin' || user.role === 'moderator');
+
+  // Handle scrolling to specific posts on page load
+  useEffect(() => {
+    if (posts && posts.length > 0) {
+      const hash = window.location.hash;
+      if (hash) {
+        const targetId = hash.substring(1); // Remove the # symbol
+        
+        if (targetId === 'last-reply') {
+          // Scroll to the last reply
+          const lastPost = posts[posts.length - 1];
+          if (lastPost) {
+            setTimeout(() => {
+              const element = document.getElementById(`post-${lastPost.id}`);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }, 100);
+          }
+        } else if (targetId.startsWith('post-')) {
+          // Scroll to specific post
+          setTimeout(() => {
+            const element = document.getElementById(targetId);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 100);
+        }
+      }
+    }
+  }, [posts]);
 
   const organizeReplies = (posts: any[]) => {
     // Create a flat list sorted by creation time to maintain chronological order

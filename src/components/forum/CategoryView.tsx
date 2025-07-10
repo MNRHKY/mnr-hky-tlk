@@ -293,7 +293,12 @@ export const CategoryView = () => {
                             {topic.last_reply_at && topic.reply_count > 0 && (
                               <>
                                 <span>•</span>
-                                <span>Last reply {formatDistanceToNow(new Date(topic.last_reply_at))} ago</span>
+                                <Link
+                                  to={`/${category.slug}/${topic.slug}#last-reply`}
+                                  className="hover:text-primary transition-colors"
+                                >
+                                  Last reply {formatDistanceToNow(new Date(topic.last_reply_at))} ago
+                                </Link>
                               </>
                             )}
                           </div>

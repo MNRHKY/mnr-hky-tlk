@@ -168,17 +168,18 @@ export const ForumHome = () => {
               {newTopics.slice(0, 25).map((topic) => (
                 <PostCard 
                   key={topic.id} 
-                  topic={{
-                    ...topic,
-                    vote_score: topic.vote_score || 0,
-                    username: topic.profiles?.username || null,
-                    avatar_url: topic.profiles?.avatar_url || null,
-                    category_name: topic.categories?.name || 'General',
-                    category_color: topic.categories?.color || '#3b82f6',
-                    category_slug: topic.categories?.slug || '',
-                    slug: topic.slug,
-                    hot_score: 0
-                  }}
+                   topic={{
+                     ...topic,
+                     vote_score: topic.vote_score || 0,
+                     username: topic.profiles?.username || null,
+                     avatar_url: topic.profiles?.avatar_url || null,
+                     category_name: topic.categories?.name || 'General',
+                     category_color: topic.categories?.color || '#3b82f6',
+                     category_slug: topic.categories?.slug || '',
+                     slug: topic.slug,
+                     hot_score: 0,
+                     last_post_id: null
+                   }}
                   onReport={handleReport}
                 />
               ))}

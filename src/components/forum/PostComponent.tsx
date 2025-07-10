@@ -133,7 +133,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   const replyTextColor = depth > 0 ? replyTextColors[colorIndex] : 'text-foreground';
   
   return (
-    <div className="relative border-b border-border/50 pb-2 mb-2 w-full">
+    <div id={`post-${post.id}`} className="relative border-b border-border/50 pb-2 mb-2 w-full">
       <div className="bg-card p-3 md:p-4 rounded-md w-full">
         {/* User info header */}
         <div className="flex items-center justify-between mb-3">

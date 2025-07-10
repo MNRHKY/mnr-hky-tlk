@@ -947,7 +947,9 @@ export type Database = {
           category_name: string
           category_color: string
           category_slug: string
+          slug: string
           hot_score: number
+          last_post_id: string
         }[]
       }
       get_or_create_temp_user: {
