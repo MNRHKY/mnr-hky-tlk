@@ -89,6 +89,93 @@ export type Database = {
         }
         Relationships: []
       }
+      banned_ips: {
+        Row: {
+          admin_notes: string | null
+          appeal_status: string | null
+          ban_type: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          ip_address: unknown
+          ip_range: unknown | null
+          is_active: boolean
+          reason: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          appeal_status?: string | null
+          ban_type?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address: unknown
+          ip_range?: unknown | null
+          is_active?: boolean
+          reason: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          appeal_status?: string | null
+          ban_type?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address?: unknown
+          ip_range?: unknown | null
+          is_active?: boolean
+          reason?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      banned_words: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          match_type: string
+          notes: string | null
+          severity: string
+          updated_at: string
+          word_pattern: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          match_type?: string
+          notes?: string | null
+          severity?: string
+          updated_at?: string
+          word_pattern: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          match_type?: string
+          notes?: string | null
+          severity?: string
+          updated_at?: string
+          word_pattern?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           birth_year: number | null
@@ -304,6 +391,42 @@ export type Database = {
           setting_key?: string
           setting_type?: string
           setting_value?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ip_whitelist: {
+        Row: {
+          bypass_level: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          ip_address: unknown
+          ip_range: unknown | null
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          bypass_level?: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          ip_address: unknown
+          ip_range?: unknown | null
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          bypass_level?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          ip_address?: unknown
+          ip_range?: unknown | null
+          is_active?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -731,6 +854,10 @@ export type Database = {
         Args: { user_ip: unknown; session_id: string }
         Returns: boolean
       }
+      check_banned_words: {
+        Args: { content_text: string }
+        Returns: Json
+      }
       check_enhanced_anonymous_rate_limit: {
         Args: {
           user_ip: unknown
@@ -738,6 +865,10 @@ export type Database = {
           p_fingerprint_hash?: string
           p_content_type?: string
         }
+        Returns: Json
+      }
+      check_ip_banned: {
+        Args: { user_ip: unknown }
         Returns: Json
       }
       check_previous_report_status: {

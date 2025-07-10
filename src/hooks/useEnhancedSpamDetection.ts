@@ -69,6 +69,36 @@ export const useEnhancedSpamDetection = () => {
         };
       }
 
+      // First check if IP is banned
+      const { data: ipCheck, error: ipError } = await supabase.rpc('check_ip_banned', {
+        user_ip: userIP
+      });
+
+      if (ipError) {
+        console.error('IP ban check failed:', ipError);
+        // Continue with rate limit check if IP check fails
+      } else if (ipCheck) {
+        const result = ipCheck as { is_banned: boolean; ban_type?: string; expires_at?: string; reason?: string };
+        
+        if (result.is_banned) {
+          const banType = result.ban_type;
+          const expires = result.expires_at;
+          
+          let message = `Your IP address has been ${banType === 'permanent' ? 'permanently ' : ''}blocked: ${result.reason}`;
+          if (banType === 'temporary' && expires) {
+            const expiryDate = new Date(expires);
+            message += ` (expires: ${expiryDate.toLocaleDateString()})`;
+          }
+          
+          return {
+            allowed: banType === 'shadowban', // Allow shadowbanned users to post but flag for review
+            reason: 'ip_banned',
+            message,
+            blockExpiresAt: expires
+          };
+        }
+      }
+
       const { data, error } = await supabase.rpc('check_enhanced_anonymous_rate_limit', {
         user_ip: userIP,
         p_session_id: sessionId,

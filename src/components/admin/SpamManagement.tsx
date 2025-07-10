@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertTriangle, Shield, Activity, Settings } from 'lucide-react';
+import { AlertTriangle, Shield, Activity, Ban, Filter } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { BannedWordsManager } from './BannedWordsManager';
+import { BannedIPsManager } from './BannedIPsManager';
 
 interface SpamReport {
   id: string;
@@ -167,22 +169,26 @@ export const SpamManagement = () => {
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="reports" className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4" />
-            Spam Reports
+            Reports
           </TabsTrigger>
           <TabsTrigger value="analysis" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
-            Content Analysis
+            Analysis
           </TabsTrigger>
           <TabsTrigger value="activity" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
-            Suspicious Activity
+            Activity
           </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Settings
+          <TabsTrigger value="banned-words" className="flex items-center gap-2">
+            <Filter className="h-4 w-4" />
+            Banned Words
+          </TabsTrigger>
+          <TabsTrigger value="banned-ips" className="flex items-center gap-2">
+            <Ban className="h-4 w-4" />
+            IP Management
           </TabsTrigger>
         </TabsList>
 
@@ -351,36 +357,12 @@ export const SpamManagement = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="settings">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Spam Detection Settings</h3>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Configuration settings are managed through the spam_detection_config table.
-                This interface will be enhanced in future updates.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium">Rate Limits</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Anonymous: 3 posts/hour, 5 posts/day
-                  </p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium">Content Filters</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Lorem Ipsum detection, spam keywords
-                  </p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium">Auto-Moderation</h4>
-                  <p className="text-sm text-muted-foreground">
-                    80% confidence threshold for automatic review
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Card>
+        <TabsContent value="banned-words">
+          <BannedWordsManager />
+        </TabsContent>
+
+        <TabsContent value="banned-ips">
+          <BannedIPsManager />
         </TabsContent>
       </Tabs>
     </div>
