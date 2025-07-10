@@ -127,23 +127,36 @@ export const TopicView = () => {
 
   // Handle cross-page navigation and scrolling to specific posts
   useEffect(() => {
-    if (!topic?.id) return;
+    if (!topic?.id || postsLoading) return;
     
     const hash = window.location.hash;
     if (!hash) return;
     
     const targetId = hash.substring(1); // Remove the # symbol
     
+    const scrollToElement = (elementId: string, retries = 3) => {
+      const element = document.getElementById(elementId);
+      if (element) {
+        console.log('Scrolling to element:', elementId);
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      
+      if (retries > 0) {
+        console.log('Element not found, retrying...', elementId, 'retries left:', retries);
+        setTimeout(() => scrollToElement(elementId, retries - 1), 100);
+      } else {
+        console.log('Element not found after retries:', elementId);
+      }
+    };
+    
     if (targetId === 'last-reply') {
       // Handle last reply - scroll to the last post on current page
       if (posts && posts.length > 0) {
         const lastPost = posts[posts.length - 1];
-        setTimeout(() => {
-          const element = document.getElementById(`post-${lastPost.id}`);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 100);
+        requestAnimationFrame(() => {
+          setTimeout(() => scrollToElement(`post-${lastPost.id}`), 300);
+        });
       }
     } else if (targetId.startsWith('post-')) {
       // Handle specific post
@@ -151,21 +164,20 @@ export const TopicView = () => {
       
       // If we have page info and need to navigate to a different page
       if (postPageInfo && postPageInfo.page !== currentPage) {
+        console.log('Navigating to page:', postPageInfo.page, 'for post:', postId);
         handlePageChange(postPageInfo.page);
         return; // Exit early, the page change will trigger this effect again
       }
       
       // If we're on the right page, scroll to the post
       if (posts && posts.length > 0) {
-        setTimeout(() => {
-          const element = document.getElementById(targetId);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 100);
+        console.log('Attempting to scroll to post:', targetId, 'on current page');
+        requestAnimationFrame(() => {
+          setTimeout(() => scrollToElement(targetId), 300);
+        });
       }
     }
-  }, [posts, topic?.id, postPageInfo, currentPage, handlePageChange]);
+  }, [posts, topic?.id, postPageInfo, currentPage, handlePageChange, postsLoading]);
 
   const organizeReplies = (posts: any[]) => {
     // Create a flat list sorted by creation time to maintain chronological order
