@@ -179,9 +179,9 @@ export const CategoryView = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-              {/* Show different content based on category level */}
-              {category.level === 3 ? (
-                // Only level 3 categories allow topic creation
+              {/* Show different content based on category level and moderation requirements */}
+              {(category.level === 3 || (category.level === 2 && !category.requires_moderation)) ? (
+                // Level 3 categories and level 2 categories without moderation allow topic creation
                 <>
                   <QuickTopicModal 
                     preselectedCategoryId={category.id}
@@ -206,7 +206,7 @@ export const CategoryView = () => {
                   />
                 </>
               ) : (
-                // Level 1 & 2 categories are for browsing only
+                // Level 1 categories and level 2 categories requiring moderation are for browsing only
                 <div className="flex flex-col items-center gap-2">
                   <Badge variant="secondary" className="text-xs">
                     Browse Only - Select a {
