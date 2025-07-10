@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { getUserIP } from '@/utils/ipUtils';
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -50,8 +51,12 @@ export const ReportModal = ({ isOpen, onClose, postId, topicId, contentType }: R
     setIsSubmitting(true);
 
     try {
+      // Get reporter's IP address
+      const reporterIP = await getUserIP();
+      
       const reportData = {
         reporter_id: user?.id || null, // Allow null for anonymous users
+        reporter_ip_address: reporterIP,
         reason,
         description: description.trim() || null,
         ...(contentType === 'post' 

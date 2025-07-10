@@ -14,10 +14,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, Ban, CheckCircle, Clock, UserX, Wifi, WifiOff, Eye, X, Trash2, Users } from 'lucide-react';
+import { AlertTriangle, Ban, CheckCircle, Clock, UserX, Wifi, WifiOff, Eye, X, Trash2, Users, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { CategoryRequestsManager } from '@/components/admin/CategoryRequestsManager';
+import { ReportDetailsModal } from '@/components/admin/ReportDetailsModal';
 
 interface ModerationItem {
   id: string;
@@ -39,6 +40,8 @@ interface ModerationItem {
 const ReportsTab = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [selectedReport, setSelectedReport] = React.useState<any>(null);
+  const [isReportModalOpen, setIsReportModalOpen] = React.useState(false);
 
   // Helper function to generate the correct URL for reported content
   const getReportedContentUrl = (report: any) => {
@@ -63,7 +66,7 @@ const ReportsTab = () => {
     queryFn: async () => {
       const { data: reportsData, error: reportsError } = await supabase
         .from('reports')
-        .select('*')
+        .select('*, admin_notes, reporter_ip_address')
         .order('created_at', { ascending: false });
 
       if (reportsError) throw reportsError;
@@ -84,6 +87,7 @@ const ReportsTab = () => {
           content, 
           author_id, 
           topic_id,
+          ip_address,
           created_at,
           topics!inner (
             id,
@@ -220,6 +224,15 @@ const ReportsTab = () => {
     }
   };
 
+  const handleViewReportDetails = (report: any) => {
+    setSelectedReport(report);
+    setIsReportModalOpen(true);
+  };
+
+  const handleReportUpdate = () => {
+    queryClient.invalidateQueries({ queryKey: ['reports'] });
+  };
+
   if (isLoading) {
     return (
       <Card className="p-6">
@@ -236,10 +249,12 @@ const ReportsTab = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Reporter</TableHead>
+              <TableHead>Reporter IP</TableHead>
               <TableHead>Content Type</TableHead>
               <TableHead>Reason</TableHead>
               <TableHead>Content Preview</TableHead>
               <TableHead>Author</TableHead>
+              <TableHead>Content IP</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Reported</TableHead>
               <TableHead>Actions</TableHead>
@@ -248,7 +263,12 @@ const ReportsTab = () => {
           <TableBody>
             {reports?.map((report) => (
               <TableRow key={report.id}>
-                <TableCell>{report.reporter?.username || 'Unknown'}</TableCell>
+                <TableCell>{report.reporter?.username || 'Anonymous'}</TableCell>
+                 <TableCell>
+                   <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                     {String(report.reporter_ip_address || 'N/A')}
+                   </code>
+                 </TableCell>
                 <TableCell>
                   <Badge variant={report.reported_post_id ? 'secondary' : 'default'}>
                     {report.reported_post_id ? 'Post' : 'Topic'}
@@ -284,6 +304,11 @@ const ReportsTab = () => {
                    </div>
                  </TableCell>
                  <TableCell>
+                   <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                     {String(report.post?.ip_address || 'N/A')}
+                   </code>
+                 </TableCell>
+                 <TableCell>
                    <Badge 
                      variant={
                        report.status === 'pending' ? 'destructive' :
@@ -298,6 +323,15 @@ const ReportsTab = () => {
                 </TableCell>
                  <TableCell>
                    <div className="flex gap-1">
+                     <Button
+                       size="sm"
+                       variant="outline"
+                       onClick={() => handleViewReportDetails(report)}
+                       className="text-blue-600 hover:text-blue-700"
+                       title="View details"
+                     >
+                       <FileText className="h-3 w-3" />
+                     </Button>
                      <Button
                        size="sm"
                        variant="outline"
@@ -321,16 +355,6 @@ const ReportsTab = () => {
                      <Button
                        size="sm"
                        variant="outline"
-                       onClick={() => handleCloseReport(report.id)}
-                       className="text-blue-600 hover:text-blue-700"
-                       disabled={report.status === 'closed'}
-                       title="Close report"
-                     >
-                       <X className="h-3 w-3" />
-                     </Button>
-                     <Button
-                       size="sm"
-                       variant="outline"
                        onClick={() => handleDeleteReport(report.id)}
                        className="text-red-600 hover:text-red-700"
                        title="Delete report permanently"
@@ -343,7 +367,7 @@ const ReportsTab = () => {
             ))}
             {(!reports || reports.length === 0) && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell colSpan={10} className="text-center text-muted-foreground">
                   No reports to display
                 </TableCell>
               </TableRow>
@@ -351,6 +375,13 @@ const ReportsTab = () => {
           </TableBody>
         </Table>
       </div>
+      
+      <ReportDetailsModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        report={selectedReport}
+        onUpdate={handleReportUpdate}
+      />
     </Card>
   );
 };
