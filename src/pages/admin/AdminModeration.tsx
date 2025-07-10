@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { CategoryRequestsManager } from '@/components/admin/CategoryRequestsManager';
 import { ReportDetailsModal } from '@/components/admin/ReportDetailsModal';
+import { ModerationItemDetailsModal } from '@/components/admin/ModerationItemDetailsModal';
 
 interface ModerationItem {
   id: string;
@@ -388,6 +389,8 @@ const ReportsTab = () => {
 
 const AdminModeration = () => {
   const { toast } = useToast();
+  const [selectedModerationItem, setSelectedModerationItem] = React.useState<ModerationItem | null>(null);
+  const [isModerationModalOpen, setIsModerationModalOpen] = React.useState(false);
 
   // Query for reports count
   const { data: reportsCount } = useQuery({
@@ -665,6 +668,11 @@ const AdminModeration = () => {
     }
   };
 
+  const handleViewModerationDetails = (item: ModerationItem) => {
+    setSelectedModerationItem(item);
+    setIsModerationModalOpen(true);
+  };
+
   if (isLoading) {
     return (
       <Card className="p-6">
@@ -772,9 +780,18 @@ const AdminModeration = () => {
                       <TableCell className="text-xs text-muted-foreground">
                         {item.ip_address || 'N/A'}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button
+                       <TableCell>
+                         <div className="flex gap-1">
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => handleViewModerationDetails(item)}
+                             className="text-blue-600 hover:text-blue-700"
+                             title="View full content"
+                           >
+                             <FileText className="h-3 w-3" />
+                           </Button>
+                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleApprove(item.id, item.type)}
@@ -854,6 +871,16 @@ const AdminModeration = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ModerationItemDetailsModal
+        isOpen={isModerationModalOpen}
+        onClose={() => setIsModerationModalOpen(false)}
+        item={selectedModerationItem}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        onBanUser={handleBanUser}
+        onBanIP={handleBanIP}
+      />
     </div>
   );
 };
