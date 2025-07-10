@@ -60,6 +60,16 @@ export const useTempUser = () => {
     }
   };
 
+  const checkTopicLimit = async () => {
+    try {
+      const { canPost, remainingPosts } = await sessionManager.checkRateLimit('topic');
+      return { canPost, remainingPosts };
+    } catch (error) {
+      console.error('Error checking topic limit:', error);
+      return { canPost: false, remainingPosts: 0 };
+    }
+  };
+
   const validateContent = (content: string) => {
     return validateAnonymousContent(content);
   };
@@ -75,6 +85,7 @@ export const useTempUser = () => {
   return {
     ...state,
     refreshRateLimit,
+    checkTopicLimit,
     validateContent,
     getTempUserId,
     recordPost

@@ -13,6 +13,35 @@ import { useEnhancedSpamDetection } from '@/hooks/useEnhancedSpamDetection';
 import { SmartCategorySelector } from './SmartCategorySelector';
 import { toast } from '@/hooks/use-toast';
 
+const TopicLimitNotice = ({ tempUser }: { tempUser: any }) => {
+  const [topicLimits, setTopicLimits] = React.useState({ canPost: true, remainingPosts: 5 });
+
+  React.useEffect(() => {
+    tempUser.checkTopicLimit?.().then((limits: any) => {
+      if (limits) setTopicLimits(limits);
+    });
+  }, [tempUser]);
+
+  return (
+    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+      <div className="text-sm text-blue-800">
+        <div className="font-medium">Posting as: {tempUser.tempUser.display_name}</div>
+        <div className="text-xs mt-1">
+          {topicLimits.canPost 
+            ? `${topicLimits.remainingPosts} topics remaining today`
+            : 'Daily topic limit reached (5 topics per day)'
+          }
+        </div>
+        <div className="text-xs mt-2 text-blue-600">
+          <a href="/register" className="underline hover:no-underline">
+            Create account for unlimited posting + images/links
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const CreateTopic = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -81,16 +110,21 @@ export const CreateTopic = () => {
         return;
       }
 
-      // Analyze content for spam
-      const contentAnalysis = await spamDetection.analyzeContent(formData.content, 'topic');
-      if (!contentAnalysis.allowed) {
-        setContentErrors([contentAnalysis.message || 'Content flagged as spam']);
-        toast({
-          title: "Content Blocked",
-          description: contentAnalysis.message,
-          variant: "destructive",
-        });
-        return;
+      // Analyze content for spam with better error handling
+      try {
+        const contentAnalysis = await spamDetection.analyzeContent(formData.content, 'topic');
+        if (!contentAnalysis.allowed) {
+          setContentErrors([contentAnalysis.message || 'Content flagged as spam']);
+          toast({
+            title: "Content Blocked",
+            description: contentAnalysis.message,
+            variant: "destructive",
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Content analysis failed:', error);
+        // Continue with creation if analysis fails (fail-open approach)
       }
 
       // Legacy validation as fallback
@@ -153,22 +187,7 @@ export const CreateTopic = () => {
 
       {/* Show temp user notice for non-authenticated users */}
       {!user && tempUser.tempUser && (
-        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-          <div className="text-sm text-blue-800">
-            <div className="font-medium">Posting as: {tempUser.tempUser.display_name}</div>
-            <div className="text-xs mt-1">
-              {tempUser.canPost 
-                ? `${tempUser.remainingPosts} posts remaining in the next 12 hours`
-                : 'Rate limit reached (5 posts per 12 hours)'
-              }
-            </div>
-            <div className="text-xs mt-2 text-blue-600">
-              <a href="/register" className="underline hover:no-underline">
-                Create account for unlimited posting + images/links
-              </a>
-            </div>
-          </div>
-        </div>
+        <TopicLimitNotice tempUser={tempUser} />
       )}
 
       <Card className="p-6">
