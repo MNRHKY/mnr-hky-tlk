@@ -70,11 +70,23 @@ export const CreateTopic = () => {
     console.log('DEBUG TOPIC CREATE: Starting submit process');
     console.log('DEBUG TOPIC CREATE: User:', user);
     console.log('DEBUG TOPIC CREATE: TempUser state:', { tempUser: tempUser.tempUser, canPost: tempUser.canPost, remainingPosts: tempUser.remainingPosts });
+    console.log('DEBUG TOPIC CREATE: Form data:', formData);
+    console.log('DEBUG TOPIC CREATE: Missing fields:', {
+      title: !formData.title,
+      content: !formData.content,
+      category_id: !formData.category_id
+    });
     
     if (!formData.title || !formData.content || !formData.category_id) {
+      const missingFields = [];
+      if (!formData.title) missingFields.push('title');
+      if (!formData.content) missingFields.push('content');
+      if (!formData.category_id) missingFields.push('category');
+      
+      console.log('DEBUG TOPIC CREATE: Missing fields detected:', missingFields);
       toast({
         title: "Error",
-        description: "Please fill in all fields",
+        description: `Please fill in all fields. Missing: ${missingFields.join(', ')}`,
         variant: "destructive",
       });
       return;
@@ -205,7 +217,14 @@ export const CreateTopic = () => {
 
           <SmartCategorySelector
             value={formData.category_id}
-            onChange={(value) => setFormData({ ...formData, category_id: value })}
+            onChange={(value) => {
+              console.log('DEBUG CATEGORY SELECTION: onChange called with value:', value);
+              setFormData(prev => {
+                const newData = { ...prev, category_id: value };
+                console.log('DEBUG CATEGORY SELECTION: New form data:', newData);
+                return newData;
+              });
+            }}
             currentCategoryId={searchParams.get('category') || undefined}
             required
           />
