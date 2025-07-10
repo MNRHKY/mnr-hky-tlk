@@ -4,7 +4,7 @@ import { useGoogleAnalytics } from '@/hooks/useGoogleAnalytics';
 interface AnalyticsContextType {
   trackPageView: (customTitle?: string) => void;
   trackEvent: (eventName: string, parameters?: Record<string, any>) => void;
-  trackVote: (type: 'topic' | 'post', voteType: 'up' | 'down', itemId: string) => void;
+  
   trackSearch: (query: string, resultsCount: number) => void;
   trackContentCreation: (type: 'topic' | 'post', categoryId?: string) => void;
   trackUserAction: (action: 'login' | 'register' | 'logout') => void;

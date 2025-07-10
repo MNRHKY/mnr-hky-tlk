@@ -7,7 +7,7 @@ import { Reply, ArrowUp, ArrowDown, Flag, ChevronDown, ChevronUp, MessageSquare,
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { formatDistanceToNow } from 'date-fns';
-import { usePostVote } from '@/hooks/useVoting';
+
 import { InlineReplyForm } from './InlineReplyForm';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,7 +30,6 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   onReport 
 }) => {
   const { user } = useAuth();
-  const { userVote: postVote, vote: voteOnPost, isVoting: isVotingPost } = usePostVote(post.id);
   const { mutate: editPost, isPending: isEditingPost } = useEditPost();
   const { mutate: deletePost, isPending: isDeletingPost } = useDeletePost();
   const [showReplyForm, setShowReplyForm] = useState(false);
@@ -218,44 +217,6 @@ export const PostComponent: React.FC<PostComponentProps> = ({
         {/* Compact action bar */}
         <TooltipProvider>
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-            {/* Voting section - only show for authenticated users */}
-            <div className="flex items-center space-x-1">
-              {user ? (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`h-6 w-6 p-0 ${postVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
-                    onClick={() => voteOnPost({ voteType: 1 })}
-                    disabled={isVotingPost}
-                  >
-                    <ArrowUp className="h-3 w-3" />
-                  </Button>
-                  <span className={`text-xs font-medium min-w-[16px] text-center ${(post.vote_score || 0) > 0 ? 'text-orange-500' : (post.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
-                    {post.vote_score || 0}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`h-6 w-6 p-0 ${postVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
-                    onClick={() => voteOnPost({ voteType: -1 })}
-                    disabled={isVotingPost}
-                  >
-                    <ArrowDown className="h-3 w-3" />
-                  </Button>
-                </>
-              ) : (
-                <div className="flex flex-col items-center space-y-1">
-                  <span className={`text-xs font-medium min-w-[16px] text-center ${(post.vote_score || 0) > 0 ? 'text-orange-500' : (post.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
-                    {post.vote_score || 0}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    Login to vote
-                  </span>
-                </div>
-              )}
-            </div>
-            
             {/* Reply button - icon only */}
             <Tooltip>
               <TooltipTrigger asChild>

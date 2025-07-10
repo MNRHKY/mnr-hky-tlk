@@ -332,54 +332,6 @@ export type Database = {
         }
         Relationships: []
       }
-      post_votes: {
-        Row: {
-          anonymous_ip: unknown | null
-          anonymous_session_id: string | null
-          created_at: string
-          id: string
-          post_id: string
-          updated_at: string
-          user_id: string | null
-          vote_type: number
-        }
-        Insert: {
-          anonymous_ip?: unknown | null
-          anonymous_session_id?: string | null
-          created_at?: string
-          id?: string
-          post_id: string
-          updated_at?: string
-          user_id?: string | null
-          vote_type: number
-        }
-        Update: {
-          anonymous_ip?: unknown | null
-          anonymous_session_id?: string | null
-          created_at?: string
-          id?: string
-          post_id?: string
-          updated_at?: string
-          user_id?: string | null
-          vote_type?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "post_votes_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "post_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       posts: {
         Row: {
           author_id: string | null
@@ -392,7 +344,6 @@ export type Database = {
           parent_post_id: string | null
           topic_id: string
           updated_at: string | null
-          vote_score: number | null
         }
         Insert: {
           author_id?: string | null
@@ -405,7 +356,6 @@ export type Database = {
           parent_post_id?: string | null
           topic_id: string
           updated_at?: string | null
-          vote_score?: number | null
         }
         Update: {
           author_id?: string | null
@@ -418,7 +368,6 @@ export type Database = {
           parent_post_id?: string | null
           topic_id?: string
           updated_at?: string | null
-          vote_score?: number | null
         }
         Relationships: [
           {
@@ -623,54 +572,6 @@ export type Database = {
         }
         Relationships: []
       }
-      topic_votes: {
-        Row: {
-          anonymous_ip: unknown | null
-          anonymous_session_id: string | null
-          created_at: string
-          id: string
-          topic_id: string
-          updated_at: string
-          user_id: string | null
-          vote_type: number
-        }
-        Insert: {
-          anonymous_ip?: unknown | null
-          anonymous_session_id?: string | null
-          created_at?: string
-          id?: string
-          topic_id: string
-          updated_at?: string
-          user_id?: string | null
-          vote_type: number
-        }
-        Update: {
-          anonymous_ip?: unknown | null
-          anonymous_session_id?: string | null
-          created_at?: string
-          id?: string
-          topic_id?: string
-          updated_at?: string
-          user_id?: string | null
-          vote_type?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "topic_votes_topic_id_fkey"
-            columns: ["topic_id"]
-            isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "topic_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       topics: {
         Row: {
           author_id: string | null
@@ -694,7 +595,6 @@ export type Database = {
           title: string
           updated_at: string | null
           view_count: number | null
-          vote_score: number | null
         }
         Insert: {
           author_id?: string | null
@@ -718,7 +618,6 @@ export type Database = {
           title: string
           updated_at?: string | null
           view_count?: number | null
-          vote_score?: number | null
         }
         Update: {
           author_id?: string | null
@@ -742,7 +641,6 @@ export type Database = {
           title?: string
           updated_at?: string | null
           view_count?: number | null
-          vote_score?: number | null
         }
         Relationships: [
           {
@@ -824,10 +722,6 @@ export type Database = {
         Returns: Json
       }
       check_anonymous_rate_limit: {
-        Args: { user_ip: unknown; session_id: string }
-        Returns: boolean
-      }
-      check_anonymous_vote_limit: {
         Args: { user_ip: unknown; session_id: string }
         Returns: boolean
       }
@@ -942,7 +836,6 @@ export type Database = {
           is_locked: boolean
           view_count: number
           reply_count: number
-          vote_score: number
           last_reply_at: string
           created_at: string
           updated_at: string

@@ -11,7 +11,6 @@ export interface HotTopic {
   is_locked: boolean;
   view_count: number;
   reply_count: number;
-  vote_score: number;
   last_reply_at: string;
   created_at: string;
   updated_at: string;

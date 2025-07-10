@@ -59,14 +59,6 @@ export const useGoogleAnalytics = () => {
   }, [canTrack, user]);
 
   // Track user interactions
-  const trackVote = useCallback((type: 'topic' | 'post', voteType: 'up' | 'down', itemId: string) => {
-    trackEvent('vote_cast', {
-      content_type: type,
-      vote_type: voteType,
-      item_id: itemId
-    });
-  }, [trackEvent]);
-
   const trackSearch = useCallback((query: string, resultsCount: number) => {
     trackEvent('search', {
       search_term: query,
@@ -113,7 +105,6 @@ export const useGoogleAnalytics = () => {
   return {
     trackPageView,
     trackEvent,
-    trackVote,
     trackSearch,
     trackContentCreation,
     trackUserAction,

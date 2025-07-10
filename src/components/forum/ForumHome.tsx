@@ -170,7 +170,6 @@ export const ForumHome = () => {
                   key={topic.id} 
                    topic={{
                      ...topic,
-                     vote_score: topic.vote_score || 0,
                      username: topic.profiles?.username || null,
                      avatar_url: topic.profiles?.avatar_url || null,
                      category_name: topic.categories?.name || 'General',

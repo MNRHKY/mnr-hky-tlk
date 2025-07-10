@@ -11,9 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTopic } from '@/hooks/useTopic';
 import { useTopicByPath } from '@/hooks/useTopicByPath';
 import { usePosts } from '@/hooks/usePosts';
-import { useTopicVote } from '@/hooks/useVoting';
 import { useEditTopic } from '@/hooks/useEditTopic';
-import { VoteButtons } from './VoteButtons';
 import { ReportModal } from './ReportModal';
 import { PostComponent } from './PostComponent';
 import { InlineReplyForm } from './InlineReplyForm';
@@ -50,7 +48,6 @@ export const TopicView = () => {
   const topicError = isLegacyRoute ? legacyError : slugError;
   
   const { data: posts, isLoading: postsLoading } = usePosts(topic?.id || '');
-  const { userVote: topicVote, vote: voteOnTopic, isVoting: isVotingTopic } = useTopicVote(topic?.id || '');
   const { mutate: editTopic, isPending: isUpdatingTopic } = useEditTopic();
 
 
@@ -298,44 +295,6 @@ export const TopicView = () => {
 
             {/* Action bar - consistent with PostComponent */}
             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-              {/* Voting section - only show for authenticated users */}
-              <div className="flex items-center space-x-1">
-                {user ? (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={`h-6 w-6 p-0 ${topicVote?.vote_type === 1 ? 'text-orange-500 bg-orange-50' : 'text-muted-foreground hover:text-orange-500'}`}
-                      onClick={() => voteOnTopic({ voteType: 1 })}
-                      disabled={isVotingTopic}
-                    >
-                      <ArrowUp className="h-3 w-3" />
-                    </Button>
-                    <span className={`text-xs font-medium min-w-[16px] text-center ${(topic.vote_score || 0) > 0 ? 'text-orange-500' : (topic.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
-                      {topic.vote_score || 0}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={`h-6 w-6 p-0 ${topicVote?.vote_type === -1 ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500'}`}
-                      onClick={() => voteOnTopic({ voteType: -1 })}
-                      disabled={isVotingTopic}
-                    >
-                      <ArrowDown className="h-3 w-3" />
-                    </Button>
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center space-y-1">
-                    <span className={`text-xs font-medium min-w-[16px] text-center ${(topic.vote_score || 0) > 0 ? 'text-orange-500' : (topic.vote_score || 0) < 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
-                      {topic.vote_score || 0}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      Login to vote
-                    </span>
-                  </div>
-                )}
-              </div>
-
               {/* Edit button - only for authors and moderators */}
               {canEditTopic && !isEditingTopic && (
                 <Button 
