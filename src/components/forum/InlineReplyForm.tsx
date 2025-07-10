@@ -73,7 +73,7 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
       if (!tempUser.canPost) {
         toast({
           title: "Rate limit exceeded",
-          description: "You've reached the limit of 5 posts per 12 hours for anonymous users",
+          description: "You've reached your daily posting limit for anonymous users",
           variant: "destructive",
         });
         return;
@@ -99,24 +99,16 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
         parent_post_id: parentPostId
       });
 
-      // Record post and refresh rate limit for anonymous users
+      // Record post and refresh rate limit for anonymous users first
       if (!user) {
         await tempUser.recordPost();
         await tempUser.refreshRateLimit();
       }
 
-      // Show appropriate success message based on moderation status
-      if (newPost.moderation_status === 'pending') {
-        toast({
-          title: "Reply submitted",
-          description: "Your reply is being reviewed and will appear once approved. Anonymous posts require moderation for community safety.",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: "Reply posted successfully!",
-        });
-      }
+      toast({
+        title: "Success",
+        description: "Reply posted successfully!",
+      });
       
       onSuccess();
     } catch (error) {
@@ -165,16 +157,16 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
             <div className="font-medium">Posting as: {tempUser.tempUser.display_name}</div>
             <div className="text-xs mt-1">
               {tempUser.canPost 
-                ? `${tempUser.remainingPosts} posts remaining in the next 12 hours`
-                : 'Rate limit reached (5 posts per 12 hours)'
+                ? `${tempUser.remainingPosts} posts remaining today`
+                : 'Daily rate limit reached'
               }
             </div>
-            <div className="text-xs mt-1 text-amber-700 font-medium">
-              ⚠️ Anonymous posts require moderation and won't appear immediately
+            <div className="text-xs mt-1 text-amber-700">
+              Posts appear immediately • No images or links allowed
             </div>
             <div className="text-xs mt-2 text-amber-600">
               <Link to="/register" className="underline hover:no-underline">
-                Create account for immediate posting + images/links
+                Create account for unlimited posting + images/links
               </Link>
             </div>
           </div>

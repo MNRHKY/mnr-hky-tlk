@@ -28,21 +28,21 @@ export const AnonymousPostingNotice: React.FC<AnonymousPostingNoticeProps> = ({
         <div className="space-y-2 text-sm text-blue-800">
           {canPost ? (
             <div className="flex items-center space-x-2">
-              <span>You have {remainingPosts} posts remaining in the next 12 hours</span>
+              <span>You have {remainingPosts} posts remaining today</span>
             </div>
           ) : (
             <Alert className="border-orange-200 bg-orange-50">
               <Ban className="h-4 w-4 text-orange-600" />
               <AlertDescription className="text-orange-800">
-                You've reached the limit of 5 posts per 12 hours for anonymous users
+                You've reached your daily posting limit for anonymous users
               </AlertDescription>
             </Alert>
           )}
           
           <div className="text-xs text-blue-700">
-            <p>Anonymous posting restrictions:</p>
+            <p>Anonymous posting features:</p>
             <ul className="list-disc list-inside mt-1 space-y-1">
-              <li>Maximum 5 posts per 12 hours</li>
+              <li>Posts appear immediately</li>
               <li>No images or links allowed</li>
               <li>Posts appear as "Anonymous User"</li>
             </ul>
