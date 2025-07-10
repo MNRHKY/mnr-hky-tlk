@@ -178,7 +178,7 @@ export const ForumHome = () => {
                      category_slug: topic.categories?.slug || '',
                      slug: topic.slug,
                      hot_score: 0,
-                     last_post_id: null
+                     last_post_id: topic.last_post_id
                    }}
                   onReport={handleReport}
                 />
