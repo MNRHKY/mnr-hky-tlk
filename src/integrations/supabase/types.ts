@@ -971,6 +971,10 @@ export type Database = {
         Args: { p_topic_id: string }
         Returns: number
       }
+      get_topics_count: {
+        Args: { p_category_id?: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _user_id: string

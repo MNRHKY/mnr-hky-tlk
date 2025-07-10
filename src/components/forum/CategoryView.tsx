@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,13 +7,14 @@ import { MessageSquare, User, Clock, Pin, Plus, ChevronRight, Home, HelpCircle }
 
 import { useCategoriesByActivity } from '@/hooks/useCategoriesByActivity';
 import { useCategoryById, useCategoryBySlug } from '@/hooks/useCategories';
-import { useTopics } from '@/hooks/useTopics';
+import { useTopics, useTopicsCount } from '@/hooks/useTopics';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategoryStats } from '@/hooks/useCategoryStats';
 import { formatDistanceToNow } from 'date-fns';
 import { QuickTopicModal } from './QuickTopicModal';
 import { CategoryRequestModal } from './CategoryRequestModal';
 import { AdminControls } from './AdminControls';
+import { TopicsPagination } from './TopicsPagination';
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -70,6 +71,8 @@ export const CategoryView = () => {
   // Handle both legacy UUID routing and new slug routing
   const isLegacyRoute = !!categoryId;
   const { user } = useAuth();
+  const [currentPage, setCurrentPage] = useState(1);
+  const topicsPerPage = 25;
   
   // Check if categoryId is a UUID (proper UUID format: 8-4-4-4-12 characters)
   const isUUID = categoryId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(categoryId);
@@ -98,7 +101,11 @@ export const CategoryView = () => {
     categoryError = slugError;
   }
   const { data: subcategories, isLoading: subcategoriesLoading } = useCategoriesByActivity(category?.id, category?.level ? category.level + 1 : undefined);
-  const { data: topics, isLoading: topicsLoading } = useTopics(category?.id);
+  const { data: topics, isLoading: topicsLoading } = useTopics(category?.id, {
+    page: currentPage,
+    limit: topicsPerPage
+  });
+  const { data: totalTopics } = useTopicsCount(category?.id);
 
   if (categoryLoading) {
     return (
@@ -129,6 +136,16 @@ export const CategoryView = () => {
   // Determine if we should show subcategories or topics
   const hasSubcategories = subcategories && subcategories.length > 0;
   const isLevel3Category = category.level === 3; // Only Level 3 categories can have topics
+  const totalPages = Math.ceil((totalTopics || 0) / topicsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of topics section
+    const topicsSection = document.querySelector('#topics-section');
+    if (topicsSection) {
+      topicsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full overflow-x-hidden">
@@ -250,8 +267,15 @@ export const CategoryView = () => {
         </>
       ) : (
         <>
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Topics</h2>
+          <div className="flex items-center justify-between" id="topics-section">
+            <div className="flex items-center gap-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Topics</h2>
+              {totalPages > 1 && (
+                <span className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages} ({totalTopics} total)
+                </span>
+              )}
+            </div>
           </div>
           <Card className="p-3 sm:p-6 w-full">
             {topicsLoading ? (
@@ -329,6 +353,17 @@ export const CategoryView = () => {
                 <MessageSquare className="h-10 sm:h-12 w-10 sm:w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">No topics yet</h3>
                 <p className="text-gray-600 text-sm sm:text-base">Be the first to start a discussion in this category!</p>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="pt-4 border-t border-gray-200 mt-4">
+                <TopicsPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
               </div>
             )}
           </Card>
