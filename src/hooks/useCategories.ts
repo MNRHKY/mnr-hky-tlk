@@ -96,7 +96,7 @@ export const useCategoryBySlug = (slug: string) => {
         .select('*')
         .eq('slug', slug)
         .eq('is_active', true)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to handle not found gracefully
       
       if (error) {
         console.error('Error fetching category by slug:', error);
@@ -104,7 +104,7 @@ export const useCategoryBySlug = (slug: string) => {
       }
       
       console.log('Category by slug fetched:', data);
-      return data as Category;
+      return data as Category | null;
     },
     enabled: isValidSlug, // Only run query if slug is valid
   });

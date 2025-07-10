@@ -71,8 +71,6 @@ const SubcategoryCard = ({ subcat }: { subcat: any }) => {
 export const CategoryView = () => {
   const { categoryId, categorySlug, subcategorySlug } = useParams();
   
-  // Handle both legacy UUID routing and new slug routing
-  const isLegacyRoute = !!categoryId;
   const { user } = useAuth();
   const { currentPage, setPage } = useUrlPagination(1);
   const [useInfiniteScroll, setUseInfiniteScroll] = useState(false);
@@ -82,20 +80,20 @@ export const CategoryView = () => {
   // Check if categoryId is a UUID (proper UUID format: 8-4-4-4-12 characters)
   const isUUID = categoryId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(categoryId);
   
-  // Determine which slug to use for the query - prioritize subcategory, then category, then categoryId if not UUID
-  const targetSlug = subcategorySlug || categorySlug || (!isUUID ? categoryId : '');
+  // Determine the target slug: prioritize subcategory, then category, then categoryId if it's not a UUID
+  const targetSlug = subcategorySlug || categorySlug || (!isUUID && categoryId ? categoryId : '');
   
-  console.log('CategoryView params:', { categoryId, categorySlug, subcategorySlug, isUUID, targetSlug });
+  // Stable parameters for hooks to prevent re-rendering issues
+  const slugParam = targetSlug || '';
+  const uuidParam = isUUID ? (categoryId || '') : '';
   
-  // Always call both hooks to avoid conditional hook issues
-  const { data: categoryBySlug, isLoading: categoryBySlugLoading, error: slugError } = useCategoryBySlug(
-    targetSlug
-  );
-  const { data: categoryById, isLoading: categoryByIdLoading, error: idError } = useCategoryById(
-    isUUID ? (categoryId || '') : ''
-  );
+  console.log('CategoryView params:', { categoryId, categorySlug, subcategorySlug, isUUID, targetSlug, slugParam, uuidParam });
   
-  // Use the appropriate result based on route type
+  // Always call both hooks with stable parameters
+  const { data: categoryBySlug, isLoading: categoryBySlugLoading, error: slugError } = useCategoryBySlug(slugParam);
+  const { data: categoryById, isLoading: categoryByIdLoading, error: idError } = useCategoryById(uuidParam);
+  
+  // Use the appropriate result based on whether we have a UUID or slug
   const category = isUUID ? categoryById : categoryBySlug;
   const categoryLoading = isUUID ? categoryByIdLoading : categoryBySlugLoading;
   const categoryError = isUUID ? idError : slugError;
@@ -105,7 +103,8 @@ export const CategoryView = () => {
     categoryLoading, 
     categoryError: categoryError?.message,
     isUUID,
-    targetSlug
+    slugParam,
+    uuidParam
   });
   const { data: subcategories, isLoading: subcategoriesLoading } = useCategoriesByActivity(category?.id, category?.level ? category.level + 1 : undefined);
   const { data: topics, isLoading: topicsLoading } = useTopics(category?.id, {
@@ -132,7 +131,7 @@ export const CategoryView = () => {
     return (
       <div className="text-center py-8">
         <h2 className="text-xl font-semibold text-gray-900">Category not found</h2>
-        <p className="text-gray-600 mt-2">The category "{targetSlug || categoryId}" doesn't exist.</p>
+        <p className="text-gray-600 mt-2">The category "{slugParam || uuidParam}" doesn't exist.</p>
         <Button asChild className="mt-4">
           <Link to="/">Back to Home</Link>
         </Button>
