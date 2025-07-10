@@ -1,9 +1,10 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { useForumSettings } from '@/hooks/useForumSettings';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PageMetadata {
   title?: string;
@@ -36,7 +37,9 @@ interface MetadataProviderProps {
 export const MetadataProvider: React.FC<MetadataProviderProps> = ({ children }) => {
   const location = useLocation();
   const params = useParams();
+  const [searchParams] = useSearchParams();
   const { getSetting } = useForumSettings();
+  const { user } = useAuth();
   const [customMetadata, setCustomMetadata] = React.useState<PageMetadata>({});
 
   // Get category metadata if on category page
@@ -47,7 +50,7 @@ export const MetadataProvider: React.FC<MetadataProviderProps> = ({ children }) 
       
       const { data, error } = await supabase
         .from('categories')
-        .select('meta_title, meta_description, meta_keywords, canonical_url, og_title, og_description, og_image')
+        .select('name, meta_title, meta_description, meta_keywords, canonical_url, og_title, og_description, og_image')
         .eq('slug', params.categorySlug)
         .single();
       
@@ -79,10 +82,28 @@ export const MetadataProvider: React.FC<MetadataProviderProps> = ({ children }) 
     setCustomMetadata(metadata);
   };
 
+  // Get user profile data for profile page
+  const { data: profileData } = useQuery({
+    queryKey: ['profile-metadata', user?.id],
+    queryFn: async () => {
+      if (!user?.id || location.pathname !== '/profile') return null;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) return null;
+      return data;
+    },
+    enabled: !!user?.id && location.pathname === '/profile'
+  });
+
   // Determine page metadata based on current route
   const getPageMetadata = (): PageMetadata => {
-    const baseTitle = "Minor Hockey Talks";
-    const baseSeparator = " - ";
+    const baseTitle = getSetting('forum_name', 'Minor Hockey Talks');
+    const baseSeparator = ' - ';
 
     // Custom metadata takes highest priority
     if (Object.keys(customMetadata).length > 0) {
@@ -108,7 +129,7 @@ export const MetadataProvider: React.FC<MetadataProviderProps> = ({ children }) 
     // Category page metadata
     if (categoryMetadata && params.categorySlug) {
       return {
-        title: categoryMetadata.meta_title || `${params.categorySlug}${baseSeparator}${baseTitle}`,
+        title: categoryMetadata.meta_title || `${categoryMetadata.name || params.categorySlug}${baseSeparator}${baseTitle}`,
         description: categoryMetadata.meta_description,
         keywords: categoryMetadata.meta_keywords,
         canonical: categoryMetadata.canonical_url,
@@ -118,8 +139,12 @@ export const MetadataProvider: React.FC<MetadataProviderProps> = ({ children }) 
       };
     }
 
-    // Home page metadata from settings
-    if (location.pathname === '/') {
+    // Dynamic route-based titles
+    const path = location.pathname;
+    const searchQuery = searchParams.get('q');
+
+    // Home page
+    if (path === '/') {
       return {
         title: getSetting('seo_home_title', baseTitle),
         description: getSetting('seo_home_description', 'Join the leading online community for minor hockey players, parents, and coaches.'),
@@ -129,6 +154,92 @@ export const MetadataProvider: React.FC<MetadataProviderProps> = ({ children }) 
         ogDescription: getSetting('seo_home_og_description', ''),
         ogImage: getSetting('seo_home_og_image', '')
       };
+    }
+
+    // Search page
+    if (path === '/search') {
+      const title = searchQuery 
+        ? `Search results for "${searchQuery}"${baseSeparator}${baseTitle}`
+        : `Search${baseSeparator}${baseTitle}`;
+      return {
+        title,
+        description: searchQuery 
+          ? `Search results for "${searchQuery}" on ${baseTitle}`
+          : `Search topics and discussions on ${baseTitle}`
+      };
+    }
+
+    // Profile page
+    if (path === '/profile') {
+      const username = profileData?.username || 'User';
+      return {
+        title: `${username}'s Profile${baseSeparator}${baseTitle}`,
+        description: `View ${username}'s profile, posts, and activity on ${baseTitle}`
+      };
+    }
+
+    // Admin pages
+    if (path.startsWith('/admin')) {
+      const adminSection = path.split('/')[2];
+      const sectionTitles: Record<string, string> = {
+        users: 'User Management',
+        content: 'Content Management',
+        moderation: 'Moderation',
+        spam: 'Spam Management',
+        seo: 'SEO Settings',
+        settings: 'Settings'
+      };
+      
+      const sectionTitle = adminSection ? sectionTitles[adminSection] || 'Dashboard' : 'Dashboard';
+      return {
+        title: `Admin ${sectionTitle}${baseSeparator}${baseTitle}`,
+        description: `Admin panel - ${sectionTitle} for ${baseTitle}`
+      };
+    }
+
+    // Static pages with comprehensive coverage
+    const routeTitles: Record<string, { title: string; description: string }> = {
+      '/topics': {
+        title: `All Topics${baseSeparator}${baseTitle}`,
+        description: `Browse all topics and discussions on ${baseTitle}`
+      },
+      '/categories': {
+        title: `Categories${baseSeparator}${baseTitle}`,
+        description: `Browse all discussion categories on ${baseTitle}`
+      },
+      '/settings': {
+        title: `Account Settings${baseSeparator}${baseTitle}`,
+        description: `Manage your account settings and preferences on ${baseTitle}`
+      },
+      '/login': {
+        title: `Login${baseSeparator}${baseTitle}`,
+        description: `Sign in to your ${baseTitle} account`
+      },
+      '/register': {
+        title: `Register${baseSeparator}${baseTitle}`,
+        description: `Create a new account on ${baseTitle}`
+      },
+      '/create': {
+        title: `Create Topic${baseSeparator}${baseTitle}`,
+        description: `Start a new discussion on ${baseTitle}`
+      },
+      '/terms': {
+        title: `Terms of Service${baseSeparator}${baseTitle}`,
+        description: `Terms of service and user agreement for ${baseTitle}`
+      },
+      '/privacy': {
+        title: `Privacy Policy${baseSeparator}${baseTitle}`,
+        description: `Privacy policy and data protection information for ${baseTitle}`
+      },
+      '/blog': {
+        title: `Blog${baseSeparator}${baseTitle}`,
+        description: `Latest news and updates from ${baseTitle}`
+      }
+    };
+
+    // Check for exact route match
+    if (routeTitles[path]) {
+      return routeTitles[path];
     }
 
     // Default fallback
