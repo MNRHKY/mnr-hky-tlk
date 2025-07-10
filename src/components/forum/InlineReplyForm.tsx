@@ -52,23 +52,7 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
       return;
     }
 
-    // Check for banned words and spam
-    try {
-      const spamAnalysis = await analyzeContent(content, 'post');
-      if (!spamAnalysis.allowed) {
-        toast({
-          title: "Content not allowed",
-          description: spamAnalysis.message || "Your content contains prohibited material",
-          variant: "destructive",
-        });
-        return;
-      }
-    } catch (error) {
-      console.error('Spam analysis failed:', error);
-      // Continue with post creation if analysis fails
-    }
-
-    // Validate content for anonymous users
+    // Basic validation for anonymous users (IP ban checking is now in useCreatePost)
     if (!user) {
       if (!tempUser.canPost) {
         toast({

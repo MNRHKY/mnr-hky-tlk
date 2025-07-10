@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { sessionManager } from '@/utils/sessionManager';
 import { getUserIPWithFallback } from '@/utils/ipUtils';
+import { useEnhancedSpamDetection } from './useEnhancedSpamDetection';
 
 interface CreatePostData {
   content: string;
@@ -14,10 +15,31 @@ interface CreatePostData {
 export const useCreatePost = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { checkRateLimit, analyzeContent } = useEnhancedSpamDetection();
 
   return useMutation({
     mutationFn: async (data: CreatePostData) => {
-      // Check for banned words first
+      // For anonymous users, check enhanced rate limits including IP bans
+      if (!user) {
+        const tempUserId = sessionManager.getTempUserId();
+        if (!tempUserId) {
+          throw new Error('No temporary user session available');
+        }
+        
+        // Check rate limits (includes IP ban check)
+        const rateLimitCheck = await checkRateLimit(tempUserId, 'post');
+        if (!rateLimitCheck.allowed) {
+          throw new Error(rateLimitCheck.message || 'Rate limit exceeded or IP banned');
+        }
+
+        // Analyze content for spam
+        const contentAnalysis = await analyzeContent(data.content, 'post');
+        if (!contentAnalysis.allowed) {
+          throw new Error(contentAnalysis.message || 'Content flagged as spam');
+        }
+      }
+
+      // Check for banned words (backup check)
       const { data: bannedWordsResult, error: bannedWordsError } = await supabase
         .rpc('check_banned_words', { content_text: data.content });
 
