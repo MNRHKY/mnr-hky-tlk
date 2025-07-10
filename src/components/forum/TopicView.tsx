@@ -234,7 +234,16 @@ export const TopicView = () => {
               {topic.last_reply_at && topic.reply_count && topic.reply_count > 0 && (
                 <>
                   <span className="hidden sm:inline">•</span>
-                  <span>Last reply {formatDistanceToNow(new Date(topic.last_reply_at))} ago</span>
+                  {topic.last_post_id ? (
+                    <Link
+                      to={`#post-${topic.last_post_id}`}
+                      className="hover:text-primary transition-colors"
+                    >
+                      Last reply {formatDistanceToNow(new Date(topic.last_reply_at))} ago
+                    </Link>
+                  ) : (
+                    <span>Last reply {formatDistanceToNow(new Date(topic.last_reply_at))} ago</span>
+                  )}
                 </>
               )}
               <span className="hidden sm:inline">•</span>

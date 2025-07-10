@@ -17,6 +17,7 @@ export interface Topic {
   created_at: string;
   updated_at: string;
   slug: string;
+  last_post_id?: string;
   profiles?: {
     username: string;
     avatar_url: string | null;
@@ -39,7 +40,8 @@ export const useTopics = (categoryId?: string) => {
         .from('topics')
         .select(`
           *,
-          categories (name, color, slug, parent_category_id)
+          categories (name, color, slug, parent_category_id),
+          last_post_id:posts!inner(id)
         `)
         .eq('moderation_status', 'approved')
         .order('is_pinned', { ascending: false })
@@ -87,11 +89,34 @@ export const useTopics = (categoryId?: string) => {
         userMap.set(tempUser.id, { username: tempUser.display_name, avatar_url: null });
       });
 
-      // Enrich topics with user data - avoid circular references
+      // Get last post IDs for topics that have replies
+      const topicsWithReplies = topics.filter(topic => topic.reply_count > 0);
+      const lastPostIds = await Promise.all(
+        topicsWithReplies.map(async (topic) => {
+          const { data: lastPost } = await supabase
+            .from('posts')
+            .select('id')
+            .eq('topic_id', topic.id)
+            .eq('moderation_status', 'approved')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          return { topic_id: topic.id, last_post_id: lastPost?.id || null };
+        })
+      );
+
+      // Create last post ID map
+      const lastPostMap = new Map();
+      lastPostIds.forEach(({ topic_id, last_post_id }) => {
+        lastPostMap.set(topic_id, last_post_id);
+      });
+
+      // Enrich topics with user data and last post IDs - avoid circular references
       const enrichedTopics = topics.map(topic => {
         const userData = topic.author_id ? userMap.get(topic.author_id) : null;
         return {
           ...topic,
+          last_post_id: lastPostMap.get(topic.id) || null,
           profiles: userData ? {
             username: userData.username,
             avatar_url: userData.avatar_url

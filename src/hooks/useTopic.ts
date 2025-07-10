@@ -58,9 +58,24 @@ export const useTopic = (identifier: string) => {
         }
       }
       
+      // Get last post ID if topic has replies
+      let lastPostId = null;
+      if (topicData.reply_count > 0) {
+        const { data: lastPost } = await supabase
+          .from('posts')
+          .select('id')
+          .eq('topic_id', topicData.id)
+          .eq('moderation_status', 'approved')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        lastPostId = lastPost?.id || null;
+      }
+
       // Combine the data
       const data = {
         ...topicData,
+        last_post_id: lastPostId,
         ...authorInfo
       };
       
