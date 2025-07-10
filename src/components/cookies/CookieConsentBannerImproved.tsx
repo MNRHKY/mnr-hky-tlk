@@ -47,7 +47,7 @@ export const CookieConsentBannerImproved: React.FC<CookieConsentBannerProps> = (
             <Button variant="outline" size="sm" onClick={onRejectAll}>
               Opt Out
             </Button>
-            <Button size="sm" onClick={onClose} className="bg-primary hover:bg-primary/90">
+            <Button size="sm" onClick={onAcceptAll} className="bg-primary hover:bg-primary/90">
               Continue
             </Button>
           </div>
