@@ -9,27 +9,36 @@ export interface AdminActivity {
   time: string;
   type: 'topic' | 'post';
   ip_address?: string;
+  topic_info?: {
+    title: string;
+    slug: string;
+    category_slug: string;
+  };
 }
 
 export const useAdminActivity = () => {
   return useQuery({
     queryKey: ['admin-activity'],
     queryFn: async () => {
-      // Get recent topics
+      // Get recent topics with category information
       const { data: recentTopics, error: topicsError } = await supabase
         .from('topics')
         .select(`
           id,
           title,
+          slug,
           created_at,
-          author_id
+          author_id,
+          categories (
+            slug
+          )
         `)
         .order('created_at', { ascending: false })
         .limit(5);
 
       if (topicsError) throw topicsError;
 
-      // Get recent posts
+      // Get recent posts with topic and category information
       const { data: recentPosts, error: postsError } = await supabase
         .from('posts')
         .select(`
@@ -38,7 +47,15 @@ export const useAdminActivity = () => {
           created_at,
           author_id,
           topic_id,
-          ip_address
+          ip_address,
+          topics (
+            id,
+            title,
+            slug,
+            categories (
+              slug
+            )
+          )
         `)
         .order('created_at', { ascending: false })
         .limit(5);
@@ -88,21 +105,32 @@ export const useAdminActivity = () => {
           content: topic.title,
           time: topic.created_at,
           type: 'topic',
-          ip_address: undefined // Topics don't have IP addresses tracked currently
+          ip_address: undefined, // Topics don't have IP addresses tracked currently
+          topic_info: {
+            title: topic.title,
+            slug: topic.slug,
+            category_slug: topic.categories?.slug || ''
+          }
         });
       });
 
       // Add posts
       recentPosts?.forEach(post => {
         const username = post.author_id ? userMap.get(post.author_id) || 'Anonymous User' : 'Anonymous User';
+        const topicTitle = post.topics?.title || 'Unknown Topic';
         activities.push({
           id: post.id,
           user: username,
           action: 'Replied to',
-          content: 'Topic', // Simplified for admin activity - could be enhanced later
+          content: topicTitle,
           time: post.created_at,
           type: 'post',
-          ip_address: post.ip_address ? String(post.ip_address) : undefined
+          ip_address: post.ip_address ? String(post.ip_address) : undefined,
+          topic_info: post.topics ? {
+            title: post.topics.title,
+            slug: post.topics.slug,
+            category_slug: post.topics.categories?.slug || ''
+          } : undefined
         });
       });
 

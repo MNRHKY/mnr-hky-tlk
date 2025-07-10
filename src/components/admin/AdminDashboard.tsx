@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, MessageSquare, Flag, TrendingUp } from 'lucide-react';
+import { Users, MessageSquare, Flag, TrendingUp, ExternalLink } from 'lucide-react';
 import { useAdminStats } from '@/hooks/useAdminStats';
 import { useAdminActivity } from '@/hooks/useAdminActivity';
 import { formatDistanceToNow } from 'date-fns';
@@ -113,7 +113,17 @@ export const AdminDashboard = () => {
                     <div className="flex-1">
                       <span className="font-medium">{activity.user}</span>
                       <span className="text-gray-600 mx-2">{activity.action}</span>
-                      <span className="font-medium">"{activity.content}"</span>
+                      {activity.topic_info && activity.topic_info.category_slug ? (
+                        <Link
+                          to={`/${activity.topic_info.category_slug}/${activity.topic_info.slug}`}
+                          className="font-medium text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
+                        >
+                          "{activity.content}"
+                          <ExternalLink className="h-3 w-3" />
+                        </Link>
+                      ) : (
+                        <span className="font-medium">"{activity.content}"</span>
+                      )}
                     </div>
                     {activity.ip_address && (
                       <div className="flex items-center gap-2">
