@@ -8,6 +8,7 @@ export interface AdminActivity {
   content: string;
   time: string;
   type: 'topic' | 'post';
+  ip_address?: string;
 }
 
 export const useAdminActivity = () => {
@@ -36,7 +37,8 @@ export const useAdminActivity = () => {
           content,
           created_at,
           author_id,
-          topic_id
+          topic_id,
+          ip_address
         `)
         .order('created_at', { ascending: false })
         .limit(5);
@@ -85,7 +87,8 @@ export const useAdminActivity = () => {
           action: 'Created topic',
           content: topic.title,
           time: topic.created_at,
-          type: 'topic'
+          type: 'topic',
+          ip_address: undefined // Topics don't have IP addresses tracked currently
         });
       });
 
@@ -98,7 +101,8 @@ export const useAdminActivity = () => {
           action: 'Replied to',
           content: 'Topic', // Simplified for admin activity - could be enhanced later
           time: post.created_at,
-          type: 'post'
+          type: 'post',
+          ip_address: post.ip_address ? String(post.ip_address) : undefined
         });
       });
 

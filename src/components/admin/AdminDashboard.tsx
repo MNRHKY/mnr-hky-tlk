@@ -108,12 +108,24 @@ export const AdminDashboard = () => {
           ) : activities && activities.length > 0 ? (
             activities.map((activity, index) => (
               <div key={`${activity.id}-${index}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <span className="font-medium">{activity.user}</span>
-                  <span className="text-gray-600 mx-2">{activity.action}</span>
-                  <span className="font-medium">"{activity.content}"</span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <span className="font-medium">{activity.user}</span>
+                      <span className="text-gray-600 mx-2">{activity.action}</span>
+                      <span className="font-medium">"{activity.content}"</span>
+                    </div>
+                    {activity.ip_address && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">IP:</span>
+                        <code className="text-xs bg-gray-200 px-2 py-1 rounded font-mono">
+                          {activity.ip_address}
+                        </code>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 ml-4">
                   {formatDistanceToNow(new Date(activity.time))} ago
                 </span>
               </div>
