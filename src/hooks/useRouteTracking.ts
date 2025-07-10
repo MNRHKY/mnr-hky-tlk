@@ -3,7 +3,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { useGoogleAnalytics } from './useGoogleAnalytics';
 import { useForumSettings } from './useForumSettings';
 import { useTopic } from './useTopic';
-import { useCategoryBySlug } from './useCategoryBySlug';
+import { useCategoryBySlug } from './useCategories';
 
 export const useRouteTracking = () => {
   const location = useLocation();

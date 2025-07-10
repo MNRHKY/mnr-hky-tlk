@@ -82,21 +82,31 @@ export const CategoryView = () => {
   // Check if categoryId is a UUID (proper UUID format: 8-4-4-4-12 characters)
   const isUUID = categoryId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(categoryId);
   
-  // Determine which slug to use for the query
-  const slugToLookup = subcategorySlug || categorySlug || (!isUUID ? categoryId : '');
+  // Determine which slug to use for the query - prioritize subcategory, then category, then categoryId if not UUID
+  const targetSlug = subcategorySlug || categorySlug || (!isUUID ? categoryId : '');
+  
+  console.log('CategoryView params:', { categoryId, categorySlug, subcategorySlug, isUUID, targetSlug });
   
   // Always call both hooks to avoid conditional hook issues
   const { data: categoryBySlug, isLoading: categoryBySlugLoading, error: slugError } = useCategoryBySlug(
-    slugToLookup || ''
+    targetSlug
   );
   const { data: categoryById, isLoading: categoryByIdLoading, error: idError } = useCategoryById(
-    isUUID ? categoryId || '' : ''
+    isUUID ? (categoryId || '') : ''
   );
   
-  // Use the appropriate result based on what we think the categoryId is
+  // Use the appropriate result based on route type
   const category = isUUID ? categoryById : categoryBySlug;
   const categoryLoading = isUUID ? categoryByIdLoading : categoryBySlugLoading;
   const categoryError = isUUID ? idError : slugError;
+  
+  console.log('CategoryView hook results:', { 
+    category: category?.name, 
+    categoryLoading, 
+    categoryError: categoryError?.message,
+    isUUID,
+    targetSlug
+  });
   const { data: subcategories, isLoading: subcategoriesLoading } = useCategoriesByActivity(category?.id, category?.level ? category.level + 1 : undefined);
   const { data: topics, isLoading: topicsLoading } = useTopics(category?.id, {
     page: useInfiniteScroll ? 1 : currentPage,
@@ -122,7 +132,7 @@ export const CategoryView = () => {
     return (
       <div className="text-center py-8">
         <h2 className="text-xl font-semibold text-gray-900">Category not found</h2>
-        <p className="text-gray-600 mt-2">The category "{slugToLookup || categoryId}" doesn't exist.</p>
+        <p className="text-gray-600 mt-2">The category "{targetSlug || categoryId}" doesn't exist.</p>
         <Button asChild className="mt-4">
           <Link to="/">Back to Home</Link>
         </Button>
