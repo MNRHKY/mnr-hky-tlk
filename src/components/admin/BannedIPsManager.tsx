@@ -77,16 +77,22 @@ export const BannedIPsManager = () => {
   // Ban IP mutation
   const banMutation = useMutation({
     mutationFn: async (ipData: Partial<BannedIP> & { ip_address: string; reason: string }) => {
+      // Clean up the data - convert empty strings to null for timestamp fields
+      const cleanedData = {
+        ...ipData,
+        expires_at: ipData.expires_at === '' ? null : ipData.expires_at
+      };
+      
       if (ipData.id) {
         const { error } = await supabase
           .from('banned_ips')
-          .update(ipData)
+          .update(cleanedData)
           .eq('id', ipData.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('banned_ips')
-          .insert(ipData);
+          .insert(cleanedData);
         if (error) throw error;
       }
     },
