@@ -28,9 +28,9 @@ export const useCreatePost = () => {
         throw new Error('Invalid topic');
       }
 
-      // Validate that the topic's category is level 3
-      if (topic.categories?.level !== 3) {
-        throw new Error(`Posts can only be created in age group & skill level categories. This topic is in "${topic.categories?.name}" which is for browsing only.`);
+      // Validate that the topic's category is level 2 or 3
+      if (topic.categories?.level !== 2 && topic.categories?.level !== 3) {
+        throw new Error(`Posts can only be created in discussion or age group categories. This topic is in "${topic.categories?.name}" which is for browsing only.`);
       }
 
       // Get user's IP address for admin tracking

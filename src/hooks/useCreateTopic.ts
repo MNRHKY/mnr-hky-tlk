@@ -31,8 +31,8 @@ export const useCreateTopic = () => {
         throw new Error('Invalid category selected');
       }
 
-      if (category.level !== 3 && (category.level !== 2 || category.requires_moderation)) {
-        throw new Error(`Posts can only be created in age group & skill level categories or tournament/general categories. "${category.name}" is for browsing only.`);
+      if (category.level !== 2 && category.level !== 3) {
+        throw new Error(`Topics can only be created in discussion or age group categories. "${category.name}" is for browsing only.`);
       }
 
       // Generate slug from title with unique suffix
