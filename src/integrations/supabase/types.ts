@@ -431,6 +431,90 @@ export type Database = {
         }
         Relationships: []
       }
+      moderation_appeals: {
+        Row: {
+          admin_response: string | null
+          appeal_reason: string
+          appellant_email: string | null
+          appellant_id: string | null
+          appellant_ip: unknown | null
+          content_context: string | null
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          admin_response?: string | null
+          appeal_reason: string
+          appellant_email?: string | null
+          appellant_id?: string | null
+          appellant_ip?: unknown | null
+          content_context?: string | null
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          admin_response?: string | null
+          appeal_reason?: string
+          appellant_email?: string | null
+          appellant_id?: string | null
+          appellant_ip?: unknown | null
+          content_context?: string | null
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      moderation_history: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          moderator_id: string | null
+          new_status: string
+          old_status: string | null
+          reason: string | null
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          moderator_id?: string | null
+          new_status: string
+          old_status?: string | null
+          reason?: string | null
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          moderator_id?: string | null
+          new_status?: string
+          old_status?: string | null
+          reason?: string | null
+        }
+        Relationships: []
+      }
       peak_users_tracking: {
         Row: {
           created_at: string
@@ -869,6 +953,10 @@ export type Database = {
       }
       check_ip_banned: {
         Args: { user_ip: unknown }
+        Returns: Json
+      }
+      check_moderation_protection: {
+        Args: { p_content_id: string; p_content_type: string }
         Returns: Json
       }
       check_previous_report_status: {

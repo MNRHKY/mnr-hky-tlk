@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { getUserIP } from '@/utils/ipUtils';
-import { AlertTriangle, Shield, Clock } from 'lucide-react';
+import { AlertTriangle, Shield, Clock, Mail, ExternalLink } from 'lucide-react';
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -43,6 +43,14 @@ interface ReporterBehavior {
   should_rate_limit: boolean;
 }
 
+interface ProtectionStatus {
+  is_protected: boolean;
+  approved_at?: string;
+  approved_by?: string;
+  moderator_id?: string;
+  reason?: string;
+}
+
 const REPORT_REASONS = [
   { value: 'spam', label: 'Spam or unwanted content' },
   { value: 'harassment', label: 'Harassment or bullying' },
@@ -58,6 +66,10 @@ export const ReportModal = ({ isOpen, onClose, postId, topicId, contentType }: R
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previousReportStatus, setPreviousReportStatus] = useState<PreviousReportStatus | null>(null);
   const [reporterBehavior, setReporterBehavior] = useState<ReporterBehavior | null>(null);
+  const [protectionStatus, setProtectionStatus] = useState<ProtectionStatus | null>(null);
+  const [isAppealMode, setIsAppealMode] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -78,6 +90,12 @@ export const ReportModal = ({ isOpen, onClose, postId, topicId, contentType }: R
         p_topic_id: topicId || null
       });
 
+      // Check moderation protection status
+      const { data: protection } = await supabase.rpc('check_moderation_protection', {
+        p_content_id: (postId || topicId) as string,
+        p_content_type: contentType
+      });
+
       // Get reporter's IP and check behavior
       const reporterIP = await getUserIP();
       const { data: behavior } = await supabase.rpc('get_reporter_behavior', {
@@ -86,6 +104,7 @@ export const ReportModal = ({ isOpen, onClose, postId, topicId, contentType }: R
       });
 
       setPreviousReportStatus(previousStatus as unknown as PreviousReportStatus);
+      setProtectionStatus(protection as unknown as ProtectionStatus);
       setReporterBehavior(behavior as unknown as ReporterBehavior);
 
       // Rate limit check
@@ -176,6 +195,58 @@ export const ReportModal = ({ isOpen, onClose, postId, topicId, contentType }: R
     }
   };
 
+  const handleAppeal = async () => {
+    if (!description.trim()) {
+      toast({
+        title: "Appeal Details Required",
+        description: "Please explain why you believe this content should be reconsidered.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Create content URL for context
+      const contentUrl = window.location.origin + window.location.pathname;
+      
+      const { error } = await supabase.functions.invoke('send-moderation-appeal', {
+        body: {
+          contentId: postId || topicId,
+          contentType,
+          reason: description.trim(),
+          userEmail: userEmail.trim() || undefined,
+          userName: userName.trim() || user?.email?.split('@')[0] || undefined,
+          contentUrl
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Appeal Submitted",
+        description: "Your appeal has been sent to the moderation team. You will receive a response within 24-48 hours.",
+      });
+      
+      onClose();
+      setDescription('');
+      setUserEmail('');
+      setUserName('');
+      setIsAppealMode(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit appeal",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
@@ -190,8 +261,36 @@ export const ReportModal = ({ isOpen, onClose, postId, topicId, contentType }: R
             </div>
           ) : (
             <>
-              {/* Warning for previously approved content */}
-              {previousReportStatus?.was_previously_approved && (
+              {/* Moderation Protection Warning */}
+              {protectionStatus?.is_protected && (
+                <Alert className="border-green-200 bg-green-50">
+                  <Shield className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800">
+                    <strong>Protected Content:</strong> This content was reviewed and approved by {protectionStatus.approved_by || 'a moderator'} 
+                    {protectionStatus.approved_at && (
+                      <span> on {new Date(protectionStatus.approved_at).toLocaleDateString()}</span>
+                    )}. 
+                    {!isAppealMode ? (
+                      <div className="mt-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => setIsAppealMode(true)}
+                          className="text-green-700 border-green-300 hover:bg-green-100"
+                        >
+                          <Mail className="h-3 w-3 mr-1" />
+                          Contact Admin About This Decision
+                        </Button>
+                      </div>
+                    ) : (
+                      <p className="mt-2 text-sm">Please provide your contact details and explain your concerns below.</p>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Warning for previously approved content (legacy) */}
+              {previousReportStatus?.was_previously_approved && !protectionStatus?.is_protected && (
                 <Alert className="border-amber-200 bg-amber-50">
                   <Shield className="h-4 w-4 text-amber-600" />
                   <AlertDescription className="text-amber-800">
@@ -226,46 +325,101 @@ export const ReportModal = ({ isOpen, onClose, postId, topicId, contentType }: R
                 </Alert>
               )}
 
-              <div>
-                <Label className="text-sm font-medium">Reason for reporting</Label>
-                <RadioGroup value={reason} onValueChange={setReason} className="mt-2">
-                  {REPORT_REASONS.map((option) => (
-                    <div key={option.value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={option.value} id={option.value} />
-                      <Label htmlFor={option.value} className="text-sm">
-                        {option.label}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
+               {/* Appeal Mode Contact Form */}
+               {isAppealMode ? (
+                 <>
+                   <div className="grid grid-cols-2 gap-3">
+                     <div>
+                       <Label htmlFor="userName" className="text-sm font-medium">Name (optional)</Label>
+                       <input
+                         type="text"
+                         id="userName"
+                         placeholder="Your name"
+                         value={userName}
+                         onChange={(e) => setUserName(e.target.value)}
+                         className="w-full mt-1 px-3 py-2 border border-input rounded-md text-sm"
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="userEmail" className="text-sm font-medium">Email (optional)</Label>
+                       <input
+                         type="email"
+                         id="userEmail"
+                         placeholder="your@email.com"
+                         value={userEmail}
+                         onChange={(e) => setUserEmail(e.target.value)}
+                         className="w-full mt-1 px-3 py-2 border border-input rounded-md text-sm"
+                       />
+                     </div>
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="appeal-description" className="text-sm font-medium">
+                       Why do you believe this moderation decision should be reconsidered? (required)
+                     </Label>
+                     <Textarea
+                       id="appeal-description"
+                       placeholder="Please provide specific details about why you believe this content violates community guidelines despite being previously approved..."
+                       value={description}
+                       onChange={(e) => setDescription(e.target.value)}
+                       rows={5}
+                       className="mt-1"
+                       required
+                     />
+                     <p className="text-xs text-muted-foreground mt-1">
+                       Be specific about which guidelines you believe are violated. Include any new context or information not available during the original review.
+                     </p>
+                   </div>
+                 </>
+               ) : (
+                 <>
+                   {/* Standard Report Form */}
+                   {!protectionStatus?.is_protected && (
+                     <div>
+                       <Label className="text-sm font-medium">Reason for reporting</Label>
+                       <RadioGroup value={reason} onValueChange={setReason} className="mt-2">
+                         {REPORT_REASONS.map((option) => (
+                           <div key={option.value} className="flex items-center space-x-2">
+                             <RadioGroupItem value={option.value} id={option.value} />
+                             <Label htmlFor={option.value} className="text-sm">
+                               {option.label}
+                             </Label>
+                           </div>
+                         ))}
+                       </RadioGroup>
+                     </div>
+                   )}
 
-              <div>
-                <Label htmlFor="description" className="text-sm font-medium">
-                  {previousReportStatus?.was_previously_approved 
-                    ? "Detailed explanation (required)" 
-                    : "Additional details (optional)"
-                  }
-                </Label>
-                <Textarea
-                  id="description"
-                  placeholder={
-                    previousReportStatus?.was_previously_approved
-                      ? "Since this content was previously approved, please explain specifically why you believe it should be reconsidered..."
-                      : "Provide more context about why you're reporting this content..."
-                  }
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={previousReportStatus?.was_previously_approved ? 4 : 3}
-                  className="mt-1"
-                  required={previousReportStatus?.was_previously_approved}
-                />
-                {previousReportStatus?.was_previously_approved && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Required: Please provide specific details about the policy violation.
-                  </p>
-                )}
-              </div>
+                   {!protectionStatus?.is_protected && (
+                     <div>
+                       <Label htmlFor="description" className="text-sm font-medium">
+                         {previousReportStatus?.was_previously_approved 
+                           ? "Detailed explanation (required)" 
+                           : "Additional details (optional)"
+                         }
+                       </Label>
+                       <Textarea
+                         id="description"
+                         placeholder={
+                           previousReportStatus?.was_previously_approved
+                             ? "Since this content was previously approved, please explain specifically why you believe it should be reconsidered..."
+                             : "Provide more context about why you're reporting this content..."
+                         }
+                         value={description}
+                         onChange={(e) => setDescription(e.target.value)}
+                         rows={previousReportStatus?.was_previously_approved ? 4 : 3}
+                         className="mt-1"
+                         required={previousReportStatus?.was_previously_approved}
+                       />
+                       {previousReportStatus?.was_previously_approved && (
+                         <p className="text-xs text-muted-foreground mt-1">
+                           Required: Please provide specific details about the policy violation.
+                         </p>
+                       )}
+                     </div>
+                   )}
+                 </>
+               )}
 
               {/* Community Guidelines Info */}
               <div className="bg-muted/50 p-3 rounded-lg">
@@ -282,9 +436,16 @@ export const ReportModal = ({ isOpen, onClose, postId, topicId, contentType }: R
             <Button variant="outline" onClick={onClose} disabled={isSubmitting || isLoading}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting || isLoading}>
-              {isSubmitting ? 'Submitting...' : 'Submit Report'}
-            </Button>
+            {isAppealMode ? (
+              <Button onClick={handleAppeal} disabled={isSubmitting || isLoading}>
+                <Mail className="h-4 w-4 mr-2" />
+                {isSubmitting ? 'Sending Appeal...' : 'Send Appeal to Admin'}
+              </Button>
+            ) : !protectionStatus?.is_protected ? (
+              <Button onClick={handleSubmit} disabled={isSubmitting || isLoading}>
+                {isSubmitting ? 'Submitting...' : 'Submit Report'}
+              </Button>
+            ) : null}
           </div>
         </div>
       </DialogContent>
