@@ -60,22 +60,78 @@ export const MetadataProvider: React.FC<MetadataProviderProps> = ({ children }) 
     enabled: !!params.categorySlug
   });
 
-  // Get topic metadata if on topic page
+  // Get topic metadata if on topic page - using same logic as useTopicByPath
   const { data: topicMetadata } = useQuery({
-    queryKey: ['topic-metadata', params.topicSlug],
+    queryKey: ['topic-metadata', params.categorySlug, params.subcategorySlug, params.topicSlug],
     queryFn: async () => {
-      if (!params.topicSlug) return null;
+      console.log('MetadataProvider: Fetching topic metadata for:', { 
+        categorySlug: params.categorySlug, 
+        subcategorySlug: params.subcategorySlug, 
+        topicSlug: params.topicSlug 
+      });
       
-      const { data, error } = await supabase
+      if (!params.topicSlug || !params.categorySlug) return null;
+      
+      // Get category ID first - handle hierarchical structure like useTopicByPath
+      let categoryData;
+      let categoryError;
+      
+      if (params.subcategorySlug) {
+        // Hierarchical: validate parent-child relationship
+        const { data: parentCategory, error: parentError } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('slug', params.categorySlug)
+          .single();
+        
+        if (parentError) {
+          console.error('MetadataProvider: Error fetching parent category:', parentError);
+          return null;
+        }
+        
+        const { data: childCategory, error: childError } = await supabase
+          .from('categories')
+          .select('id, parent_category_id')
+          .eq('slug', params.subcategorySlug)
+          .eq('parent_category_id', parentCategory.id)
+          .single();
+        
+        categoryData = childCategory;
+        categoryError = childError;
+      } else {
+        // Single category
+        const { data, error } = await supabase
+          .from('categories')
+          .select('id, parent_category_id')
+          .eq('slug', params.categorySlug)
+          .single();
+        
+        categoryData = data;
+        categoryError = error;
+      }
+      
+      if (categoryError) {
+        console.error('MetadataProvider: Error fetching category:', categoryError);
+        return null;
+      }
+      
+      // Get topic by slug and category
+      const { data: topicData, error: topicError } = await supabase
         .from('topics')
         .select('meta_title, meta_description, meta_keywords, canonical_url, og_title, og_description, og_image, title, content')
         .eq('slug', params.topicSlug)
+        .eq('category_id', categoryData.id)
         .single();
       
-      if (error) return null;
-      return data;
+      if (topicError) {
+        console.error('MetadataProvider: Error fetching topic:', topicError);
+        return null;
+      }
+      
+      console.log('MetadataProvider: Successfully fetched topic metadata:', topicData);
+      return topicData;
     },
-    enabled: !!params.topicSlug
+    enabled: !!params.categorySlug && !!params.topicSlug
   });
 
   const setPageMetadata = (metadata: PageMetadata) => {
