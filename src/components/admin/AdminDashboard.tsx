@@ -115,7 +115,7 @@ export const AdminDashboard = () => {
                       <span className="text-gray-600 mx-2">{activity.action}</span>
                       {activity.topic_info && activity.topic_info.category_slug ? (
                         <Link
-                          to={`/${activity.topic_info.category_slug}/${activity.topic_info.slug}`}
+                          to={`/${activity.topic_info.category_slug}/${activity.topic_info.slug}${activity.type === 'post' ? `#post-${activity.id}` : ''}`}
                           className="font-medium text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
                         >
                           "{activity.content}"
