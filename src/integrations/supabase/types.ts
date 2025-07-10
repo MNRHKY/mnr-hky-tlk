@@ -434,45 +434,135 @@ export type Database = {
         }
         Relationships: []
       }
-      ip_visit_tracking: {
+      ip_geolocation_cache: {
         Row: {
-          category_visited: string | null
+          city: string | null
+          country_code: string | null
+          country_name: string | null
           created_at: string | null
           id: string
           ip_address: unknown
+          is_proxy: boolean | null
+          is_vpn: boolean | null
+          isp: string | null
+          latitude: number | null
+          longitude: number | null
+          region: string | null
+          timezone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          city?: string | null
+          country_code?: string | null
+          country_name?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address: unknown
+          is_proxy?: boolean | null
+          is_vpn?: boolean | null
+          isp?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          region?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          city?: string | null
+          country_code?: string | null
+          country_name?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          is_proxy?: boolean | null
+          is_vpn?: boolean | null
+          isp?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          region?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      ip_visit_tracking: {
+        Row: {
+          category_visited: string | null
+          city: string | null
+          country_code: string | null
+          country_name: string | null
+          created_at: string | null
+          id: string
+          ip_address: unknown
+          is_active: boolean | null
+          is_proxy: boolean | null
+          is_vpn: boolean | null
+          isp: string | null
+          latitude: number | null
+          longitude: number | null
           page_path: string
           page_title: string | null
           referrer: string | null
+          region: string | null
           search_query: string | null
+          session_end: string | null
           session_id: string | null
+          session_start: string | null
+          timezone: string | null
           topic_visited: string | null
           user_agent: string | null
           visit_duration: unknown | null
         }
         Insert: {
           category_visited?: string | null
+          city?: string | null
+          country_code?: string | null
+          country_name?: string | null
           created_at?: string | null
           id?: string
           ip_address: unknown
+          is_active?: boolean | null
+          is_proxy?: boolean | null
+          is_vpn?: boolean | null
+          isp?: string | null
+          latitude?: number | null
+          longitude?: number | null
           page_path: string
           page_title?: string | null
           referrer?: string | null
+          region?: string | null
           search_query?: string | null
+          session_end?: string | null
           session_id?: string | null
+          session_start?: string | null
+          timezone?: string | null
           topic_visited?: string | null
           user_agent?: string | null
           visit_duration?: unknown | null
         }
         Update: {
           category_visited?: string | null
+          city?: string | null
+          country_code?: string | null
+          country_name?: string | null
           created_at?: string | null
           id?: string
           ip_address?: unknown
+          is_active?: boolean | null
+          is_proxy?: boolean | null
+          is_vpn?: boolean | null
+          isp?: string | null
+          latitude?: number | null
+          longitude?: number | null
           page_path?: string
           page_title?: string | null
           referrer?: string | null
+          region?: string | null
           search_query?: string | null
+          session_end?: string | null
           session_id?: string | null
+          session_start?: string | null
+          timezone?: string | null
           topic_visited?: string | null
           user_agent?: string | null
           visit_duration?: unknown | null
@@ -1098,6 +1188,23 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_active_visitors: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          ip_address: unknown
+          country_code: string
+          country_name: string
+          city: string
+          region: string
+          latitude: number
+          longitude: number
+          current_page: string
+          session_start: string
+          last_activity: string
+          total_pages: number
+          is_vpn: boolean
+        }[]
+      }
       get_categories_by_activity: {
         Args: { p_parent_category_id?: string; p_category_level?: number }
         Returns: {
@@ -1225,6 +1332,16 @@ export type Database = {
       get_topics_total_count: {
         Args: { p_category_id?: string }
         Returns: number
+      }
+      get_visitor_geographic_summary: {
+        Args: { p_hours_back?: number }
+        Returns: {
+          country_code: string
+          country_name: string
+          visitor_count: number
+          page_views: number
+          avg_session_duration: unknown
+        }[]
       }
       has_role: {
         Args: {

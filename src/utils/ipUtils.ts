@@ -1,5 +1,18 @@
 import { supabase } from '@/integrations/supabase/client';
 
+interface GeolocationData {
+  country_code: string;
+  country_name: string;
+  city: string;
+  region: string;
+  latitude: number;
+  longitude: number;
+  timezone: string;
+  is_vpn: boolean;
+  is_proxy: boolean;
+  isp: string;
+}
+
 // Utility function to get user's IP address using Supabase Edge Function
 export const getUserIP = async (): Promise<string | null> => {
   try {
@@ -33,6 +46,27 @@ export const getUserIP = async (): Promise<string | null> => {
       console.error('Failed to get IP from external service:', fallbackError);
       return null;
     }
+  }
+};
+
+// Get IP geolocation data
+export const getIPGeolocation = async (ip: string): Promise<GeolocationData | null> => {
+  try {
+    console.log(`Getting geolocation for IP: ${ip}`);
+    const { data, error } = await supabase.functions.invoke('get-ip-geolocation', {
+      body: { ip }
+    });
+    
+    if (error) {
+      console.error('Geolocation error:', error);
+      return null;
+    }
+    
+    console.log('Geolocation data received:', data);
+    return data;
+  } catch (error) {
+    console.error('Failed to get geolocation:', error);
+    return null;
   }
 };
 

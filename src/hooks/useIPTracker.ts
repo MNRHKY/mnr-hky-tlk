@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { getUserIP } from '@/utils/ipUtils';
+import { getUserIP, getIPGeolocation } from '@/utils/ipUtils';
 import { sessionManager } from '@/utils/sessionManager';
 
 export const useIPTracker = () => {
