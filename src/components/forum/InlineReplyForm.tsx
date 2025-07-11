@@ -8,6 +8,7 @@ import { useEnhancedSpamDetection } from '@/hooks/useEnhancedSpamDetection';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { htmlToText } from '@/utils/htmlToText';
 
 interface InlineReplyFormProps {
   topicId: string;
@@ -126,9 +127,10 @@ export const InlineReplyForm: React.FC<InlineReplyFormProps> = ({
               )}
             </div>
             <div className="text-xs text-slate-500 italic bg-white/50 rounded p-1">
-              "{(isTopicReply ? parentPost.title : parentPost.content).length > 150 ? 
-                `${(isTopicReply ? parentPost.title : parentPost.content).substring(0, 150)}...` : 
-                (isTopicReply ? parentPost.title : parentPost.content)}"
+              {(() => {
+                const text = isTopicReply ? parentPost.title : htmlToText(parentPost.content);
+                return `"${text.length > 150 ? `${text.substring(0, 150)}...` : text}"`;
+              })()}
             </div>
           </div>
         </div>
