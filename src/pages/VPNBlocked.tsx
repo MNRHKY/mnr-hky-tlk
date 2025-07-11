@@ -1,10 +1,19 @@
-import { Shield, AlertTriangle } from "lucide-react";
+import { Shield, AlertTriangle, Loader } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useVPNDetection } from "@/hooks/useVPNDetection";
 
 export const VPNBlocked = () => {
-  const handleRefresh = () => {
-    window.location.reload();
+  const navigate = useNavigate();
+  const { isVPN, isLoading, recheckVPN } = useVPNDetection();
+
+  const handleRefresh = async () => {
+    await recheckVPN();
+    // If VPN is no longer detected, redirect to home
+    if (!isVPN) {
+      navigate('/', { replace: true });
+    }
   };
 
   return (
@@ -42,8 +51,16 @@ export const VPNBlocked = () => {
               onClick={handleRefresh}
               className="w-full"
               size="lg"
+              disabled={isLoading}
             >
-              I've Turned Off My VPN - Refresh Page
+              {isLoading ? (
+                <>
+                  <Loader className="h-4 w-4 animate-spin mr-2" />
+                  Checking...
+                </>
+              ) : (
+                "I've Turned Off My VPN - Check Again"
+              )}
             </Button>
           </div>
           
