@@ -16,7 +16,7 @@ export const HeaderCodeInjector = () => {
     // Sanitize the header code to prevent XSS attacks
     const sanitizedCode = DOMPurify.sanitize(headerCode, {
       ALLOWED_TAGS: ['script', 'style', 'meta', 'link'],
-      ALLOWED_ATTR: ['src', 'href', 'type', 'rel', 'charset', 'name', 'content', 'property'],
+      ALLOWED_ATTR: ['src', 'href', 'type', 'rel', 'charset', 'name', 'content', 'property', 'async', 'crossorigin'],
       ALLOW_DATA_ATTR: false,
       ALLOW_UNKNOWN_PROTOCOLS: false
     });
