@@ -43,6 +43,8 @@ import { MaintenanceWrapper } from "./components/MaintenanceWrapper";
 import { StickyBanner } from "./components/StickyBanner";
 import { AdsTxt } from "./pages/AdsTxt";
 import { IPTrackingWrapper } from "./components/IPTrackingWrapper";
+import { VPNBlocked } from "./pages/VPNBlocked";
+import { VPNGuard } from "./components/VPNGuard";
 
 const queryClient = new QueryClient();
 
@@ -65,12 +67,19 @@ const App = () => (
                   <MetadataProvider>
                   <MaintenanceWrapper>
                 <Routes>
-                  {/* Special routes */}
-                  <Route path="/ads.txt" element={<AdsTxt />} />
+                  {/* VPN blocked page - outside VPN guard */}
+                  <Route path="/vpn-blocked" element={<VPNBlocked />} />
                   
-                  {/* Authentication routes - standalone pages */}
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
+                  {/* All other routes wrapped in VPN guard */}
+                  <Route path="/*" element={
+                    <VPNGuard>
+                      <Routes>
+                        {/* Special routes */}
+                        <Route path="/ads.txt" element={<AdsTxt />} />
+                        
+                        {/* Authentication routes - standalone pages */}
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
                   
                   {/* Admin routes - wrapped in AdminLayout */}
                   <Route path="/admin" element={<AdminLayout />}>
@@ -105,9 +114,12 @@ const App = () => (
                     <Route path="blog" element={<Blog />} />
                   </Route>
                   
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                  </Routes>
+                        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </VPNGuard>
+                  } />
+                </Routes>
                   </MaintenanceWrapper>
                 </MetadataProvider>
                 </IPTrackingWrapper>
