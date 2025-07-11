@@ -155,16 +155,16 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
 
   return (
     <div className={cn("w-full max-w-full border border-input rounded-md bg-background overflow-hidden", className)}>
-      {/* Toolbar */}
+      {/* Sticky Toolbar */}
       {!hideToolbar && (
-        <div className="flex items-center gap-1 p-2 border-b border-input bg-muted/50 overflow-x-auto scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div className="sticky top-0 z-10 flex items-center gap-1 p-2 border-b border-input bg-muted/50 overflow-x-auto scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {toolbarButtons.map((button, index) => (
             <Button
               key={index}
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 flex-shrink-0"
               onClick={() => button.value ? execCommand(button.command, button.value) : formatText(button.command)}
               title={button.title}
               disabled={disabled}
@@ -175,7 +175,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
           
           {allowImages && (
             <>
-              <div className="w-px h-6 bg-border mx-1" />
+              <div className="w-px h-6 bg-border mx-1 flex-shrink-0" />
               <Button
                 type="button"
                 variant="ghost"
@@ -214,30 +214,37 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         className="hidden"
       />
 
-      {/* Editor */}
+      {/* Scrollable Editor Container */}
       <div
-        ref={editorRef}
-        contentEditable={!disabled}
-        className={cn(
-          "w-full max-w-full p-3 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 min-h-[200px] prose prose-sm break-words",
-          disabled && "opacity-50 cursor-not-allowed"
-        )}
+        className="relative"
         style={{ 
-          height: height - (hideToolbar ? 0 : 48), 
-          maxWidth: '100%',
-          wordWrap: 'break-word',
-          overflowWrap: 'break-word',
-          hyphens: 'auto',
-          direction: 'ltr',
-          textAlign: 'left',
-          unicodeBidi: 'plaintext'
+          height: height - (hideToolbar ? 0 : 48),
+          overflowY: 'auto'
         }}
-        onInput={handleInput}
-        onKeyDown={handleKeyDown}
-        data-placeholder={placeholder}
-        dir="ltr"
-        suppressContentEditableWarning={true}
-      />
+      >
+        <div
+          ref={editorRef}
+          contentEditable={!disabled}
+          className={cn(
+            "w-full max-w-full p-3 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 min-h-full prose prose-sm break-words",
+            disabled && "opacity-50 cursor-not-allowed"
+          )}
+          style={{ 
+            maxWidth: '100%',
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word',
+            hyphens: 'auto',
+            direction: 'ltr',
+            textAlign: 'left',
+            unicodeBidi: 'plaintext'
+          }}
+          onInput={handleInput}
+          onKeyDown={handleKeyDown}
+          data-placeholder={placeholder}
+          dir="ltr"
+          suppressContentEditableWarning={true}
+        />
+      </div>
 
       <style>{`
         /* Hide scrollbars on toolbar */
