@@ -1263,6 +1263,59 @@ export type Database = {
           top_poster: string
         }[]
       }
+      get_enriched_posts: {
+        Args: { p_topic_id: string; p_limit?: number; p_offset?: number }
+        Returns: {
+          id: string
+          content: string
+          author_id: string
+          topic_id: string
+          parent_post_id: string
+          created_at: string
+          updated_at: string
+          moderation_status: string
+          author_username: string
+          author_avatar_url: string
+          parent_post_content: string
+          parent_post_author_username: string
+          parent_post_author_avatar_url: string
+          parent_post_created_at: string
+        }[]
+      }
+      get_enriched_posts_count: {
+        Args: { p_topic_id: string }
+        Returns: number
+      }
+      get_enriched_topics: {
+        Args: { p_category_id?: string; p_limit?: number; p_offset?: number }
+        Returns: {
+          id: string
+          title: string
+          content: string
+          author_id: string
+          category_id: string
+          is_pinned: boolean
+          is_locked: boolean
+          view_count: number
+          reply_count: number
+          last_reply_at: string
+          created_at: string
+          updated_at: string
+          slug: string
+          moderation_status: string
+          last_post_id: string
+          author_username: string
+          author_avatar_url: string
+          category_name: string
+          category_color: string
+          category_slug: string
+          parent_category_id: string
+        }[]
+      }
+      get_enriched_topics_count: {
+        Args: { p_category_id?: string }
+        Returns: number
+      }
       get_forum_setting: {
         Args: { key_name: string }
         Returns: Json
