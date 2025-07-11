@@ -176,9 +176,14 @@ export const ReportModal = ({ isOpen, onClose, postId, topicId, contentType }: R
           throw error;
         }
       } else {
+        // Show different messages based on protection status
+        const isProtected = protectionStatus?.is_protected;
+        
         toast({
           title: "Report submitted",
-          description: "The content has been hidden pending review. Thank you for keeping our community safe.",
+          description: isProtected 
+            ? "Your report has been submitted to the moderation team for review. Thank you for keeping our community safe."
+            : "The content has been immediately hidden pending moderation review. Thank you for keeping our community safe.",
         });
         onClose();
         setReason('');
