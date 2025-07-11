@@ -3,11 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+
 import { useForumSettings } from '@/hooks/useForumSettings';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, FileText, Eye } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export const AnalyticsSettings: React.FC = () => {
@@ -16,7 +16,6 @@ export const AnalyticsSettings: React.FC = () => {
   const { toast } = useToast();
   
   const [gaTrackingId, setGaTrackingId] = useState(getSetting('google_analytics_id', ''));
-  const [adsTxtContent, setAdsTxtContent] = useState(getSetting('ads_txt_content', ''));
 
   const handleSaveGA = async () => {
     updateSetting({
@@ -28,15 +27,6 @@ export const AnalyticsSettings: React.FC = () => {
     });
   };
 
-  const handleSaveAdsTxt = async () => {
-    updateSetting({
-      key: 'ads_txt_content',
-      value: adsTxtContent,
-      type: 'string',
-      category: 'advertising',
-      description: 'Content for ads.txt file'
-    });
-  };
 
   const testGA = () => {
     if (window.gtag && hasConsent('analytics')) {
@@ -108,47 +98,6 @@ export const AnalyticsSettings: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Ads.txt */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Ads.txt Configuration
-          </CardTitle>
-          <CardDescription>
-            Configure your ads.txt file for Google AdSense and other ad networks
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="ads-txt-content">Ads.txt Content</Label>
-            <Textarea
-              id="ads-txt-content"
-              placeholder="google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0"
-              value={adsTxtContent}
-              onChange={(e) => setAdsTxtContent(e.target.value)}
-              rows={8}
-            />
-            <p className="text-xs text-muted-foreground">
-              Add your ad network entries one per line. This will be served at /ads.txt
-            </p>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" asChild>
-                <a href="/ads.txt" target="_blank" rel="noopener noreferrer">
-                  <Eye className="h-4 w-4 mr-2" />
-                  Preview ads.txt
-                </a>
-              </Button>
-            </div>
-            <Button onClick={handleSaveAdsTxt} disabled={isUpdating}>
-              Save ads.txt
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
