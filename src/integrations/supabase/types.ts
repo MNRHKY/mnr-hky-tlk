@@ -872,6 +872,36 @@ export type Database = {
           },
         ]
       }
+      security_events: {
+        Row: {
+          client_ip: unknown | null
+          created_at: string
+          event_details: Json | null
+          event_type: string
+          id: string
+          severity: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          client_ip?: unknown | null
+          created_at?: string
+          event_details?: Json | null
+          event_type: string
+          id?: string
+          severity?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          client_ip?: unknown | null
+          created_at?: string
+          event_details?: Json | null
+          event_type?: string
+          id?: string
+          severity?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       spam_detection_config: {
         Row: {
           config_key: string
@@ -1132,6 +1162,15 @@ export type Database = {
         Returns: Json
       }
       check_enhanced_anonymous_rate_limit: {
+        Args: {
+          user_ip: unknown
+          p_session_id: string
+          p_fingerprint_hash?: string
+          p_content_type?: string
+        }
+        Returns: Json
+      }
+      check_enhanced_rate_limit_with_penalties: {
         Args: {
           user_ip: unknown
           p_session_id: string
