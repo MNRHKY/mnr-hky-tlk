@@ -9,6 +9,7 @@ import { HotTopic } from '@/hooks/useHotTopics';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AdminControls } from './AdminControls';
 import { generateCategoryUrl } from '@/utils/urlHelpers';
+import { htmlToText } from '@/utils/htmlToText';
 
 interface PostCardProps {
   topic: HotTopic;
@@ -86,7 +87,7 @@ export const PostCard: React.FC<PostCardProps> = React.memo(({ topic, onReport }
             {/* Content preview - only on desktop */}
             {!isMobile && topic.content && (
               <p className="text-muted-foreground text-sm line-clamp-2 leading-relaxed mb-3">
-                {topic.content}
+                {htmlToText(topic.content)}
               </p>
             )}
 
