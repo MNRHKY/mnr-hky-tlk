@@ -45,6 +45,7 @@ import { AdsTxt } from "./pages/AdsTxt";
 import { IPTrackingWrapper } from "./components/IPTrackingWrapper";
 import { VPNBlocked } from "./pages/VPNBlocked";
 import { VPNGuard } from "./components/VPNGuard";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -72,7 +73,8 @@ const App = () => (
                   
                   {/* All other routes wrapped in VPN guard */}
                   <Route path="/*" element={
-                    <VPNGuard>
+                    <ErrorBoundary>
+                      <VPNGuard>
                       <Routes>
                         {/* Special routes */}
                         <Route path="/ads.txt" element={<AdsTxt />} />
@@ -118,6 +120,7 @@ const App = () => (
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </VPNGuard>
+                    </ErrorBoundary>
                   } />
                 </Routes>
                   </MaintenanceWrapper>

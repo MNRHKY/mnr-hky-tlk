@@ -7,7 +7,10 @@ export const useVPNDetection = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  console.log('🔧 useVPNDetection hook state:', { isVPN, isLoading, error });
+
   const checkVPNStatus = useCallback(async () => {
+    console.log('🔧 checkVPNStatus called');
     try {
       setIsLoading(true);
       setError(null);
@@ -58,6 +61,7 @@ export const useVPNDetection = () => {
   }, []);
 
   useEffect(() => {
+    console.log('🔧 useVPNDetection useEffect triggered');
     checkVPNStatus();
   }, [checkVPNStatus]);
 

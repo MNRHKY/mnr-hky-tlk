@@ -18,6 +18,13 @@ export const useIPTracker = () => {
         // Get geolocation data
         const geoData = await getIPGeolocation(ip);
 
+        // BACKUP VPN PROTECTION: Block VPN users immediately at tracking level
+        if (geoData?.is_vpn && location.pathname !== '/vpn-blocked') {
+          console.log('🚨 BACKUP VPN DETECTION: Blocking VPN user at IP tracking level');
+          window.location.href = '/vpn-blocked';
+          return;
+        }
+
         // Extract category and topic IDs from the path
         const pathParts = location.pathname.split('/');
         let categoryId = null;
