@@ -34,13 +34,22 @@ export const HTMLRenderer: React.FC<HTMLRendererProps> = ({
           data.keepAttr = false;
         }
       }
+      
+      // Allow data URLs for image src attributes
+      if (data.attrName === 'src' && node.tagName === 'IMG') {
+        if (data.attrValue.startsWith('data:image/')) {
+          data.keepAttr = true;
+        }
+      }
     });
 
     const result = DOMPurify.sanitize(content, {
-      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'a', 'code', 'pre', 'div', 'span'],
-      ALLOWED_ATTR: ['href', 'target', 'rel', 'style', 'class', 'id'],
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'a', 'code', 'pre', 'div', 'span', 'img'],
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'style', 'class', 'id', 'src', 'alt', 'width', 'height'],
       ALLOW_DATA_ATTR: false,
       ALLOW_UNKNOWN_PROTOCOLS: false,
+      ADD_TAGS: ['img'],
+      ADD_ATTR: ['src', 'alt', 'width', 'height'],
       FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
       FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input']
     });
