@@ -88,7 +88,7 @@ export const usePosts = (topicId: string, options: UsePostsOptions = {}) => {
           created_at: post.parent_post_created_at!,
           updated_at: post.parent_post_created_at!,
           vote_score: null,
-          moderation_status: null,
+          moderation_status: post.parent_post_moderation_status,
           profiles: post.parent_post_author_username ? {
             username: post.parent_post_author_username,
             avatar_url: post.parent_post_author_avatar_url

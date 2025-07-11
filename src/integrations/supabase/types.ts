@@ -1280,6 +1280,7 @@ export type Database = {
           parent_post_author_username: string
           parent_post_author_avatar_url: string
           parent_post_created_at: string
+          parent_post_moderation_status: string
         }[]
       }
       get_enriched_posts_count: {
