@@ -159,14 +159,29 @@ export const TopicView = () => {
     });
   }, [setSearchParams]);
 
-  // Extract post ID from hash for cross-page navigation
-  const hashPostId = (() => {
+  // Extract post ID from hash for cross-page navigation - make it reactive
+  const [hashPostId, setHashPostId] = useState(() => {
     const hash = window.location.hash;
     if (hash && hash.startsWith('#post-')) {
       return hash.substring('#post-'.length);
     }
     return null;
-  })();
+  });
+
+  // Listen for hash changes to update hashPostId
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#post-')) {
+        setHashPostId(hash.substring('#post-'.length));
+      } else {
+        setHashPostId(null);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   // Use the hook to find the correct page for the post
   const { data: postPageInfo, isLoading: isLoadingPostPage } = usePostPage(
