@@ -18,8 +18,53 @@ interface GeolocationData {
   isp: string;
 }
 
+// Function to enhance VPN detection based on ISP patterns
+function enhanceVPNDetection(geoData: GeolocationData): GeolocationData {
+  if (!geoData.isp) return geoData;
+  
+  // VPN/Proxy indicators in ISP names - case insensitive patterns
+  const suspiciousPatterns = [
+    /vpn/i,
+    /proxy/i, 
+    /hosting/i,
+    /datacenter/i,
+    /data center/i,
+    /cloud/i,
+    /consumer.*toronto/i, // Specific pattern we found
+    /consumer.*vpn/i,
+    /virtual.*private/i,
+    /dedicated.*server/i,
+    /colocation/i,
+    /colo/i,
+    /aws/i,
+    /amazon.*web/i,
+    /google.*cloud/i,
+    /microsoft.*azure/i,
+    /digital.*ocean/i,
+    /vultr/i,
+    /linode/i
+  ];
+  
+  // Check if ISP matches suspicious patterns
+  const isSuspiciousISP = suspiciousPatterns.some(pattern => pattern.test(geoData.isp!));
+  
+  // If we detect VPN indicators and the original detection missed it
+  if (isSuspiciousISP && !geoData.is_vpn) {
+    console.log(`🔍 Enhanced VPN detection: ISP "${geoData.isp}" flagged as VPN`);
+    return {
+      ...geoData,
+      is_vpn: true,
+      is_proxy: true // Also mark as proxy since VPNs are proxy services
+    };
+  }
+  
+  return geoData;
+}
+
 async function getGeolocationFromAPI(ip: string): Promise<GeolocationData | null> {
   try {
+    console.log(`🌍 Fetching geolocation for IP: ${ip}`);
+    
     // Using ip-api.com (free tier, 1000 requests/hour)
     const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,message,country,countryCode,region,regionName,city,lat,lon,timezone,isp,proxy,hosting`);
     
@@ -34,7 +79,7 @@ async function getGeolocationFromAPI(ip: string): Promise<GeolocationData | null
       return null;
     }
     
-    return {
+    let geoData: GeolocationData = {
       country_code: data.countryCode || 'Unknown',
       country_name: data.country || 'Unknown',
       city: data.city || 'Unknown',
@@ -46,6 +91,18 @@ async function getGeolocationFromAPI(ip: string): Promise<GeolocationData | null
       is_proxy: data.proxy || false,
       isp: data.isp || 'Unknown'
     };
+    
+    // Apply enhanced VPN detection
+    geoData = enhanceVPNDetection(geoData);
+    
+    console.log(`✅ Geolocation result for ${ip}:`, {
+      country: geoData.country_name,
+      isp: geoData.isp,
+      is_vpn: geoData.is_vpn,
+      is_proxy: geoData.is_proxy
+    });
+    
+    return geoData;
   } catch (error) {
     console.error('Error fetching geolocation:', error);
     return null;
