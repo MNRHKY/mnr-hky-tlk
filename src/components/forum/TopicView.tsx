@@ -200,15 +200,7 @@ export const TopicView = () => {
       }
     };
     
-    if (targetId === 'last-reply') {
-      // Handle last reply - scroll to the last post on current page
-      if (posts && posts.length > 0) {
-        const lastPost = posts[posts.length - 1];
-        requestAnimationFrame(() => {
-          setTimeout(() => scrollToElement(`post-${lastPost.id}`), 300);
-        });
-      }
-    } else if (targetId.startsWith('post-')) {
+    if (targetId.startsWith('post-')) {
       // Handle specific post
       const postId = targetId.substring('post-'.length);
       
