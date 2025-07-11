@@ -11,6 +11,7 @@ export interface Post {
   created_at: string;
   updated_at: string;
   vote_score: number | null;
+  moderation_status: string | null;
   profiles?: {
     username: string;
     avatar_url: string | null;
@@ -73,6 +74,7 @@ export const usePosts = (topicId: string, options: UsePostsOptions = {}) => {
         created_at: post.created_at,
         updated_at: post.updated_at,
         vote_score: null, // Not used in current UI
+        moderation_status: post.moderation_status,
         profiles: post.author_username ? {
           username: post.author_username,
           avatar_url: post.author_avatar_url
@@ -86,6 +88,7 @@ export const usePosts = (topicId: string, options: UsePostsOptions = {}) => {
           created_at: post.parent_post_created_at!,
           updated_at: post.parent_post_created_at!,
           vote_score: null,
+          moderation_status: null,
           profiles: post.parent_post_author_username ? {
             username: post.parent_post_author_username,
             avatar_url: post.parent_post_author_avatar_url
