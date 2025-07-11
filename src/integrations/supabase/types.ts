@@ -1274,6 +1274,8 @@ export type Database = {
           created_at: string
           updated_at: string
           moderation_status: string
+          ip_address: unknown
+          is_anonymous: boolean
           author_username: string
           author_avatar_url: string
           parent_post_content: string

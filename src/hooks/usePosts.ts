@@ -12,6 +12,8 @@ export interface Post {
   updated_at: string;
   vote_score: number | null;
   moderation_status: string | null;
+  ip_address?: string | null;
+  is_anonymous?: boolean | null;
   profiles?: {
     username: string;
     avatar_url: string | null;
@@ -75,6 +77,8 @@ export const usePosts = (topicId: string, options: UsePostsOptions = {}) => {
         updated_at: post.updated_at,
         vote_score: null, // Not used in current UI
         moderation_status: post.moderation_status,
+        ip_address: post.ip_address,
+        is_anonymous: post.is_anonymous,
         profiles: post.author_username ? {
           username: post.author_username,
           avatar_url: post.author_avatar_url
@@ -89,6 +93,8 @@ export const usePosts = (topicId: string, options: UsePostsOptions = {}) => {
           updated_at: post.parent_post_created_at!,
           vote_score: null,
           moderation_status: post.parent_post_moderation_status,
+          ip_address: undefined,
+          is_anonymous: undefined,
           profiles: post.parent_post_author_username ? {
             username: post.parent_post_author_username,
             avatar_url: post.parent_post_author_avatar_url
