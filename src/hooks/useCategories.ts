@@ -52,6 +52,8 @@ export const useCategories = (parentId?: string | null, level?: number) => {
       console.log('Categories fetched:', data);
       return data as Category[];
     },
+    staleTime: 10 * 60 * 1000, // 10 minutes - categories rarely change
+    gcTime: 30 * 60 * 1000, // 30 minutes garbage collection
   });
 };
 
@@ -80,6 +82,8 @@ export const useCategoryById = (categoryId: string) => {
       return data as Category;
     },
     enabled: isValidId, // Only run query if ID is valid
+    staleTime: 10 * 60 * 1000, // 10 minutes - categories rarely change
+    gcTime: 30 * 60 * 1000, // 30 minutes garbage collection
   });
 };
 
@@ -107,5 +111,7 @@ export const useCategoryBySlug = (slug: string) => {
       return data as Category;
     },
     enabled: isValidSlug, // Only run query if slug is valid
+    staleTime: 10 * 60 * 1000, // 10 minutes - categories rarely change
+    gcTime: 30 * 60 * 1000, // 30 minutes garbage collection
   });
 };

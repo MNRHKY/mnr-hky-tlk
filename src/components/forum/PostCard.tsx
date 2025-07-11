@@ -15,7 +15,7 @@ interface PostCardProps {
   onReport?: (topicId: string) => void;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
+export const PostCard: React.FC<PostCardProps> = React.memo(({ topic, onReport }) => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
@@ -142,4 +142,4 @@ export const PostCard: React.FC<PostCardProps> = ({ topic, onReport }) => {
       </div>
     </div>
   );
-};
+});

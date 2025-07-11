@@ -43,36 +43,22 @@ export const useTopics = (categoryId?: string, page = 1, limit = 10) => {
   return useQuery({
     queryKey: ['topics', categoryId, page, limit],
     queryFn: async () => {
-      console.log('Fetching topics for category:', categoryId);
+      console.log('Fetching topics for category:', categoryId, 'with optimized function');
       
-      // Get topics with pagination
-      let query = supabase
-        .from('topics')
-        .select(`
-          *,
-          categories (name, color, slug, parent_category_id)
-        `)
-        .eq('moderation_status', 'approved')
-        .order('is_pinned', { ascending: false })
-        .order('last_reply_at', { ascending: false })
-        .range(offset, offset + limit - 1);
-      
-      if (categoryId) {
-        query = query.eq('category_id', categoryId);
-      }
-      
-      // Get total count
-      const countResult = await supabase.rpc('get_topics_total_count', {
-        p_category_id: categoryId || null
-      });
-      
+      // Use optimized enriched function - eliminates N+1 queries
       const [{ data: topics, error }, { data: totalCount, error: countError }] = await Promise.all([
-        query,
-        Promise.resolve({ data: countResult.data, error: countResult.error })
+        supabase.rpc('get_enriched_topics', {
+          p_category_id: categoryId || null,
+          p_limit: limit,
+          p_offset: offset
+        }),
+        supabase.rpc('get_enriched_topics_count', {
+          p_category_id: categoryId || null
+        })
       ]);
       
       if (error) {
-        console.error('Error fetching topics:', error);
+        console.error('Error fetching enriched topics:', error);
         throw error;
       }
       
@@ -90,69 +76,22 @@ export const useTopics = (categoryId?: string, page = 1, limit = 10) => {
         } as PaginatedTopicsResult;
       }
 
-      // Extract unique author IDs
-      const authorIds = [...new Set(topics.map(topic => topic.author_id).filter(Boolean))];
+      // Transform enriched data to match expected interface
+      const enrichedTopics = topics.map(topic => ({
+        ...topic,
+        profiles: topic.author_username ? {
+          username: topic.author_username,
+          avatar_url: topic.author_avatar_url
+        } : null,
+        categories: topic.category_name ? {
+          name: topic.category_name,
+          color: topic.category_color,
+          slug: topic.category_slug,
+          parent_category_id: topic.parent_category_id
+        } : null
+      }));
       
-      // Fetch user data from both profiles and temporary_users
-      const [profilesData, temporaryUsersData] = await Promise.all([
-        authorIds.length > 0 ? supabase
-          .from('profiles')
-          .select('id, username, avatar_url')
-          .in('id', authorIds)
-          .then(({ data }) => data || []) : Promise.resolve([]),
-        
-        authorIds.length > 0 ? supabase
-          .from('temporary_users')
-          .select('id, display_name')
-          .in('id', authorIds)
-          .then(({ data }) => data || []) : Promise.resolve([])
-      ]);
-
-      // Create a map for quick user lookup
-      const userMap = new Map();
-      profilesData.forEach(profile => {
-        userMap.set(profile.id, { username: profile.username, avatar_url: profile.avatar_url });
-      });
-      temporaryUsersData.forEach(tempUser => {
-        userMap.set(tempUser.id, { username: tempUser.display_name, avatar_url: null });
-      });
-
-      // Get last post IDs for topics that have replies
-      const topicsWithReplies = topics.filter(topic => topic.reply_count > 0);
-      const lastPostIds = await Promise.all(
-        topicsWithReplies.map(async (topic) => {
-          const { data: lastPost } = await supabase
-            .from('posts')
-            .select('id')
-            .eq('topic_id', topic.id)
-            .eq('moderation_status', 'approved')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          return { topic_id: topic.id, last_post_id: lastPost?.id || null };
-        })
-      );
-
-      // Create last post ID map
-      const lastPostMap = new Map();
-      lastPostIds.forEach(({ topic_id, last_post_id }) => {
-        lastPostMap.set(topic_id, last_post_id);
-      });
-
-      // Enrich topics with user data and last post IDs - avoid circular references
-      const enrichedTopics = topics.map(topic => {
-        const userData = topic.author_id ? userMap.get(topic.author_id) : null;
-        return {
-          ...topic,
-          last_post_id: lastPostMap.get(topic.id) || null,
-          profiles: userData ? {
-            username: userData.username,
-            avatar_url: userData.avatar_url
-          } : null
-        };
-      });
-      
-      console.log('Topics fetched:', enrichedTopics);
+      console.log('Optimized topics fetched:', enrichedTopics.length, 'topics in single query');
       
       const totalPages = Math.ceil((totalCount as number) / limit);
       
@@ -163,5 +102,7 @@ export const useTopics = (categoryId?: string, page = 1, limit = 10) => {
         currentPage: page
       } as PaginatedTopicsResult;
     },
+    staleTime: 3 * 60 * 1000, // 3 minutes - topics are dynamic but not constantly changing
+    gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
   });
 };

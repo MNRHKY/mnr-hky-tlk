@@ -35,140 +35,69 @@ export const usePosts = (topicId: string, options: UsePostsOptions = {}) => {
   return useQuery({
     queryKey: ['posts', topicId, page, limit],
     queryFn: async (): Promise<UsePostsResult> => {
-      console.log('Fetching posts for topic:', topicId, 'page:', page);
+      console.log('Fetching posts for topic:', topicId, 'page:', page, 'with optimized function');
       
-      // Get total count using the database function
-      const { data: countData, error: countError } = await supabase
-        .rpc('get_posts_count', { p_topic_id: topicId });
+      // Use optimized enriched function - eliminates N+1 queries
+      const [{ data: posts, error }, { data: totalCount, error: countError }] = await Promise.all([
+        supabase.rpc('get_enriched_posts', {
+          p_topic_id: topicId,
+          p_limit: limit,
+          p_offset: offset
+        }),
+        supabase.rpc('get_enriched_posts_count', {
+          p_topic_id: topicId
+        })
+      ]);
+      
+      if (error) {
+        console.error('Error fetching enriched posts:', error);
+        throw error;
+      }
       
       if (countError) {
         console.error('Error fetching posts count:', countError);
         throw countError;
       }
 
-      const totalCount = countData || 0;
-
-      // Get paginated posts for the topic
-      const { data: posts, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('topic_id', topicId)
-        .eq('moderation_status', 'approved')
-        .order('created_at', { ascending: true })
-        .range(offset, offset + limit - 1);
-      
-      if (error) {
-        console.error('Error fetching posts:', error);
-        throw error;
-      }
-
       if (!posts || posts.length === 0) {
-        return { posts: [], totalCount };
+        return { posts: [], totalCount: totalCount || 0 };
       }
 
-      // Get unique author IDs (including from posts that might be parents)
-      const authorIds = [...new Set(posts.map(p => p.author_id).filter(Boolean))];
+      // Transform enriched data to match expected interface
+      const enrichedPosts = posts.map(post => ({
+        id: post.id,
+        content: post.content,
+        author_id: post.author_id,
+        topic_id: post.topic_id,
+        parent_post_id: post.parent_post_id,
+        created_at: post.created_at,
+        updated_at: post.updated_at,
+        vote_score: null, // Not used in current UI
+        profiles: post.author_username ? {
+          username: post.author_username,
+          avatar_url: post.author_avatar_url
+        } : undefined,
+        parent_post: post.parent_post_content ? {
+          id: post.parent_post_id!,
+          content: post.parent_post_content,
+          author_id: null,
+          topic_id: topicId,
+          parent_post_id: null,
+          created_at: post.parent_post_created_at!,
+          updated_at: post.parent_post_created_at!,
+          vote_score: null,
+          profiles: post.parent_post_author_username ? {
+            username: post.parent_post_author_username,
+            avatar_url: post.parent_post_author_avatar_url
+          } : undefined
+        } : undefined
+      }));
       
-      // Get unique parent post IDs that need to be fetched
-      const parentPostIds = [...new Set(posts.map(p => p.parent_post_id).filter(Boolean))];
-      
-      // Fetch parent posts if any exist
-      let parentPosts = [];
-      if (parentPostIds.length > 0) {
-        const { data: parentPostsData, error: parentError } = await supabase
-          .from('posts')
-          .select('*')
-          .in('id', parentPostIds);
-        
-        if (parentError) {
-          console.error('Error fetching parent posts:', parentError);
-        } else {
-          parentPosts = parentPostsData || [];
-          // Add parent post authors to authorIds for user data fetching
-          const parentAuthorIds = parentPosts.map(p => p.author_id).filter(Boolean);
-          authorIds.push(...parentAuthorIds);
-        }
-      }
-      
-      // Remove duplicates from authorIds
-      const uniqueAuthorIds = [...new Set(authorIds)];
-      
-      // Fetch profile data for authenticated users
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, username, avatar_url')
-        .in('id', uniqueAuthorIds);
-
-      // Fetch temporary user data
-      const { data: tempUsers } = await supabase
-        .from('temporary_users')
-        .select('id, display_name')
-        .in('id', uniqueAuthorIds);
-
-      // Helper function to enrich a post with user data
-      const enrichPostWithUserData = (post: any) => {
-        if (!post.author_id) {
-          return { ...post, profiles: null };
-        }
-
-        // Check if it's a profile user
-        const profile = profiles?.find(p => p.id === post.author_id);
-        if (profile) {
-          return {
-            ...post,
-            profiles: {
-              username: profile.username,
-              avatar_url: profile.avatar_url
-            }
-          };
-        }
-
-        // Check if it's a temporary user
-        const tempUser = tempUsers?.find(t => t.id === post.author_id);
-        if (tempUser) {
-          return {
-            ...post,
-            profiles: {
-              username: tempUser.display_name,
-              avatar_url: null
-            }
-          };
-        }
-
-        // Fallback for unknown users
-        return {
-          ...post,
-          profiles: {
-            username: 'Anonymous User',
-            avatar_url: null
-          }
-        };
-      };
-
-      // Enrich parent posts with user data
-      const enrichedParentPosts = parentPosts.map(enrichPostWithUserData);
-      
-      // Create a map for quick parent post lookup
-      const parentPostMap = new Map();
-      enrichedParentPosts.forEach(parentPost => {
-        parentPostMap.set(parentPost.id, parentPost);
-      });
-
-      // Enrich posts with user data and parent post information
-      const enrichedPosts = posts.map(post => {
-        const enrichedPost = enrichPostWithUserData(post);
-        
-        // Add parent post if it exists
-        if (post.parent_post_id && parentPostMap.has(post.parent_post_id)) {
-          enrichedPost.parent_post = parentPostMap.get(post.parent_post_id);
-        }
-        
-        return enrichedPost;
-      });
-      
-      console.log('Posts enriched with user data and parent posts:', enrichedPosts);
-      return { posts: enrichedPosts as Post[], totalCount };
+      console.log('Optimized posts fetched:', enrichedPosts.length, 'posts in single query');
+      return { posts: enrichedPosts as Post[], totalCount: totalCount || 0 };
     },
     enabled: !!topicId,
+    staleTime: 2 * 60 * 1000, // 2 minutes - posts are more dynamic
+    gcTime: 5 * 60 * 1000, // 5 minutes garbage collection
   });
 };

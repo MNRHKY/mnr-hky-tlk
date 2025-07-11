@@ -23,7 +23,7 @@ interface PostComponentProps {
   onReport: (contentType: 'post' | 'topic', postId?: string, topicId?: string) => void;
 }
 
-export const PostComponent: React.FC<PostComponentProps> = ({ 
+export const PostComponent: React.FC<PostComponentProps> = React.memo(({ 
   post, 
   topicId,
   depth = 0, 
@@ -322,4 +322,4 @@ export const PostComponent: React.FC<PostComponentProps> = ({
       </div>
     </div>
   );
-};
+});
