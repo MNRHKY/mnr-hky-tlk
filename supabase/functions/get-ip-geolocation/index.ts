@@ -42,8 +42,8 @@ async function getGeolocationFromAPI(ip: string): Promise<GeolocationData | null
       latitude: data.lat || 0,
       longitude: data.lon || 0,
       timezone: data.timezone || 'UTC',
-      is_vpn: data.proxy || false,
-      is_proxy: data.hosting || false,
+      is_vpn: data.proxy || data.hosting || false,
+      is_proxy: data.proxy || false,
       isp: data.isp || 'Unknown'
     };
   } catch (error) {
