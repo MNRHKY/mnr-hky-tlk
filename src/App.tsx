@@ -41,7 +41,7 @@ import { CookieConsent } from "./components/cookies/CookieConsent";
 import { CookieDebugPanel } from "./components/cookies/CookieDebugPanel";
 import { MaintenanceWrapper } from "./components/MaintenanceWrapper";
 import { StickyBanner } from "./components/StickyBanner";
-import { AdsTxt } from "./pages/AdsTxt";
+
 import { IPTrackingWrapper } from "./components/IPTrackingWrapper";
 import { VPNBlocked } from "./pages/VPNBlocked";
 import { VPNGuard } from "./components/VPNGuard";
@@ -77,7 +77,6 @@ const App = () => (
                       <VPNGuard>
                       <Routes>
                         {/* Special routes */}
-                        <Route path="/ads.txt" element={<AdsTxt />} />
                         
                         {/* Authentication routes - standalone pages */}
                         <Route path="/login" element={<Login />} />
