@@ -8,9 +8,12 @@ interface VPNGuardProps {
 }
 
 export const VPNGuard = ({ children }: VPNGuardProps) => {
+  console.log('🛡️ VPNGuard component mounted');
   const { isBlocked, isLoading } = useVPNDetection();
   const location = useLocation();
   const navigate = useNavigate();
+
+  console.log('🛡️ VPNGuard state:', { isBlocked, isLoading, pathname: location.pathname });
 
   useEffect(() => {
     // Only redirect if VPN is detected and user is not already on the VPN blocked page

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getUserIP, getIPGeolocation } from '@/utils/ipUtils';
 
 export const useVPNDetection = () => {
+  console.log('🔧 useVPNDetection hook initialized');
   const [isVPN, setIsVPN] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
