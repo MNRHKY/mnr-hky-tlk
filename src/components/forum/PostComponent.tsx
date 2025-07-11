@@ -37,8 +37,8 @@ export const PostComponent: React.FC<PostComponentProps> = React.memo(({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
-  const [moderationStatus, setModerationStatus] = useState(post.moderation_status);
-  const [isVisible, setIsVisible] = useState(post.moderation_status === 'approved');
+  const [moderationStatus, setModerationStatus] = useState(post.moderation_status || 'approved');
+  const [isVisible, setIsVisible] = useState((post.moderation_status || 'approved') === 'approved');
   const { toast } = useToast();
 
   // Real-time subscription for moderation status changes
@@ -117,6 +117,9 @@ export const PostComponent: React.FC<PostComponentProps> = React.memo(({
     postId: post.id,
     postContent: post.content,
     postContentLength: post.content?.length,
+    moderationStatus: moderationStatus,
+    postModerationStatus: post.moderation_status,
+    isVisible: isVisible,
     depth: depth,
     parentPostId: post.parent_post_id,
     hasParentPost: !!post.parent_post,
