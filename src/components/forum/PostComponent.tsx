@@ -76,8 +76,8 @@ export const PostComponent: React.FC<PostComponentProps> = React.memo(({
     };
   }, [post.id, toast]);
 
-  // Don't render the post if it's not visible (pending/rejected)
-  if (!isVisible && moderationStatus !== 'approved') {
+  // Don't render the post if it's not approved
+  if (moderationStatus !== 'approved') {
     return (
       <div className="relative border-b border-border/50 pb-2 mb-2 w-full">
         <div className="bg-muted/50 p-3 md:p-4 rounded-md w-full text-center">
