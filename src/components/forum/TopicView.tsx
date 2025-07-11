@@ -20,6 +20,7 @@ import { InlineReplyForm } from './InlineReplyForm';
 import { AdminControls } from './AdminControls';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const TopicView = () => {
   const { topicId, categorySlug, subcategorySlug, topicSlug } = useParams();
@@ -51,6 +52,10 @@ export const TopicView = () => {
   const { data: slugTopic, isLoading: slugLoading, error: slugError } = useTopicByPath(categorySlug || '', subcategorySlug, topicSlug);
   
   const topic = isLegacyRoute ? legacyTopic : slugTopic;
+  
+  // Topic moderation status state - initialized after topic is defined
+  const [topicModerationStatus, setTopicModerationStatus] = useState(topic?.moderation_status);
+  const [isTopicVisible, setIsTopicVisible] = useState(topic?.moderation_status === 'approved');
   const topicLoading = isLegacyRoute ? legacyLoading : slugLoading;
   const topicError = isLegacyRoute ? legacyError : slugError;
   
@@ -62,6 +67,51 @@ export const TopicView = () => {
   const posts = postsData?.posts || [];
   const totalPosts = postsData?.totalCount || 0;
   const { mutate: editTopic, isPending: isUpdatingTopic } = useEditTopic();
+
+  // Real-time subscription for topic moderation status changes
+  useEffect(() => {
+    if (!topic?.id) return;
+
+    const channel = supabase
+      .channel(`topic-moderation-${topic.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'topics',
+          filter: `id=eq.${topic.id}`
+        },
+        (payload) => {
+          if (payload.new) {
+            const newStatus = payload.new.moderation_status;
+            setTopicModerationStatus(newStatus);
+            setIsTopicVisible(newStatus === 'approved');
+            
+            if (newStatus === 'pending') {
+              toast({
+                title: "Topic flagged",
+                description: "This topic has been flagged and is now under review.",
+                variant: "default",
+              });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [topic?.id, toast]);
+
+  // Update local state when topic data changes
+  useEffect(() => {
+    if (topic) {
+      setTopicModerationStatus(topic.moderation_status);
+      setIsTopicVisible(topic.moderation_status === 'approved');
+    }
+  }, [topic]);
 
 
   const handleReport = (contentType: 'post' | 'topic', postId?: string, topicId?: string) => {
@@ -205,6 +255,29 @@ export const TopicView = () => {
       <div className="text-center py-8">
         <h2 className="text-xl font-semibold text-gray-900">Topic not found</h2>
         <p className="text-gray-600 mt-2">The topic you're looking for doesn't exist.</p>
+        <Button asChild className="mt-4">
+          <Link to="/">Back to Home</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  // Don't render topic content if it's not visible (pending/rejected)
+  if (!isTopicVisible && topicModerationStatus !== 'approved') {
+    return (
+      <div className="text-center py-8">
+        <h2 className="text-xl font-semibold text-gray-900">
+          {topicModerationStatus === 'pending' 
+            ? "Topic Under Review"
+            : "Topic Unavailable"
+          }
+        </h2>
+        <p className="text-gray-600 mt-2">
+          {topicModerationStatus === 'pending' 
+            ? "This topic has been flagged and is currently under review by our moderation team."
+            : "This topic has been removed by moderators."
+          }
+        </p>
         <Button asChild className="mt-4">
           <Link to="/">Back to Home</Link>
         </Button>

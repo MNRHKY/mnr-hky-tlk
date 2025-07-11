@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { WysiwygEditor } from '@/components/ui/wysiwyg-editor';
@@ -15,6 +15,7 @@ import { useEditPost } from '@/hooks/useEditPost';
 import { useDeletePost } from '@/hooks/useDeletePost';
 import { AdminPostInfo } from './AdminPostInfo';
 import { AdminControls } from './AdminControls';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PostComponentProps {
   post: any;
@@ -36,7 +37,60 @@ export const PostComponent: React.FC<PostComponentProps> = React.memo(({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
+  const [moderationStatus, setModerationStatus] = useState(post.moderation_status);
+  const [isVisible, setIsVisible] = useState(post.moderation_status === 'approved');
   const { toast } = useToast();
+
+  // Real-time subscription for moderation status changes
+  useEffect(() => {
+    const channel = supabase
+      .channel(`post-moderation-${post.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'posts',
+          filter: `id=eq.${post.id}`
+        },
+        (payload) => {
+          if (payload.new) {
+            const newStatus = payload.new.moderation_status;
+            setModerationStatus(newStatus);
+            setIsVisible(newStatus === 'approved');
+            
+            if (newStatus === 'pending') {
+              toast({
+                title: "Content flagged",
+                description: "This post has been flagged and is now under review.",
+                variant: "default",
+              });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [post.id, toast]);
+
+  // Don't render the post if it's not visible (pending/rejected)
+  if (!isVisible && moderationStatus !== 'approved') {
+    return (
+      <div className="relative border-b border-border/50 pb-2 mb-2 w-full">
+        <div className="bg-muted/50 p-3 md:p-4 rounded-md w-full text-center">
+          <div className="text-muted-foreground text-sm">
+            {moderationStatus === 'pending' 
+              ? "This post is under review and temporarily unavailable."
+              : "This post has been removed by moderators."
+            }
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   // Removed hasReplies since we're not nesting replies anymore
   
