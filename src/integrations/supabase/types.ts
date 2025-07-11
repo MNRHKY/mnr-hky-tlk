@@ -1403,6 +1403,30 @@ export type Database = {
         }
         Returns: undefined
       }
+      log_page_visit_with_geolocation: {
+        Args: {
+          p_ip_address: unknown
+          p_session_id: string
+          p_page_path: string
+          p_page_title?: string
+          p_referrer?: string
+          p_user_agent?: string
+          p_search_query?: string
+          p_category_id?: string
+          p_topic_id?: string
+          p_country_code?: string
+          p_country_name?: string
+          p_city?: string
+          p_region?: string
+          p_latitude?: number
+          p_longitude?: number
+          p_timezone?: string
+          p_is_vpn?: boolean
+          p_is_proxy?: boolean
+          p_isp?: string
+        }
+        Returns: undefined
+      }
       record_anonymous_post: {
         Args: { user_ip: unknown; session_id: string }
         Returns: undefined

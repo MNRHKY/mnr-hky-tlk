@@ -15,6 +15,9 @@ export const useIPTracker = () => {
         
         if (!ip || !sessionId) return;
 
+        // Get geolocation data
+        const geoData = await getIPGeolocation(ip);
+
         // Extract category and topic IDs from the path
         const pathParts = location.pathname.split('/');
         let categoryId = null;
@@ -43,18 +46,43 @@ export const useIPTracker = () => {
         const searchParams = new URLSearchParams(location.search);
         const searchQuery = searchParams.get('q') || searchParams.get('search');
 
-        // Log the page visit
-        await supabase.rpc('log_page_visit', {
-          p_ip_address: ip,
-          p_session_id: sessionId,
-          p_page_path: location.pathname + location.search,
-          p_page_title: document.title,
-          p_referrer: document.referrer || null,
-          p_user_agent: navigator.userAgent,
-          p_search_query: searchQuery,
-          p_category_id: categoryId,
-          p_topic_id: topicId
-        });
+        // Log the page visit with geolocation data
+        if (geoData) {
+          await supabase.rpc('log_page_visit_with_geolocation', {
+            p_ip_address: ip,
+            p_session_id: sessionId,
+            p_page_path: location.pathname + location.search,
+            p_page_title: document.title,
+            p_referrer: document.referrer || null,
+            p_user_agent: navigator.userAgent,
+            p_search_query: searchQuery,
+            p_category_id: categoryId,
+            p_topic_id: topicId,
+            p_country_code: geoData.country_code,
+            p_country_name: geoData.country_name,
+            p_city: geoData.city,
+            p_region: geoData.region,
+            p_latitude: geoData.latitude,
+            p_longitude: geoData.longitude,
+            p_timezone: geoData.timezone,
+            p_is_vpn: geoData.is_vpn,
+            p_is_proxy: geoData.is_proxy,
+            p_isp: geoData.isp
+          });
+        } else {
+          // Fallback to original function if geolocation fails
+          await supabase.rpc('log_page_visit', {
+            p_ip_address: ip,
+            p_session_id: sessionId,
+            p_page_path: location.pathname + location.search,
+            p_page_title: document.title,
+            p_referrer: document.referrer || null,
+            p_user_agent: navigator.userAgent,
+            p_search_query: searchQuery,
+            p_category_id: categoryId,
+            p_topic_id: topicId
+          });
+        }
       } catch (error) {
         console.error('Failed to track page visit:', error);
       }

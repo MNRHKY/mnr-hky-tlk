@@ -4,14 +4,17 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, MessageSquare, Flag, TrendingUp, ExternalLink } from 'lucide-react';
+import { Users, MessageSquare, Flag, TrendingUp, ExternalLink, Globe, Eye } from 'lucide-react';
 import { useAdminStats } from '@/hooks/useAdminStats';
 import { useAdminActivity } from '@/hooks/useAdminActivity';
+import { useActiveVisitors } from '@/hooks/useActiveVisitors';
+import { LiveVisitorMonitor } from './LiveVisitorMonitor';
 import { formatDistanceToNow } from 'date-fns';
 
 export const AdminDashboard = () => {
   const { data: stats, isLoading: statsLoading, error: statsError } = useAdminStats();
   const { data: activities, isLoading: activitiesLoading, error: activitiesError } = useAdminActivity();
+  const { data: activeVisitors, isLoading: visitorsLoading } = useActiveVisitors();
 
   if (statsError || activitiesError) {
     return (
@@ -27,6 +30,13 @@ export const AdminDashboard = () => {
   }
 
   const dashboardStats = [
+    {
+      title: 'Active Visitors',
+      value: visitorsLoading ? '...' : activeVisitors?.length?.toString() || '0',
+      change: 'Live now',
+      changeType: 'live',
+      icon: Globe
+    },
     {
       title: 'Total Users',
       value: statsLoading ? '...' : stats?.total_users?.toString() || '0',
@@ -47,13 +57,6 @@ export const AdminDashboard = () => {
       change: 'No change',
       changeType: 'neutral',
       icon: Flag
-    },
-    {
-      title: 'Total Topics',
-      value: statsLoading ? '...' : stats?.total_topics?.toString() || '0',
-      change: '+5%',
-      changeType: 'positive',
-      icon: TrendingUp
     }
   ];
 
@@ -78,9 +81,10 @@ export const AdminDashboard = () => {
                   <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                   <p className={`text-sm ${
                     stat.changeType === 'positive' ? 'text-green-600' : 
-                    stat.changeType === 'negative' ? 'text-red-600' : 'text-gray-600'
+                    stat.changeType === 'negative' ? 'text-red-600' : 
+                    stat.changeType === 'live' ? 'text-blue-600' : 'text-gray-600'
                   }`}>
-                    {stat.change} from last month
+                    {stat.changeType === 'live' ? stat.change : `${stat.change} from last month`}
                   </p>
                 </div>
                 <div className="p-3 bg-gray-100 rounded-lg">
@@ -145,6 +149,9 @@ export const AdminDashboard = () => {
           )}
         </div>
       </Card>
+
+      {/* Live Visitor Monitor */}
+      <LiveVisitorMonitor />
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
