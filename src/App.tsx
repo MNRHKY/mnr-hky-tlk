@@ -22,7 +22,7 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
-import { AdsTxt } from "./pages/AdsTxt";
+
 import Blog from "./pages/Blog";
 import Topics from "./pages/Topics";
 import { Categories } from "./pages/Categories";
@@ -78,7 +78,6 @@ const App = () => (
                       <VPNGuard>
                       <Routes>
                         {/* Special routes */}
-                        <Route path="/ads.txt" element={<AdsTxt />} />
                         
                         {/* Authentication routes - standalone pages */}
                         <Route path="/login" element={<Login />} />
