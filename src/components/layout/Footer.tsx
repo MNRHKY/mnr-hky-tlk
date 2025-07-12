@@ -9,8 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useEnhancedForumStats } from '@/hooks/useEnhancedForumStats';
 import { useForumSettings } from '@/hooks/useForumSettings';
-import { useOnlineUsers } from '@/contexts/OnlineUsersContext';
-import { usePeakUsers } from '@/hooks/usePeakUsers';
+import { useVisitors24h } from '@/hooks/useVisitors24h';
+import { usePeakVisitors24h } from '@/hooks/usePeakVisitors24h';
 import { Facebook, Twitter, Instagram, Youtube, Users, Calendar } from 'lucide-react';
 
 const ContactFormModal = () => {
@@ -123,8 +123,8 @@ const ContactFormModal = () => {
 export const Footer = () => {
   const { data: stats } = useEnhancedForumStats();
   const { getSetting } = useForumSettings();
-  const onlineCount = useOnlineUsers();
-  const { data: peakData } = usePeakUsers();
+  const { data: visitors24h } = useVisitors24h();
+  const { data: peakData24h } = usePeakVisitors24h();
 
   return (
     <footer className="bg-card border-t mt-auto">
@@ -215,13 +215,13 @@ export const Footer = () => {
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span className="text-muted-foreground">
-                  {onlineCount} Online Now
+                  {visitors24h || 0} Visitors (24h)
                 </span>
               </div>
               <div className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">
-                  Peak: {peakData?.peak_count || 1} ({peakData?.peak_date ? new Date(peakData.peak_date).toLocaleDateString() : 'Today'})
+                  Peak (24h): {peakData24h?.peak_count || 0}
                 </span>
               </div>
             </div>

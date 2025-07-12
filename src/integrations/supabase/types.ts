@@ -1412,6 +1412,13 @@ export type Database = {
           peak_date: string
         }[]
       }
+      get_peak_visitors_24h: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          peak_count: number
+          peak_hour: string
+        }[]
+      }
       get_posts_count: {
         Args: { p_topic_id: string }
         Returns: number
@@ -1437,6 +1444,10 @@ export type Database = {
           page_views: number
           avg_session_duration: unknown
         }[]
+      }
+      get_visitors_last_24h: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       has_role: {
         Args: {
